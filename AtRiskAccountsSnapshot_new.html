@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>At-Risk Accounts</title>
+<style>
+  :root{
+    --bg:#0c0e11;
+    --panel:#15171c;
+    --panel-border:#262932;
+    --text:#e7e5df;
+    --muted:#8b929e;
+    --muted-2:#666d78;
+    --teal:#4fd8b8;
+    --coral:#e2896c;
+    --critical:#e2796a;
+    --high:#e0a95c;
+    --watch:#d9c15c;
+    --row-hover:#1a1d23;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
+  .wrap{max-width:1120px;margin:0 auto;padding:40px 24px 64px;}
+  .eyebrow{
+    display:flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.12em;color:var(--teal);
+    text-transform:uppercase;
+    margin-bottom:18px;
+  }
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block;}
+  h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:56px;line-height:1.05;margin:0 0 20px;font-weight:700;
+  }
+  .dek{font-size:17px;line-height:1.65;color:#c7c9cf;max-width:920px;margin:0 0 28px;}
+  .dek b{color:var(--text);}
+  hr.rule{border:none;border-top:1px solid var(--panel-border);margin:0 0 28px;}
+  .stats{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    border:1px solid var(--panel-border);border-radius:4px;overflow:hidden;
+    margin-bottom:40px;background:var(--panel);
+  }
+  .stat{padding:22px 24px;border-right:1px solid var(--panel-border);}
+  .stat:last-child{border-right:none;}
+  .stat .label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  .stat .value{font-family:Georgia,serif;font-size:34px;color:var(--coral);margin-bottom:10px;font-weight:700;}
+  .stat .value.plain{color:var(--text);}
+  .stat .sub{font-size:13px;color:var(--muted);line-height:1.5;}
+  h2{font-family:Georgia,serif;font-size:22px;margin:0 0 4px;font-weight:700;}
+  .list-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .list-head .hint{font-size:12px;color:var(--muted-2);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead th{
+    text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--panel-border);
+    cursor:pointer;white-space:nowrap;user-select:none;
+  }
+  thead th:hover{color:var(--text);}
+  thead th .arrow{opacity:.5;font-size:10px;margin-left:3px;}
+  tbody tr{border-bottom:1px solid var(--panel-border);position:relative;}
+  tbody tr:hover{background:var(--row-hover);}
+  tbody td{padding:14px;vertical-align:middle;}
+  tbody tr td:first-child{border-left:3px solid transparent;padding-left:11px;}
+  tr[data-tier="critical"] td:first-child{border-left-color:var(--critical);}
+  tr[data-tier="high"] td:first-child{border-left-color:var(--high);}
+  tr[data-tier="watch"] td:first-child{border-left-color:var(--watch);}
+  .acct-name{font-weight:600;color:var(--text);}
+  .acct-owner{font-size:12px;color:var(--muted);margin-top:2px;}
+  .chip{
+    display:inline-block;padding:3px 9px;border:1px solid var(--panel-border);border-radius:3px;
+    font-size:11px;color:var(--muted);text-transform:none;
+  }
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;}
+  .badge .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .badge.critical{color:var(--critical);} .badge.critical .dot{background:var(--critical);}
+  .badge.high{color:var(--high);} .badge.high .dot{background:var(--high);}
+  .badge.watch{color:var(--watch);} .badge.watch .dot{background:var(--watch);}
+  .usage-pct{font-weight:700;margin-bottom:6px;}
+  .usage-bar{height:4px;border-radius:2px;background:#24272d;overflow:hidden;width:140px;margin-bottom:6px;}
+  .usage-bar > span{display:block;height:100%;border-radius:2px;}
+  tr[data-tier="critical"] .usage-bar > span{background:var(--critical);}
+  tr[data-tier="high"] .usage-bar > span{background:var(--high);}
+  tr[data-tier="watch"] .usage-bar > span{background:var(--watch);}
+  .usage-detail{font-size:12px;color:var(--muted);}
+  .acv{font-family:"SFMono-Regular",Consolas,monospace;}
+  .renewal{font-family:"SFMono-Regular",Consolas,monospace;}
+  .renewal .days{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
+  .renewal.soon{color:var(--critical);}
+  .renewal.soon .days{color:var(--critical);opacity:.85;}
+  footer{margin-top:44px;padding-top:24px;border-top:1px solid var(--panel-border);}
+  footer p{font-size:13px;line-height:1.7;color:var(--muted);max-width:920px;}
+  .snapshot-note{
+    margin-top:28px;font-size:12px;color:var(--muted-2);
+    border:1px dashed var(--panel-border);border-radius:4px;padding:12px 14px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow mono"><span class="dot"></span>SIFTMED &middot; ACCOUNT HEALTH &middot; AS OF <span id="asof">AUG 28, 2026</span></div>
+
+  <h1>At-Risk Accounts</h1>
+
+  <p class="dek" id="dek">
+    <span id="flaggedN">19</span> of SiftMed's <span id="totalCustomers">53</span> real, paying customers used
+    <b>under 25% of their contracted monthly page cap</b> in the last 30 days &mdash; the same usage-cliff pattern
+    that showed up, months in advance, ahead of every one of SiftMed's nine confirmed churns this year. The monthly
+    cap is prorated to each account's actual contract length rather than assumed to be 12 months, which cleared two
+    multi-year contracts (Zurich North America, Physician Life Care Planning) that would otherwise have looked
+    at-risk only because their page cap covers 24 months, not one.
+  </p>
+
+  <hr class="rule">
+
+  <div class="stats">
+    <div class="stat">
+      <div class="label">Flagged Accounts</div>
+      <div class="value" id="statFlagged">19</div>
+      <div class="sub">of <span id="statTotal">53</span> real, paying customers</div>
+    </div>
+    <div class="stat">
+      <div class="label">ACV Represented</div>
+      <div class="value" id="statACV">$724.1K</div>
+      <div class="sub">annual contract value, flagged accounts</div>
+    </div>
+    <div class="stat">
+      <div class="label">Renewing Within 60 Days</div>
+      <div class="value" id="statRenew">6</div>
+      <div class="sub" id="statRenewSub">Viewpoint Medical Assessments &mdash; 3 days, 1.7% usage</div>
+    </div>
+    <div class="stat">
+      <div class="label">Enterprise-Tier Flagged</div>
+      <div class="value plain" id="statEnt">1</div>
+      <div class="sub" id="statEntSub">Integrity Medical Evaluations</div>
+    </div>
+  </div>
+
+  <h2>The list</h2>
+  <div class="list-head">
+    <span></span>
+    <span class="hint mono">click a column to sort &middot; sorted by usage % by default</span>
+  </div>
+
+  <table id="riskTable">
+    <thead>
+      <tr>
+        <th data-key="name">Account <span class="arrow">↕</span></th>
+        <th data-key="tier">Tier <span class="arrow">↕</span></th>
+        <th data-key="severity">Risk <span class="arrow">↕</span></th>
+        <th data-key="pct">Usage vs. monthly cap <span class="arrow">↑</span></th>
+        <th data-key="acv">ACV <span class="arrow">↕</span></th>
+        <th data-key="days">Renewal <span class="arrow">↕</span></th>
+      </tr>
+    </thead>
+    <tbody id="riskBody"></tbody>
+  </table>
+
+  <footer>
+    <p id="methodology">
+      Tracks SiftMed's real, paying customers (Salesforce Account.Stage__c = &ldquo;Customer&rdquo;) whose trailing
+      30-day product usage (Pages_Last_30__c) is low relative to their contracted page cap (PageCountCap__c),
+      prorated to each account's actual contract length (Active_Contract_Start_Date__c to Subscription_End_Date__c)
+      rather than a flat 12-month assumption &mdash; the same usage-cliff pattern that preceded all nine of SiftMed's
+      confirmed churns. Accounts missing a start date, end date, or page cap, or with a zero page cap, are excluded
+      from the calculation. Non-paying and internal Account records (null or zero Annual_Contract_Value__c) are
+      excluded from the 53 real-customer base entirely. Usage_data__c is intentionally not used as a source, since it
+      carries rolling placeholder/demo activity rather than real customer signal.
+    </p>
+    <div class="snapshot-note mono">
+      This is a point-in-time snapshot embedded in Salesforce as a Static Resource. The live, auto-refreshing version
+      of this dashboard is published at claude.ai; this copy reflects the data as of the date in the eyebrow above and
+      does not update itself.
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  var ROWS = [
+    {name:"Girones Lawyers", owner:"Carla Chaytor", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:5, acv:11188, renewal:"2027-05-12", days:257},
+    {name:"Priddle Law Group", owner:"Matt Baldwin", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-12-01", days:95},
+    {name:"Jamie Irvine MD", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0.3, users:1, acv:9576, renewal:"2027-02-18", days:174},
+    {name:"North Toronto Surgical", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:1920, renewal:"2027-06-03", days:279},
+    {name:"Halbrecht Orthopedics", owner:"Peter Moyse", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:650, renewal:"2026-11-23", days:87},
+    {name:"TrueLine Medical Legal Consulting", owner:"Peter Moyse", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:12000, renewal:"2027-05-31", days:276},
+    {name:"Integrity Legal Nurse Consulting", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:16, acv:9000, renewal:"2026-09-21", days:24},
+    {name:"Cayuga Mutual", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-10-19", days:52},
+    {name:"Mohamed Khaled MD", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.9, pages:149, hours:0.1, users:1, acv:19349, renewal:"2026-09-02", days:5},
+    {name:"Chris Small Professional Medical Corporation", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:1.4, pages:24, hours:0.8, users:1, acv:4800, renewal:"2027-03-21", days:205},
+    {name:"Viewpoint Medical Assessments", owner:"Travis Bailey", tier:"SMB", severity:0, pct:1.7, pages:4905, hours:14.3, users:12, acv:126000, renewal:"2026-08-31", days:3},
+    {name:"SEA & Associates Medical Legal Consulting Inc", owner:"Carla Chaytor", tier:"SMB", severity:0, pct:2.0, pages:718, hours:0.3, users:2, acv:24000, renewal:"2026-09-25", days:28},
+    {name:"iMPROve Health", owner:"Travis Bailey", tier:"SMB", severity:0, pct:2.5, pages:685, hours:28.1, users:7, acv:36960, renewal:"2026-09-30", days:33},
+    {name:"Orvosi Medical Management", owner:"Travis Bailey", tier:"SMB", severity:1, pct:5.5, pages:7398, hours:8.8, users:7, acv:96000, renewal:"2027-01-08", days:133},
+    {name:"Integrity Medical Evaluations", owner:"Travis Bailey", tier:"Enterprise", severity:1, pct:7.3, pages:7391, hours:5.3, users:1, acv:158400, renewal:"2027-08-31", days:368},
+    {name:"The Ivera Group", owner:"Carla Chaytor", tier:"SMB", severity:1, pct:11.6, pages:7748, hours:7.1, users:3, acv:80000, renewal:"2027-03-22", days:206},
+    {name:"Medical Vocational Planning", owner:"Travis Bailey", tier:"SMB", severity:1, pct:15.0, pages:8632, hours:52.2, users:6, acv:115200, renewal:"2027-12-01", days:460},
+    {name:"Life Care Planning Solutions LLC", owner:"Travis Bailey", tier:"SMB", severity:1, pct:15.0, pages:3745, hours:34.0, users:8, acv:8000, renewal:"2027-06-23", days:299},
+    {name:"Vocational Alternatives", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:15.9, pages:1194, hours:1.0, users:3, acv:9900, renewal:"2027-03-09", days:193},
+  ];
+
+  var SEV = ["critical","high","watch"];
+  var SEV_LABEL = ["Critical","High","Watch"];
+
+  function fmtMoney(n){
+    return "$" + n.toLocaleString("en-US");
+  }
+  function fmtDate(iso){
+    var d = new Date(iso + "T00:00:00Z");
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return months[d.getUTCMonth()] + " " + d.getUTCDate() + ", " + d.getUTCFullYear();
+  }
+
+  function render(rows){
+    var body = document.getElementById("riskBody");
+    body.innerHTML = "";
+    rows.forEach(function(r){
+      var tr = document.createElement("tr");
+      tr.setAttribute("data-tier", SEV[r.severity]);
+      var soon = r.days <= 30;
+      tr.innerHTML =
+        '<td><div class="acct-name">' + r.name + '</div><div class="acct-owner">' + r.owner + '</div></td>' +
+        '<td><span class="chip">' + r.tier + '</span></td>' +
+        '<td><span class="badge ' + SEV[r.severity] + '"><span class="dot"></span>' + SEV_LABEL[r.severity] + '</span></td>' +
+        '<td><div class="usage-pct">' + r.pct.toFixed(1) + '%</div>' +
+            '<div class="usage-bar"><span style="width:' + Math.min(100, r.pct) + '%"></span></div>' +
+            '<div class="usage-detail">' + r.pages.toLocaleString("en-US") + ' pages &middot; ' + r.hours.toFixed(1) + ' hrs &middot; ' + r.users + ' users</div></td>' +
+        '<td class="acv">' + fmtMoney(r.acv) + '</td>' +
+        '<td class="renewal' + (soon ? ' soon' : '') + '">' + fmtDate(r.renewal) + '<span class="days">in ' + r.days + ' day' + (r.days === 1 ? '' : 's') + '</span></td>';
+      body.appendChild(tr);
+    });
+  }
+
+  var sortState = {key:"pct", dir:1};
+  function sortRows(key){
+    if (sortState.key === key){ sortState.dir *= -1; } else { sortState.key = key; sortState.dir = 1; }
+    var sorted = ROWS.slice().sort(function(a,b){
+      var av = a[key], bv = b[key];
+      if (typeof av === "string"){ av = av.toLowerCase(); bv = bv.toLowerCase(); }
+      if (av < bv) return -1 * sortState.dir;
+      if (av > bv) return 1 * sortState.dir;
+      return 0;
+    });
+    render(sorted);
+  }
+
+  document.querySelectorAll("thead th").forEach(function(th){
+    th.addEventListener("click", function(){ sortRows(th.getAttribute("data-key")); });
+  });
+
+  render(ROWS.slice().sort(function(a,b){ return a.pct - b.pct; }));
+</script>
+</body>
+</html>
