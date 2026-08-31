@@ -106,12 +106,12 @@
 <body>
 <div class="wrap">
 
-  <div class="eyebrow mono"><span class="dot"></span>SIFTMED &middot; ACCOUNT HEALTH &middot; AS OF <span id="asof">AUG 28, 2026</span></div>
+  <div class="eyebrow mono"><span class="dot"></span>SIFTMED &middot; ACCOUNT HEALTH &middot; AS OF <span id="asof">AUG 31, 2026</span></div>
 
   <h1>At-Risk Accounts</h1>
 
   <p class="dek" id="dek">
-    <span id="flaggedN">19</span> of SiftMed's <span id="totalCustomers">53</span> real, paying customers used
+    <span id="flaggedN">20</span> of SiftMed's <span id="totalCustomers">51</span> real, paying customers used
     <b>under 25% of their contracted monthly page cap</b> in the last 30 days &mdash; the same usage-cliff pattern
     that showed up, months in advance, ahead of every one of SiftMed's nine confirmed churns this year. The monthly
     cap is prorated to each account's actual contract length rather than assumed to be 12 months, which cleared two
@@ -124,18 +124,18 @@
   <div class="stats">
     <div class="stat">
       <div class="label">Flagged Accounts</div>
-      <div class="value" id="statFlagged">19</div>
-      <div class="sub">of <span id="statTotal">53</span> real, paying customers</div>
+      <div class="value" id="statFlagged">20</div>
+      <div class="sub">of <span id="statTotal">51</span> real, paying customers</div>
     </div>
     <div class="stat">
       <div class="label">ACV Represented</div>
-      <div class="value" id="statACV">$724.1K</div>
+      <div class="value" id="statACV">$641.6K</div>
       <div class="sub">annual contract value, flagged accounts</div>
     </div>
     <div class="stat">
       <div class="label">Renewing Within 60 Days</div>
-      <div class="value" id="statRenew">6</div>
-      <div class="sub" id="statRenewSub">Viewpoint Medical Assessments &mdash; 3 days, 1.7% usage</div>
+      <div class="value" id="statRenew">4</div>
+      <div class="sub" id="statRenewSub">Mohamed Khaled MD &mdash; 2 days, 0.9% usage</div>
     </div>
     <div class="stat">
       <div class="label">Enterprise-Tier Flagged</div>
@@ -172,7 +172,7 @@
       rather than a flat 12-month assumption &mdash; the same usage-cliff pattern that preceded all nine of SiftMed's
       confirmed churns. Accounts missing a start date, end date, or page cap, or with a zero page cap, are excluded
       from the calculation. Non-paying and internal Account records (null or zero Annual_Contract_Value__c) are
-      excluded from the 53 real-customer base entirely. Usage_data__c is intentionally not used as a source, since it
+      excluded from the 51 real-customer base entirely. Usage_data__c is intentionally not used as a source, since it
       carries rolling placeholder/demo activity rather than real customer signal.
     </p>
     <div class="snapshot-note mono">
@@ -186,25 +186,26 @@
 
 <script>
   var ROWS = [
-    {name:"Girones Lawyers", owner:"Carla Chaytor", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:5, acv:11188, renewal:"2027-05-12", days:257},
-    {name:"Priddle Law Group", owner:"Matt Baldwin", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-12-01", days:95},
-    {name:"Jamie Irvine MD", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0.3, users:1, acv:9576, renewal:"2027-02-18", days:174},
-    {name:"North Toronto Surgical", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:1920, renewal:"2027-06-03", days:279},
-    {name:"Halbrecht Orthopedics", owner:"Peter Moyse", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:650, renewal:"2026-11-23", days:87},
-    {name:"TrueLine Medical Legal Consulting", owner:"Peter Moyse", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:12000, renewal:"2027-05-31", days:276},
-    {name:"Integrity Legal Nurse Consulting", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:16, acv:9000, renewal:"2026-09-21", days:24},
-    {name:"Cayuga Mutual", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-10-19", days:52},
-    {name:"Mohamed Khaled MD", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.9, pages:149, hours:0.1, users:1, acv:19349, renewal:"2026-09-02", days:5},
-    {name:"Chris Small Professional Medical Corporation", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:1.4, pages:24, hours:0.8, users:1, acv:4800, renewal:"2027-03-21", days:205},
-    {name:"Viewpoint Medical Assessments", owner:"Travis Bailey", tier:"SMB", severity:0, pct:1.7, pages:4905, hours:14.3, users:12, acv:126000, renewal:"2026-08-31", days:3},
-    {name:"SEA & Associates Medical Legal Consulting Inc", owner:"Carla Chaytor", tier:"SMB", severity:0, pct:2.0, pages:718, hours:0.3, users:2, acv:24000, renewal:"2026-09-25", days:28},
-    {name:"iMPROve Health", owner:"Travis Bailey", tier:"SMB", severity:0, pct:2.5, pages:685, hours:28.1, users:7, acv:36960, renewal:"2026-09-30", days:33},
-    {name:"Orvosi Medical Management", owner:"Travis Bailey", tier:"SMB", severity:1, pct:5.5, pages:7398, hours:8.8, users:7, acv:96000, renewal:"2027-01-08", days:133},
-    {name:"Integrity Medical Evaluations", owner:"Travis Bailey", tier:"Enterprise", severity:1, pct:7.3, pages:7391, hours:5.3, users:1, acv:158400, renewal:"2027-08-31", days:368},
-    {name:"The Ivera Group", owner:"Carla Chaytor", tier:"SMB", severity:1, pct:11.6, pages:7748, hours:7.1, users:3, acv:80000, renewal:"2027-03-22", days:206},
-    {name:"Medical Vocational Planning", owner:"Travis Bailey", tier:"SMB", severity:1, pct:15.0, pages:8632, hours:52.2, users:6, acv:115200, renewal:"2027-12-01", days:460},
-    {name:"Life Care Planning Solutions LLC", owner:"Travis Bailey", tier:"SMB", severity:1, pct:15.0, pages:3745, hours:34.0, users:8, acv:8000, renewal:"2027-06-23", days:299},
-    {name:"Vocational Alternatives", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:15.9, pages:1194, hours:1.0, users:3, acv:9900, renewal:"2027-03-09", days:193},
+    {name:"Cayuga Mutual", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-10-19", days:49},
+    {name:"Girones Lawyers", owner:"Carla Chaytor", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:5, acv:11188, renewal:"2027-05-12", days:254},
+    {name:"Halbrecht Orthopedics", owner:"Peter Moyse", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:650, renewal:"2026-11-23", days:84},
+    {name:"Integrity Legal Nurse Consulting", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:16, acv:9000, renewal:"2026-09-21", days:21},
+    {name:"Jamie Irvine MD", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0.3, users:1, acv:9576, renewal:"2027-02-18", days:171},
+    {name:"North Toronto Surgical", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:1920, renewal:"2027-06-03", days:276},
+    {name:"Priddle Law Group", owner:"Matt Baldwin", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-12-01", days:92},
+    {name:"TrueLine Medical Legal Consulting", owner:"Peter Moyse", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:12000, renewal:"2027-05-31", days:273},
+    {name:"Mohamed Khaled MD", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.9, pages:149, hours:0.1, users:1, acv:19349, renewal:"2026-09-02", days:2},
+    {name:"Chris Small Professional Medical Corporation", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:1.4, pages:24, hours:0.8, users:1, acv:4800, renewal:"2027-03-21", days:202},
+    {name:"iMPROve Health", owner:"Travis Bailey", tier:"SMB", severity:0, pct:2.2, pages:591, hours:26.5, users:7, acv:36960, renewal:"2026-09-30", days:30},
+    {name:"Orvosi Medical Management", owner:"Travis Bailey", tier:"SMB", severity:1, pct:5.5, pages:7398, hours:10.2, users:7, acv:96000, renewal:"2027-01-08", days:130},
+    {name:"Integrity Medical Evaluations", owner:"Travis Bailey", tier:"Enterprise", severity:1, pct:7.6, pages:7684, hours:5.1, users:1, acv:158400, renewal:"2027-08-31", days:365},
+    {name:"The Ivera Group", owner:"Carla Chaytor", tier:"SMB", severity:1, pct:8.4, pages:5606, hours:5.0, users:3, acv:80000, renewal:"2027-03-22", days:203},
+    {name:"Life Care Planning Solutions LLC", owner:"Travis Bailey", tier:"SMB", severity:1, pct:8.8, pages:2194, hours:28.6, users:8, acv:8000, renewal:"2027-06-23", days:296},
+    {name:"Vocational Alternatives", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:15.9, pages:1194, hours:1.0, users:3, acv:9900, renewal:"2027-03-09", days:190},
+    {name:"Medical Vocational Planning (MVP)", owner:"Travis Bailey", tier:"SMB", severity:2, pct:21.3, pages:12301, hours:47.4, users:6, acv:115200, renewal:"2027-12-01", days:457},
+    {name:"JS Held - BioMechanics Group", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:21.4, pages:2233, hours:15.5, users:7, acv:23061.75, renewal:"2027-01-08", days:130},
+    {name:"Daugherty & Associates, LLC", owner:"Carla Chaytor", tier:"Micro", severity:2, pct:23.2, pages:1165, hours:70.1, users:1, acv:8400, renewal:"2027-07-29", days:332},
+    {name:"Roebothan McKay Marshall (RMM)", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:24.0, pages:9619, hours:53.9, users:37, acv:36000, renewal:"2027-06-06", days:279},
   ];
 
   var SEV = ["critical","high","watch"];
