@@ -1,1 +1,3 @@
 credentials.rtf
+__pycache__/
+*.pyc
