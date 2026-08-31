@@ -147,7 +147,7 @@
   <h2>The list</h2>
   <div class="list-head">
     <span></span>
-    <span class="hint mono">click a column to sort &middot; sorted by usage % by default</span>
+    <span class="hint mono">click a column to sort &middot; sorted by usage % (highest first) by default</span>
   </div>
 
   <table id="riskTable">
@@ -156,7 +156,7 @@
         <th data-key="name">Account <span class="arrow">↕</span></th>
         <th data-key="tier">Tier <span class="arrow">↕</span></th>
         <th data-key="severity">Risk <span class="arrow">↕</span></th>
-        <th data-key="pct">Usage vs. monthly cap <span class="arrow">↑</span></th>
+        <th data-key="pct">Usage vs. monthly cap <span class="arrow">↓</span></th>
         <th data-key="acv">ACV <span class="arrow">↕</span></th>
         <th data-key="days">Renewal <span class="arrow">↕</span></th>
       </tr>
@@ -240,7 +240,7 @@
     });
   }
 
-  var sortState = {key:"pct", dir:1};
+  var sortState = {key:"pct", dir:-1};
   function sortRows(key){
     if (sortState.key === key){ sortState.dir *= -1; } else { sortState.key = key; sortState.dir = 1; }
     var sorted = ROWS.slice().sort(function(a,b){
@@ -257,7 +257,7 @@
     th.addEventListener("click", function(){ sortRows(th.getAttribute("data-key")); });
   });
 
-  render(ROWS.slice().sort(function(a,b){ return a.pct - b.pct; }));
+  render(ROWS.slice().sort(function(a,b){ return b.pct - a.pct; }));
 </script>
 </body>
 </html>
