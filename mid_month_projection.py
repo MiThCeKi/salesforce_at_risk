@@ -1,20 +1,23 @@
 """
 mid_month_projection.py
 
-1st & 15th of every month: a standalone "who's projected to go over" report,
+15th of every month: a standalone "who's projected to go over" report,
 separate from check_alerts.py's ongoing high/low usage alerts.
 
 Usage resets on a shared monthly cycle rather than being a rolling
-trailing-30-day window (corrected 2026-09-01), so early in a cycle the raw
-current tally understates what a full month's pace would be. This report
-corrects for that: it scales each account's usage-so-far by
+trailing-30-day window (corrected 2026-09-01), so partway through a cycle
+the raw current tally understates what a full month's pace would be. This
+report corrects for that: it scales each account's usage-so-far by
 (days_in_month / days_elapsed_so_far) to project a full-month total, then
 flags anyone projected to land over 100% of their prorated monthly cap.
 
-Caveat: on the 1st of the month this scaling divides by ~1 day of data and
-multiplies by ~30 - a single unusually heavy or light upload day gets
-wildly amplified. Treat day-1 results as a rough early signal, and the
-15th's results (half a month of real pace) as the more trustworthy read.
+Deliberately run on the 15th only, not the 1st: by the 15th, roughly half
+the month's real usage pace is in, so the projection is a meaningful
+"reasonable pace toward the true total". On the 1st there's only ~1 day of
+data to scale by ~30, which amplifies a single unusually heavy or light
+upload day into nonsense (confirmed live: 39/51 accounts flagged, one over
+50,000% projected) - not worth reporting, so that run was dropped rather
+than patched.
 
 Unlike check_alerts.py, this report carries no hysteresis/reminder state -
 it's a fresh status snapshot every run, not a "new crossing" alert system,
