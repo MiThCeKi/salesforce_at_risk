@@ -72,7 +72,8 @@
   tr[data-tier="critical"] td:first-child{border-left-color:var(--critical);}
   tr[data-tier="high"] td:first-child{border-left-color:var(--high);}
   tr[data-tier="watch"] td:first-child{border-left-color:var(--watch);}
-  .acct-name{font-weight:600;color:var(--text);}
+  .acct-name{font-weight:600;color:var(--text);text-decoration:none;}
+  .acct-name:hover{text-decoration:underline;}
   .acct-owner{font-size:12px;color:var(--muted);margin-top:2px;}
   .chip{
     display:inline-block;padding:3px 9px;border:1px solid var(--panel-border);border-radius:3px;
@@ -189,6 +190,7 @@
 __ROWS_JS__
   ];
 
+  var ACCOUNT_URL_BASE = "https://siftmed.lightning.force.com/lightning/r/Account/";
   var SEV = ["critical","high","watch"];
   var SEV_LABEL = ["Critical","High","Watch"];
 
@@ -209,7 +211,7 @@ __ROWS_JS__
       tr.setAttribute("data-tier", SEV[r.severity]);
       var soon = r.days <= 30;
       tr.innerHTML =
-        '<td><div class="acct-name">' + r.name + '</div><div class="acct-owner">' + r.owner + '</div></td>' +
+        '<td><a class="acct-name" href="' + ACCOUNT_URL_BASE + r.id + '/view" target="_top">' + r.name + '</a><div class="acct-owner">' + r.owner + '</div></td>' +
         '<td><span class="chip">' + r.tier + '</span></td>' +
         '<td><span class="badge ' + SEV[r.severity] + '"><span class="dot"></span>' + SEV_LABEL[r.severity] + '</span></td>' +
         '<td><div class="usage-pct">' + r.pct.toFixed(1) + '%</div>' +
