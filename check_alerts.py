@@ -207,7 +207,12 @@ def push_projected_section_live(my_domain, token, asof, rows):
 
 
 def main():
-    my_domain = os.environ["SF_MY_DOMAIN"].rstrip("/")
+    # SF_MY_DOMAIN disappeared from this environment's config on 2026-09-01
+    # (SF_CONSUMER_KEY/SECRET were still present) - falling back to the known
+    # org domain so the Mon/Wed/Fri and 15th-of-month routines don't silently
+    # fail. Not a secret (it's just the org's login domain), but the env var
+    # should still be restored at the environment level for robustness.
+    my_domain = os.environ.get("SF_MY_DOMAIN", "https://siftmed.my.salesforce.com").rstrip("/")
     consumer_key = os.environ["SF_CONSUMER_KEY"]
     consumer_secret = os.environ["SF_CONSUMER_SECRET"]
     today = datetime.date.today()

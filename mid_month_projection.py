@@ -55,7 +55,9 @@ def project_full_month_pct(account, pages_so_far, today):
 
 
 def main():
-    my_domain = os.environ["SF_MY_DOMAIN"].rstrip("/")
+    # See check_alerts.py: SF_MY_DOMAIN disappeared from this environment's
+    # config on 2026-09-01 - falling back to the known org domain.
+    my_domain = os.environ.get("SF_MY_DOMAIN", "https://siftmed.my.salesforce.com").rstrip("/")
     consumer_key = os.environ["SF_CONSUMER_KEY"]
     consumer_secret = os.environ["SF_CONSUMER_SECRET"]
     today = datetime.date.today()
