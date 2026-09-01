@@ -23,6 +23,13 @@ What it does, each run:
   4. Writes projected_snapshot.json, the mid-cycle projection table's data,
      which generate.py's daily regeneration reads and carries forward
      unchanged on the days this script doesn't run.
+  5. Pushes that same Projected Usage data straight to the LIVE Static
+     Resource itself (push_projected_section_live) - the daily push routine
+     never clones this repo, so it can't pick up projected_snapshot.json;
+     this script is the only thing that keeps the live page's Projected
+     section current. It edits only that section (regex-replaces PROJ_ROWS
+     and the projAsof date), leaving the main all-accounts table and
+     everything else on the live page untouched.
 
 Alert rules (agreed 2026-09-01):
   - "High" = projected usage % > 115. "Low" = projected usage % < 25.
@@ -45,7 +52,8 @@ Alert rules (agreed 2026-09-01):
 
 Usage: python3 check_alerts.py
 Reads:  alert_state.json (if present; treated as empty otherwise)
-Writes: alert_state.json, pending_alerts.json, projected_snapshot.json
+Writes: alert_state.json, pending_alerts.json, projected_snapshot.json,
+        and PATCHes the live Salesforce Static Resource's Projected section.
 """
 import datetime
 import json
@@ -65,6 +73,7 @@ REMINDER_DAYS = 14
 STATE_PATH = "alert_state.json"
 PENDING_PATH = "pending_alerts.json"
 PROJECTED_PATH = "projected_snapshot.json"
+STATIC_RESOURCE_ID = "081OL000000FhsfYAC"
 
 
 def get_access_token(my_domain, consumer_key, consumer_secret):
@@ -122,6 +131,51 @@ def load_json(path, default):
         with open(path) as fh:
             return json.load(fh)
     return default
+
+
+def get_static_resource_body(my_domain, token, resource_id):
+    url = f"{my_domain}/services/data/{API_VERSION}/sobjects/StaticResource/{resource_id}/Body"
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+    with urllib.request.urlopen(req) as resp:
+        return resp.read().decode("utf-8")
+
+
+def patch_static_resource_body(my_domain, token, resource_id, html_text):
+    import base64
+    url = f"{my_domain}/services/data/{API_VERSION}/sobjects/StaticResource/{resource_id}"
+    payload = json.dumps({"Body": base64.b64encode(html_text.encode("utf-8")).decode("ascii")}).encode("utf-8")
+    req = urllib.request.Request(
+        url, data=payload, method="PATCH",
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req) as resp:
+        return resp.status
+
+
+def push_projected_section_live(my_domain, token, asof, rows):
+    """Surgically replaces ONLY the PROJ_ROWS array and the projAsof date on
+    the CURRENT live Static Resource, leaving every other byte (including
+    the main all-accounts table's data) untouched - the same "live page as
+    its own template" approach the daily push routine uses, so this can run
+    independently of it without either one clobbering the other's section."""
+    import re as _re
+    current = get_static_resource_body(my_domain, token, STATIC_RESOURCE_ID)
+
+    rows_js = generate.render_projected_js(rows)
+    new_block = "var PROJ_ROWS = [\n" + rows_js + "\n  ];"
+    updated, n_rows = _re.subn(
+        r"var PROJ_ROWS = \[.*?\];", new_block, current, count=1, flags=_re.DOTALL
+    )
+    if n_rows != 1:
+        raise RuntimeError("Could not find PROJ_ROWS block on the live page - aborting live patch.")
+
+    updated, n_date = _re.subn(
+        r'(<span id="projAsof">)[^<]*(</span>)', rf"\g<1>{asof}\g<2>", updated, count=1
+    )
+    if n_date != 1:
+        raise RuntimeError("Could not find projAsof span on the live page - aborting live patch.")
+
+    return patch_static_resource_body(my_domain, token, STATIC_RESOURCE_ID, updated)
 
 
 def main():
@@ -195,8 +249,12 @@ def main():
         json.dump(state, fh, indent=2, sort_keys=True)
     with open(PENDING_PATH, "w") as fh:
         json.dump(pending, fh, indent=2)
+    projected_asof = today.strftime("%b %d, %Y").upper()
     with open(PROJECTED_PATH, "w") as fh:
-        json.dump({"asOf": today.strftime("%b %d, %Y").upper(), "rows": projected}, fh, indent=2)
+        json.dump({"asOf": projected_asof, "rows": projected}, fh, indent=2)
+
+    status = push_projected_section_live(my_domain, token, projected_asof, projected)
+    print(f"Pushed Projected Usage section live: HTTP {status}")
 
     print(f"{len(pending)} alert(s) pending, {len(projected)} accounts in projected snapshot")
     for p in pending:
