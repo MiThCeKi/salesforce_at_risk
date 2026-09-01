@@ -9,8 +9,9 @@ What it does, each run:
      generate.py) via the OAuth client-credentials flow (env vars
      SF_MY_DOMAIN, SF_CONSUMER_KEY, SF_CONSUMER_SECRET).
   2. Computes each account's usage % (generate.compute_rows's formula) and
-     its own billing-cycle position (day-of-month anchored to
-     Active_Contract_Start_Date__c, via generate.cycle_position).
+     its position in the current calendar-month usage cycle (usage resets
+     on a shared monthly cycle, not a per-account contract-anniversary day
+     - via generate.cycle_position).
   3. Compares against alert_state.json (persisted in this repo, committed
      after each run) using the hysteresis rules below, and writes
      pending_alerts.json describing exactly which emails need sending this
@@ -25,10 +26,10 @@ What it does, each run:
 
 Alert rules (agreed 2026-09-01):
   - "High" = projected usage % > 115. "Low" = projected usage % < 25.
-    Note: given the accepted data-approximation (see generate.py docstring
-    changes), "projected" here is numerically the same trailing-30-day-pace
-    usage % already shown elsewhere on the dashboard - there is no finer
-    data available to compute a truer per-cycle projection.
+    "Projected" here is the same usage % already shown elsewhere on the
+    dashboard (Pages_Last_30__c against the prorated monthly cap) - it
+    resets on a shared monthly cycle, so this is a same-cycle read, not an
+    extrapolation from a different window.
   - First time an account enters High: send an alert, mark state "high".
   - While state stays "high" (pct still > 115), no further emails until
     either (a) pct drops to <= 115 (state resets to "normal", clearing the
@@ -131,7 +132,6 @@ def main():
 
     token = get_access_token(my_domain, consumer_key, consumer_secret)
     accounts = fetch_accounts(my_domain, token)
-    accounts_by_id = {a["Id"]: a for a in accounts}
     rows = generate.compute_rows(accounts, today)
 
     state = load_json(STATE_PATH, {})
@@ -142,9 +142,7 @@ def main():
         acct_id = r["Id"]
         pct = r["UsagePct"]
 
-        days_into, days_remaining, cycle_len = generate.cycle_position(
-            accounts_by_id[acct_id]["Start"], today
-        )
+        days_into, days_remaining, cycle_len = generate.cycle_position(today)
         projected.append({
             "name": r["Name"], "id": acct_id, "tier": r["Tier"],
             "pct": pct, "acv": r["ACV"],

@@ -161,28 +161,13 @@ def render_rows_js(rows):
     return "\n".join(lines)
 
 
-def cycle_position(start_date_str, today):
+def cycle_position(today):
     """Returns (days_into_cycle, days_remaining, cycle_length_days) for the
-    account's current monthly billing cycle, anchored to the day-of-month of
-    its contract start date. Approximate: a shorter month clamps to its own
-    last day rather than precisely modeling calendar rollovers."""
+    current calendar month. Usage resets on a shared monthly cycle (not a
+    per-account contract-anniversary day), so this is plain calendar math."""
     import calendar
-    start = parse(start_date_str)
-    anchor_day = start.day
-
-    def month_add(d, months):
-        m = d.month - 1 + months
-        y = d.year + m // 12
-        m = m % 12 + 1
-        day = min(anchor_day, calendar.monthrange(y, m)[1])
-        return datetime.date(y, m, day)
-
-    cycle_start = datetime.date(today.year, today.month, min(anchor_day, calendar.monthrange(today.year, today.month)[1]))
-    if cycle_start > today:
-        cycle_start = month_add(cycle_start, -1)
-    cycle_end = month_add(cycle_start, 1)
-    days_into = (today - cycle_start).days
-    cycle_len = (cycle_end - cycle_start).days
+    cycle_len = calendar.monthrange(today.year, today.month)[1]
+    days_into = today.day
     return days_into, cycle_len - days_into, cycle_len
 
 
