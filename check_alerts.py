@@ -8,10 +8,16 @@ What it does, each run:
   1. Pulls live account data from Salesforce (same fields/methodology as
      generate.py) via the OAuth client-credentials flow (env vars
      SF_MY_DOMAIN, SF_CONSUMER_KEY, SF_CONSUMER_SECRET).
-  2. Computes each account's usage % (generate.compute_rows's formula) and
-     its position in the current calendar-month usage cycle (usage resets
-     on a shared monthly cycle, not a per-account contract-anniversary day
-     - via generate.cycle_position).
+  2. Computes each account's usage % the same way generate.compute_rows does,
+     for the high/low alert check below - this is Pages_Last_30__c (a true
+     rolling trailing-30-day total, verified live against the raw
+     Usage_data__c records) against the prorated monthly cap. It needs no
+     calendar-cycle awareness and is never noisy early in a month.
+     Separately, for the Projected Usage table only, sums real page counts
+     from the 1st of the current calendar month via fetch_month_to_date_pages
+     (querying Usage_data__c directly, since Pages_Last_30__c itself never
+     resets) and extrapolates to a full-month total using
+     generate.cycle_position's day count.
   3. Compares against alert_state.json (persisted in this repo, committed
      after each run) using the hysteresis rules below, and writes
      pending_alerts.json describing exactly which emails need sending this
@@ -31,12 +37,15 @@ What it does, each run:
      and the projAsof date), leaving the main all-accounts table and
      everything else on the live page untouched.
 
-Alert rules (agreed 2026-09-01):
-  - "High" = projected usage % > 115. "Low" = projected usage % < 25.
-    "Projected" here is the same usage % already shown elsewhere on the
-    dashboard (Pages_Last_30__c against the prorated monthly cap) - it
-    resets on a shared monthly cycle, so this is a same-cycle read, not an
-    extrapolation from a different window.
+Alert rules (agreed 2026-09-01, methodology corrected 2026-09-01):
+  - "High" = usage % > 115. "Low" = usage % < 25. This is the rolling
+    30-day Pages_Last_30__c-based UsagePct from generate.compute_rows - the
+    same number shown in the dashboard's main table - not the calendar
+    month-to-date projection used for the separate Projected Usage table
+    below. It's deliberately the stable rolling figure so an alert can fire
+    on any day of the month without the early-month noise a month-to-date
+    extrapolation would have (confirmed live: projecting from 1 day of
+    calendar-month data amplified one account to over 50,000%).
   - First time an account enters High: send an alert, mark state "high".
   - While state stays "high" (pct still > 115), no further emails until
     either (a) pct drops to <= 115 (state resets to "normal", clearing the
@@ -97,6 +106,25 @@ def soql(my_domain, token, query):
         records.extend(result["records"])
         url = (my_domain + result["nextRecordsUrl"]) if not result["done"] else None
     return records
+
+
+def fetch_month_to_date_pages(my_domain, token, today):
+    """Real calendar-month-to-date page counts per account, summed straight
+    from the raw daily Usage_data__c records (the ground truth Pages_Last_30__c
+    itself is rolled up from) from the 1st of the current month through
+    whatever's most recently landed. Verified live 2026-09-01: this is 0 on
+    the 1st (no data posted yet for the new month) while the LAST_N_DAYS:30
+    sum exactly matches Pages_Last_30__c - confirming Pages_Last_30__c is a
+    continuously rolling window with no monthly reset, and this is the only
+    correct source for a "how's this calendar month going" figure."""
+    first_of_month = today.replace(day=1).isoformat()
+    query = (
+        "SELECT Related_Account__c, SUM(Number_of_Pages_Uploaded__c) total "
+        f"FROM Usage_data__c WHERE Date__c >= {first_of_month} "
+        "AND Related_Account__c != null GROUP BY Related_Account__c"
+    )
+    records = soql(my_domain, token, query)
+    return {r["Related_Account__c"]: (r["total"] or 0) for r in records}
 
 
 def fetch_accounts(my_domain, token):
@@ -186,7 +214,10 @@ def main():
 
     token = get_access_token(my_domain, consumer_key, consumer_secret)
     accounts = fetch_accounts(my_domain, token)
+    accounts_by_id = {a["Id"]: a for a in accounts}
     rows = generate.compute_rows(accounts, today)
+    mtd_pages = fetch_month_to_date_pages(my_domain, token, today)
+    days_into, days_remaining, cycle_len = generate.cycle_position(today)
 
     state = load_json(STATE_PATH, {})
     pending = []
@@ -196,10 +227,15 @@ def main():
         acct_id = r["Id"]
         pct = r["UsagePct"]
 
-        days_into, days_remaining, cycle_len = generate.cycle_position(today)
+        prorated_cap = generate.prorated_monthly_cap(accounts_by_id[acct_id])
+        pages_so_far = mtd_pages.get(acct_id, 0)
+        if prorated_cap and days_into > 0:
+            projected_pct = round((pages_so_far / days_into * cycle_len) / prorated_cap * 100, 1)
+        else:
+            projected_pct = None
         projected.append({
             "name": r["Name"], "id": acct_id, "tier": r["Tier"],
-            "pct": pct, "acv": r["ACV"],
+            "pct": projected_pct, "acv": r["ACV"],
             "daysIntoCycle": days_into, "daysRemaining": days_remaining, "cycleLen": cycle_len,
         })
 

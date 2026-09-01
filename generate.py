@@ -82,20 +82,35 @@ def parse(d):
     return datetime.date(*[int(x) for x in d.split("-")])
 
 
+def prorated_monthly_cap(a):
+    """The account's page cap divided by its contract term in months - an
+    average monthly allowance, independent of calendar position. Returns
+    None if it can't be computed (missing contract dates or a zero cap)."""
+    start = parse(a["Start"])
+    end = parse(a["End"])
+    months = (end - start).days / 30.44
+    if months <= 0 or a["Cap"] <= 0:
+        return None
+    cap = a["Cap"] / months
+    return cap if cap > 0 else None
+
+
 def compute_rows(accounts, today):
     """Computes a row for every account, not just ones under the 25% at-risk
     threshold. Severity is "Healthy" at/above 25% usage, or "Unknown" when a
-    usage % can't be computed at all (missing contract dates or a zero cap)."""
+    usage % can't be computed at all (missing contract dates or a zero cap).
+
+    UsagePct here is Pages (Pages_Last_30__c, a true trailing 30-day rolling
+    total - verified live against the raw Usage_data__c records) against the
+    prorated monthly cap. This is a stable, always-current "how's usage been
+    lately" read that needs no calendar-cycle awareness, which is why it's
+    used for this main table and isn't the same figure as the mid-cycle
+    Projected Usage table (see check_alerts.py), which deliberately tracks
+    the real calendar month instead."""
     rows = []
     for a in accounts:
-        start = parse(a["Start"])
-        end = parse(a["End"])
-        months = (end - start).days / 30.44
-        if months <= 0 or a["Cap"] <= 0:
-            usage_pct = None
-        else:
-            prorated_cap = a["Cap"] / months
-            usage_pct = (a["Pages"] / prorated_cap) * 100 if prorated_cap > 0 else None
+        prorated_cap = prorated_monthly_cap(a)
+        usage_pct = (a["Pages"] / prorated_cap) * 100 if prorated_cap else None
 
         if usage_pct is None:
             sev = "Unknown"
@@ -108,7 +123,7 @@ def compute_rows(accounts, today):
         else:
             sev = "Healthy"
 
-        days_to_renewal = (end - today).days
+        days_to_renewal = (parse(a["End"]) - today).days
         last_login = a.get("LastLogin")
         days_since_login = (today - parse(last_login)).days if last_login else None
         rows.append({
@@ -163,8 +178,13 @@ def render_rows_js(rows):
 
 def cycle_position(today):
     """Returns (days_into_cycle, days_remaining, cycle_length_days) for the
-    current calendar month. Usage resets on a shared monthly cycle (not a
-    per-account contract-anniversary day), so this is plain calendar math."""
+    current calendar month. This is a real reset point for the month-to-date
+    figures check_alerts.py sums straight from Usage_data__c (verified live
+    2026-09-01: THIS_MONTH sums to 0 on the 1st) - it is NOT what Pages/
+    Pages_Last_30__c track, which is a continuously rolling trailing-30-day
+    total with no reset at all (verified live: LAST_N_DAYS:30 exactly
+    matches the field). Only use this alongside month-to-date sums, not
+    alongside UsagePct/Pages."""
     import calendar
     cycle_len = calendar.monthrange(today.year, today.month)[1]
     days_into = today.day
