@@ -97,6 +97,10 @@
   .renewal .days{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
   .renewal.soon{color:var(--critical);}
   .renewal.soon .days{color:var(--critical);opacity:.85;}
+  .last-login{font-family:"SFMono-Regular",Consolas,monospace;}
+  .last-login .ago{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
+  .last-login.stale{color:var(--critical);}
+  .last-login.stale .ago{color:var(--critical);opacity:.85;}
   footer{margin-top:44px;padding-top:24px;border-top:1px solid var(--panel-border);}
   footer p{font-size:13px;line-height:1.7;color:var(--muted);max-width:920px;}
   .snapshot-note{
@@ -161,6 +165,7 @@
         <th data-key="pct">Usage vs. monthly cap <span class="arrow">↓</span></th>
         <th data-key="acv">ACV <span class="arrow">↕</span></th>
         <th data-key="days">Renewal <span class="arrow">↕</span></th>
+        <th data-key="daysSinceLogin">Last Login <span class="arrow">↕</span></th>
       </tr>
     </thead>
     <tbody id="riskBody"></tbody>
@@ -218,6 +223,7 @@ __ROWS_JS__
       var tr = document.createElement("tr");
       tr.setAttribute("data-tier", SEV[r.severity]);
       var soon = r.days <= 30;
+      var stale = r.daysSinceLogin !== null && r.daysSinceLogin > 30;
       tr.innerHTML =
         '<td>' + acctLink(r, r.name, 'class="acct-name"') + '<div class="acct-owner">' + r.owner + '</div></td>' +
         '<td>' + acctLink(r, r.tier, 'class="chip"') + '</td>' +
@@ -232,6 +238,11 @@ __ROWS_JS__
         '<td class="acv">' + acctLink(r, fmtMoney(r.acv)) + '</td>' +
         '<td class="renewal' + (soon ? ' soon' : '') + '">' +
           acctLink(r, fmtDate(r.renewal) + '<span class="days">in ' + r.days + ' day' + (r.days === 1 ? '' : 's') + '</span>') +
+        '</td>' +
+        '<td class="last-login' + (stale ? ' stale' : '') + '">' +
+          (r.lastLogin === null
+            ? acctLink(r, 'Never')
+            : acctLink(r, fmtDate(r.lastLogin) + '<span class="ago">' + r.daysSinceLogin + ' day' + (r.daysSinceLogin === 1 ? '' : 's') + ' ago</span>')) +
         '</td>';
       body.appendChild(tr);
     });

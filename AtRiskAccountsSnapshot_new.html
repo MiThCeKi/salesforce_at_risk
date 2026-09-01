@@ -97,6 +97,10 @@
   .renewal .days{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
   .renewal.soon{color:var(--critical);}
   .renewal.soon .days{color:var(--critical);opacity:.85;}
+  .last-login{font-family:"SFMono-Regular",Consolas,monospace;}
+  .last-login .ago{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
+  .last-login.stale{color:var(--critical);}
+  .last-login.stale .ago{color:var(--critical);opacity:.85;}
   footer{margin-top:44px;padding-top:24px;border-top:1px solid var(--panel-border);}
   footer p{font-size:13px;line-height:1.7;color:var(--muted);max-width:920px;}
   .snapshot-note{
@@ -161,6 +165,7 @@
         <th data-key="pct">Usage vs. monthly cap <span class="arrow">↓</span></th>
         <th data-key="acv">ACV <span class="arrow">↕</span></th>
         <th data-key="days">Renewal <span class="arrow">↕</span></th>
+        <th data-key="daysSinceLogin">Last Login <span class="arrow">↕</span></th>
       </tr>
     </thead>
     <tbody id="riskBody"></tbody>
@@ -188,26 +193,26 @@
 
 <script>
   var ROWS = [
-    {name:"Cayuga Mutual", id:"001OL00000VTlWPYA1", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-10-19", days:48},
-    {name:"Girones Lawyers", id:"001I9000005T4a9IAC", owner:"Carla Chaytor", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:5, acv:11188, renewal:"2027-05-12", days:253},
-    {name:"Halbrecht Orthopedics", id:"001OL00000TX14jYAD", owner:"Peter Moyse", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:650, renewal:"2026-11-23", days:83},
-    {name:"Integrity Legal Nurse Consulting", id:"001OL00000UmhEIYAZ", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:16, acv:9000, renewal:"2026-09-21", days:20},
-    {name:"Jamie Irvine MD", id:"001OL00000D0AqjYAF", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0.3, users:1, acv:9576, renewal:"2027-02-18", days:170},
-    {name:"North Toronto Surgical", id:"001OL00000SE68iYAD", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:1920, renewal:"2027-06-03", days:275},
-    {name:"Priddle Law Group", id:"001I9000005T4fNIAS", owner:"Matt Baldwin", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-12-01", days:91},
-    {name:"TrueLine Medical Legal Consulting", id:"001OL00000UBUYBYA5", owner:"Peter Moyse", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:12000, renewal:"2027-05-31", days:272},
-    {name:"Mohamed Khaled MD", id:"001OL00000D0B7XYAV", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.9, pages:149, hours:0.1, users:1, acv:19349, renewal:"2026-09-02", days:1},
-    {name:"Chris Small Professional Medical Corporation", id:"001OL000008ibX8YAI", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:1.4, pages:24, hours:0.8, users:1, acv:4800, renewal:"2027-03-21", days:201},
-    {name:"iMPROve Health", id:"001OL00000Ncj26YAB", owner:"Travis Bailey", tier:"SMB", severity:0, pct:2.2, pages:591, hours:26.5, users:7, acv:36960, renewal:"2026-09-30", days:29},
-    {name:"Orvosi Medical Management", id:"001OL00000BbZGdYAN", owner:"Travis Bailey", tier:"SMB", severity:1, pct:5.5, pages:7398, hours:10.2, users:7, acv:96000, renewal:"2027-01-08", days:129},
-    {name:"Integrity Medical Evaluations", id:"001OL00000AU6wgYAD", owner:"Travis Bailey", tier:"Enterprise", severity:1, pct:7.6, pages:7684, hours:5.1, users:1, acv:158400, renewal:"2027-08-31", days:364},
-    {name:"The Ivera Group", id:"001OL00000gAMVJYA4", owner:"Carla Chaytor", tier:"SMB", severity:1, pct:8.4, pages:5606, hours:5.0, users:3, acv:80000, renewal:"2027-03-22", days:202},
-    {name:"Life Care Planning Solutions LLC", id:"001OL00000NseOJYAZ", owner:"Travis Bailey", tier:"SMB", severity:1, pct:8.8, pages:2194, hours:28.6, users:8, acv:8000, renewal:"2027-06-23", days:295},
-    {name:"Vocational Alternatives", id:"001OL00000byRmQYAU", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:15.9, pages:1194, hours:1.0, users:3, acv:9900, renewal:"2027-03-09", days:189},
-    {name:"Medical Vocational Planning (MVP)", id:"001OL00000A5GPoYAN", owner:"Travis Bailey", tier:"SMB", severity:2, pct:21.3, pages:12301, hours:47.4, users:6, acv:115200, renewal:"2027-12-01", days:456},
-    {name:"JS Held - BioMechanics Group", id:"001OL000006SaZlYAK", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:21.4, pages:2233, hours:15.5, users:7, acv:23061.75, renewal:"2027-01-08", days:129},
-    {name:"Daugherty & Associates, LLC", id:"001OL00000SYxvHYAT", owner:"Carla Chaytor", tier:"Micro", severity:2, pct:23.2, pages:1165, hours:70.1, users:1, acv:8400, renewal:"2027-07-29", days:331},
-    {name:"Roebothan McKay Marshall (RMM)", id:"001I9000003c6huIAA", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:24.0, pages:9619, hours:53.9, users:37, acv:36000, renewal:"2027-06-06", days:278},
+    {name:"Cayuga Mutual", id:"001OL00000VTlWPYA1", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-10-19", days:48, lastLogin:"2025-11-19", daysSinceLogin:286},
+    {name:"Girones Lawyers", id:"001I9000005T4a9IAC", owner:"Carla Chaytor", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:5, acv:11188, renewal:"2027-05-12", days:253, lastLogin:"2026-06-15", daysSinceLogin:78},
+    {name:"Halbrecht Orthopedics", id:"001OL00000TX14jYAD", owner:"Peter Moyse", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:650, renewal:"2026-11-23", days:83, lastLogin:"2026-01-21", daysSinceLogin:223},
+    {name:"Integrity Legal Nurse Consulting", id:"001OL00000UmhEIYAZ", owner:"Travis Bailey", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:16, acv:9000, renewal:"2026-09-21", days:20, lastLogin:"2026-05-01", daysSinceLogin:123},
+    {name:"Jamie Irvine MD", id:"001OL00000D0AqjYAF", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0.3, users:1, acv:9576, renewal:"2027-02-18", days:170, lastLogin:"2026-08-12", daysSinceLogin:20},
+    {name:"North Toronto Surgical", id:"001OL00000SE68iYAD", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:1920, renewal:"2027-06-03", days:275, lastLogin:"2026-07-07", daysSinceLogin:56},
+    {name:"Priddle Law Group", id:"001I9000005T4fNIAS", owner:"Matt Baldwin", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-12-01", days:91, lastLogin:"2026-03-06", daysSinceLogin:179},
+    {name:"TrueLine Medical Legal Consulting", id:"001OL00000UBUYBYA5", owner:"Peter Moyse", tier:"SMB", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:12000, renewal:"2027-05-31", days:272, lastLogin:"2026-06-12", daysSinceLogin:81},
+    {name:"Mohamed Khaled MD", id:"001OL00000D0B7XYAV", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:0.9, pages:149, hours:0.1, users:1, acv:19349, renewal:"2026-09-02", days:1, lastLogin:"2026-08-27", daysSinceLogin:5},
+    {name:"Chris Small Professional Medical Corporation", id:"001OL000008ibX8YAI", owner:"Carla Chaytor", tier:"Micro", severity:0, pct:1.4, pages:24, hours:0.8, users:1, acv:4800, renewal:"2027-03-21", days:201, lastLogin:"2026-08-15", daysSinceLogin:17},
+    {name:"iMPROve Health", id:"001OL00000Ncj26YAB", owner:"Travis Bailey", tier:"SMB", severity:0, pct:2.2, pages:591, hours:26.5, users:7, acv:36960, renewal:"2026-09-30", days:29, lastLogin:"2026-08-31", daysSinceLogin:1},
+    {name:"Orvosi Medical Management", id:"001OL00000BbZGdYAN", owner:"Travis Bailey", tier:"SMB", severity:1, pct:5.5, pages:7398, hours:10.2, users:7, acv:96000, renewal:"2027-01-08", days:129, lastLogin:"2026-08-31", daysSinceLogin:1},
+    {name:"Integrity Medical Evaluations", id:"001OL00000AU6wgYAD", owner:"Travis Bailey", tier:"Enterprise", severity:1, pct:7.6, pages:7684, hours:5.1, users:1, acv:158400, renewal:"2027-08-31", days:364, lastLogin:"2026-08-28", daysSinceLogin:4},
+    {name:"The Ivera Group", id:"001OL00000gAMVJYA4", owner:"Carla Chaytor", tier:"SMB", severity:1, pct:8.4, pages:5606, hours:5.0, users:3, acv:80000, renewal:"2027-03-22", days:202, lastLogin:"2026-08-31", daysSinceLogin:1},
+    {name:"Life Care Planning Solutions LLC", id:"001OL00000NseOJYAZ", owner:"Travis Bailey", tier:"SMB", severity:1, pct:8.8, pages:2194, hours:28.6, users:8, acv:8000, renewal:"2027-06-23", days:295, lastLogin:"2026-08-31", daysSinceLogin:1},
+    {name:"Vocational Alternatives", id:"001OL00000byRmQYAU", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:15.9, pages:1194, hours:1.0, users:3, acv:9900, renewal:"2027-03-09", days:189, lastLogin:"2026-08-18", daysSinceLogin:14},
+    {name:"Medical Vocational Planning (MVP)", id:"001OL00000A5GPoYAN", owner:"Travis Bailey", tier:"SMB", severity:2, pct:21.3, pages:12301, hours:47.4, users:6, acv:115200, renewal:"2027-12-01", days:456, lastLogin:"2026-08-31", daysSinceLogin:1},
+    {name:"JS Held - BioMechanics Group", id:"001OL000006SaZlYAK", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:21.4, pages:2233, hours:15.5, users:7, acv:23061.75, renewal:"2027-01-08", days:129, lastLogin:"2026-08-31", daysSinceLogin:1},
+    {name:"Daugherty & Associates, LLC", id:"001OL00000SYxvHYAT", owner:"Carla Chaytor", tier:"Micro", severity:2, pct:23.2, pages:1165, hours:70.1, users:1, acv:8400, renewal:"2027-07-29", days:331, lastLogin:"2026-08-13", daysSinceLogin:19},
+    {name:"Roebothan McKay Marshall (RMM)", id:"001I9000003c6huIAA", owner:"Carla Chaytor", tier:"SMB", severity:2, pct:24.0, pages:9619, hours:53.9, users:37, acv:36000, renewal:"2027-06-06", days:278, lastLogin:"2026-08-31", daysSinceLogin:1},
   ];
 
   var ACCOUNT_URL_BASE = "https://siftmed.lightning.force.com/lightning/r/Account/";
@@ -237,6 +242,7 @@
       var tr = document.createElement("tr");
       tr.setAttribute("data-tier", SEV[r.severity]);
       var soon = r.days <= 30;
+      var stale = r.daysSinceLogin !== null && r.daysSinceLogin > 30;
       tr.innerHTML =
         '<td>' + acctLink(r, r.name, 'class="acct-name"') + '<div class="acct-owner">' + r.owner + '</div></td>' +
         '<td>' + acctLink(r, r.tier, 'class="chip"') + '</td>' +
@@ -251,6 +257,11 @@
         '<td class="acv">' + acctLink(r, fmtMoney(r.acv)) + '</td>' +
         '<td class="renewal' + (soon ? ' soon' : '') + '">' +
           acctLink(r, fmtDate(r.renewal) + '<span class="days">in ' + r.days + ' day' + (r.days === 1 ? '' : 's') + '</span>') +
+        '</td>' +
+        '<td class="last-login' + (stale ? ' stale' : '') + '">' +
+          (r.lastLogin === null
+            ? acctLink(r, 'Never')
+            : acctLink(r, fmtDate(r.lastLogin) + '<span class="ago">' + r.daysSinceLogin + ' day' + (r.daysSinceLogin === 1 ? '' : 's') + ' ago</span>')) +
         '</td>';
       body.appendChild(tr);
     });
