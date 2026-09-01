@@ -75,52 +75,69 @@ accounts = [
 {"Name":"Zurich North America","Id":"001I9000002tqUTIAY","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"Enterprise","ACV":88200,"Start":"2026-04-01","End":"2028-03-31","Cap":900000,"Pages":13673,"Hours":16.2238,"Users":47},
 ]
 
-SEVERITY_CODE = {"Critical": 0, "High": 1, "Watch": 2}
+SEVERITY_CODE = {"Critical": 0, "High": 1, "Watch": 2, "Healthy": 3, "Unknown": 4}
 
 
 def parse(d):
     return datetime.date(*[int(x) for x in d.split("-")])
 
 
-def compute_flagged(accounts, today):
-    flagged = []
+def compute_rows(accounts, today):
+    """Computes a row for every account, not just ones under the 25% at-risk
+    threshold. Severity is "Healthy" at/above 25% usage, or "Unknown" when a
+    usage % can't be computed at all (missing contract dates or a zero cap)."""
+    rows = []
     for a in accounts:
         start = parse(a["Start"])
         end = parse(a["End"])
         months = (end - start).days / 30.44
         if months <= 0 or a["Cap"] <= 0:
-            continue
-        prorated_cap = a["Cap"] / months
-        usage_pct = (a["Pages"] / prorated_cap) * 100 if prorated_cap > 0 else 0
-        if usage_pct < 25:
-            if usage_pct < 5:
-                sev = "Critical"
-            elif usage_pct < 15:
-                sev = "High"
-            else:
-                sev = "Watch"
-            days_to_renewal = (end - today).days
-            last_login = a.get("LastLogin")
-            days_since_login = (today - parse(last_login)).days if last_login else None
-            flagged.append({
-                "Name": a["Name"], "Id": a["Id"], "Owner": a["Owner"], "Tier": a["Tier"], "Severity": sev,
-                "UsagePct": round(usage_pct, 1), "Pages": a["Pages"], "Hours": round(a["Hours"], 1),
-                "Users": a["Users"], "ACV": a["ACV"], "Renewal": a["End"], "Days": days_to_renewal,
-                "LastLogin": last_login, "DaysSinceLogin": days_since_login,
-            })
-    flagged.sort(key=lambda x: x["UsagePct"])
-    return flagged
+            usage_pct = None
+        else:
+            prorated_cap = a["Cap"] / months
+            usage_pct = (a["Pages"] / prorated_cap) * 100 if prorated_cap > 0 else None
+
+        if usage_pct is None:
+            sev = "Unknown"
+        elif usage_pct < 5:
+            sev = "Critical"
+        elif usage_pct < 15:
+            sev = "High"
+        elif usage_pct < 25:
+            sev = "Watch"
+        else:
+            sev = "Healthy"
+
+        days_to_renewal = (end - today).days
+        last_login = a.get("LastLogin")
+        days_since_login = (today - parse(last_login)).days if last_login else None
+        rows.append({
+            "Name": a["Name"], "Id": a["Id"], "Owner": a["Owner"], "Tier": a["Tier"], "Severity": sev,
+            "UsagePct": (round(usage_pct, 1) if usage_pct is not None else None),
+            "Pages": a["Pages"], "Hours": round(a["Hours"], 1),
+            "Users": a["Users"], "ACV": a["ACV"], "Renewal": a["End"], "Days": days_to_renewal,
+            "LastLogin": last_login, "DaysSinceLogin": days_since_login,
+        })
+    rows.sort(key=lambda x: (x["UsagePct"] is None, x["UsagePct"] if x["UsagePct"] is not None else 0))
+    return rows
+
+
+def compute_flagged(rows):
+    """The at-risk subset (usage % under 25) of an already-computed row list,
+    used only for the summary stat tiles."""
+    return [r for r in rows if r["Severity"] in ("Critical", "High", "Watch")]
 
 
 def js_escape(s):
     return s.replace("\\", "\\\\").replace('"', '\\"')
 
 
-def render_rows_js(flagged):
+def render_rows_js(rows):
     lines = []
-    for f in flagged:
+    for f in rows:
         last_login_js = 'null' if f["LastLogin"] is None else '"{}"'.format(f["LastLogin"])
         days_since_login_js = 'null' if f["DaysSinceLogin"] is None else f["DaysSinceLogin"]
+        pct_js = 'null' if f["UsagePct"] is None else f["UsagePct"]
         lines.append(
             '    {{name:"{name}", id:"{id}", owner:"{owner}", tier:"{tier}", severity:{sev}, '
             'pct:{pct}, pages:{pages}, hours:{hours}, users:{users}, acv:{acv}, '
@@ -130,7 +147,7 @@ def render_rows_js(flagged):
                 owner=js_escape(f["Owner"]),
                 tier=f["Tier"],
                 sev=SEVERITY_CODE[f["Severity"]],
-                pct=f["UsagePct"],
+                pct=pct_js,
                 pages=f["Pages"],
                 hours=f["Hours"],
                 users=f["Users"],
@@ -145,7 +162,8 @@ def render_rows_js(flagged):
 
 
 def fill_template(template_text, accounts, today):
-    flagged = compute_flagged(accounts, today)
+    all_rows = compute_rows(accounts, today)
+    flagged = compute_flagged(all_rows)
     total_n = len(accounts)
     flagged_n = len(flagged)
     total_acv = sum(f["ACV"] for f in flagged)
@@ -166,7 +184,7 @@ def fill_template(template_text, accounts, today):
 
     asof = today.strftime("%b %d, %Y").upper()
 
-    rows_js = render_rows_js(flagged)
+    rows_js = render_rows_js(all_rows)
 
     out = template_text
     out = out.replace("__ASOF__", asof)

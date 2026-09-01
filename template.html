@@ -74,6 +74,8 @@
   tr[data-tier="critical"] td:first-child{border-left-color:var(--critical);}
   tr[data-tier="high"] td:first-child{border-left-color:var(--high);}
   tr[data-tier="watch"] td:first-child{border-left-color:var(--watch);}
+  tr[data-tier="healthy"] td:first-child{border-left-color:var(--teal);}
+  tr[data-tier="unknown"] td:first-child{border-left-color:var(--muted);}
   .acct-name{font-weight:600;color:var(--text);}
   .acct-owner{font-size:12px;color:var(--muted);margin-top:2px;}
   .chip{
@@ -85,12 +87,16 @@
   .badge.critical{color:var(--critical);} .badge.critical .dot{background:var(--critical);}
   .badge.high{color:var(--high);} .badge.high .dot{background:var(--high);}
   .badge.watch{color:var(--watch);} .badge.watch .dot{background:var(--watch);}
+  .badge.healthy{color:var(--teal);} .badge.healthy .dot{background:var(--teal);}
+  .badge.unknown{color:var(--muted);} .badge.unknown .dot{background:var(--muted);}
   .usage-pct{font-weight:700;margin-bottom:6px;}
   .usage-bar{height:4px;border-radius:2px;background:#24272d;overflow:hidden;width:140px;margin-bottom:6px;}
   .usage-bar > span{display:block;height:100%;border-radius:2px;}
   tr[data-tier="critical"] .usage-bar > span{background:var(--critical);}
   tr[data-tier="high"] .usage-bar > span{background:var(--high);}
   tr[data-tier="watch"] .usage-bar > span{background:var(--watch);}
+  tr[data-tier="healthy"] .usage-bar > span{background:var(--teal);}
+  tr[data-tier="unknown"] .usage-bar > span{background:var(--muted);}
   .usage-detail{font-size:12px;color:var(--muted);}
   .acv{font-family:"SFMono-Regular",Consolas,monospace;}
   .renewal{font-family:"SFMono-Regular",Consolas,monospace;}
@@ -150,10 +156,10 @@
     </div>
   </div>
 
-  <h2>The list</h2>
+  <h2>All accounts</h2>
   <div class="list-head">
     <span></span>
-    <span class="hint mono">click a column to sort &middot; sorted by usage % (highest first) by default</span>
+    <span class="hint mono">showing all __TOTAL_N__ accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
   </div>
 
   <table id="riskTable">
@@ -197,8 +203,8 @@ __ROWS_JS__
   ];
 
   var ACCOUNT_URL_BASE = "https://siftmed.lightning.force.com/lightning/r/Account/";
-  var SEV = ["critical","high","watch"];
-  var SEV_LABEL = ["Critical","High","Watch"];
+  var SEV = ["critical","high","watch","healthy","unknown"];
+  var SEV_LABEL = ["Critical","High","Watch","Healthy","Unknown"];
 
   function fmtMoney(n){
     return "$" + n.toLocaleString("en-US");
@@ -224,12 +230,14 @@ __ROWS_JS__
       tr.setAttribute("data-tier", SEV[r.severity]);
       var soon = r.days <= 30;
       var stale = r.daysSinceLogin !== null && r.daysSinceLogin > 30;
+      var pctLabel = r.pct === null ? 'N/A' : r.pct.toFixed(1) + '%';
+      var barWidth = r.pct === null ? 0 : Math.min(100, r.pct);
       tr.innerHTML =
         '<td>' + acctLink(r, r.name, 'class="acct-name"') + '<div class="acct-owner">' + r.owner + '</div></td>' +
         '<td>' + acctLink(r, r.tier, 'class="chip"') + '</td>' +
         '<td>' + acctLink(r, '<span class="dot"></span>' + SEV_LABEL[r.severity], 'class="badge ' + SEV[r.severity] + '"') + '</td>' +
-        '<td><div class="usage-pct">' + acctLink(r, r.pct.toFixed(1) + '%') + '</div>' +
-            '<div class="usage-bar"><span style="width:' + Math.min(100, r.pct) + '%"></span></div>' +
+        '<td><div class="usage-pct">' + acctLink(r, pctLabel) + '</div>' +
+            '<div class="usage-bar"><span style="width:' + barWidth + '%"></span></div>' +
             '<div class="usage-detail">' +
               acctLink(r, r.pages.toLocaleString("en-US") + ' pages') + ' &middot; ' +
               acctLink(r, r.hours.toFixed(1) + ' hrs') + ' &middot; ' +
@@ -265,7 +273,7 @@ __ROWS_JS__
     th.addEventListener("click", function(){ sortRows(th.getAttribute("data-key")); });
   });
 
-  render(ROWS.slice().sort(function(a,b){ return b.pct - a.pct; }));
+  render(ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); }));
 </script>
 </body>
 </html>
