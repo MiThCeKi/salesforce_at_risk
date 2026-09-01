@@ -107,6 +107,13 @@
   .last-login .ago{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
   .last-login.stale{color:var(--critical);}
   .last-login.stale .ago{color:var(--critical);opacity:.85;}
+  .proj-section{margin-top:44px;}
+  .proj-badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;}
+  .proj-badge .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .proj-badge.low{color:var(--critical);} .proj-badge.low .dot{background:var(--critical);}
+  .proj-badge.normal{color:var(--teal);} .proj-badge.normal .dot{background:var(--teal);}
+  .proj-badge.high{color:var(--high);} .proj-badge.high .dot{background:var(--high);}
+  .cycle-pos{color:var(--muted);font-size:13px;}
   footer{margin-top:44px;padding-top:24px;border-top:1px solid var(--panel-border);}
   footer p{font-size:13px;line-height:1.7;color:var(--muted);max-width:920px;}
   .snapshot-note{
@@ -176,6 +183,26 @@
     </thead>
     <tbody id="riskBody"></tbody>
   </table>
+
+  <div class="proj-section">
+    <h2>Projected Usage &mdash; Mid-Cycle Check</h2>
+    <div class="list-head">
+      <span></span>
+      <span class="hint mono">last computed <span id="projAsof">__PROJECTED_ASOF__</span> &middot; refreshed Mon/Wed/Fri &middot; approximated from trailing 30-day pace, not each account's exact cycle days</span>
+    </div>
+    <table id="projectedTable">
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th>Tier</th>
+          <th>Projected Usage</th>
+          <th>Cycle Position</th>
+          <th>ACV</th>
+        </tr>
+      </thead>
+      <tbody id="projectedBody"></tbody>
+    </table>
+  </div>
 
   <footer>
     <p id="methodology">
@@ -269,11 +296,41 @@ __ROWS_JS__
     render(sorted);
   }
 
-  document.querySelectorAll("thead th").forEach(function(th){
+  document.querySelectorAll("#riskTable thead th").forEach(function(th){
     th.addEventListener("click", function(){ sortRows(th.getAttribute("data-key")); });
   });
 
   render(ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); }));
+
+  var PROJ_ROWS = [
+__PROJECTED_ROWS_JS__
+  ];
+
+  function projBadge(pct){
+    if (pct === null) return {cls:"normal", label:"N/A"};
+    if (pct < 25) return {cls:"low", label:"Low"};
+    if (pct > 115) return {cls:"high", label:"High"};
+    return {cls:"normal", label:"Normal"};
+  }
+
+  function renderProjected(rows){
+    var body = document.getElementById("projectedBody");
+    body.innerHTML = "";
+    rows.forEach(function(r){
+      var tr = document.createElement("tr");
+      var b = projBadge(r.pct);
+      var pctLabel = r.pct === null ? "N/A" : r.pct.toFixed(1) + "%";
+      tr.innerHTML =
+        '<td>' + acctLink(r, r.name, 'class="acct-name"') + '</td>' +
+        '<td>' + acctLink(r, r.tier, 'class="chip"') + '</td>' +
+        '<td>' + acctLink(r, '<span class="dot"></span>' + b.label + ' &middot; ' + pctLabel, 'class="proj-badge ' + b.cls + '"') + '</td>' +
+        '<td class="cycle-pos">Day ' + r.daysIntoCycle + ' of ' + r.cycleLen + ' (' + r.daysRemaining + ' left)</td>' +
+        '<td class="acv">' + acctLink(r, fmtMoney(r.acv)) + '</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  renderProjected(PROJ_ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); }));
 </script>
 </body>
 </html>

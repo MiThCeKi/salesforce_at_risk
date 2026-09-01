@@ -107,6 +107,13 @@
   .last-login .ago{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
   .last-login.stale{color:var(--critical);}
   .last-login.stale .ago{color:var(--critical);opacity:.85;}
+  .proj-section{margin-top:44px;}
+  .proj-badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;}
+  .proj-badge .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .proj-badge.low{color:var(--critical);} .proj-badge.low .dot{background:var(--critical);}
+  .proj-badge.normal{color:var(--teal);} .proj-badge.normal .dot{background:var(--teal);}
+  .proj-badge.high{color:var(--high);} .proj-badge.high .dot{background:var(--high);}
+  .cycle-pos{color:var(--muted);font-size:13px;}
   footer{margin-top:44px;padding-top:24px;border-top:1px solid var(--panel-border);}
   footer p{font-size:13px;line-height:1.7;color:var(--muted);max-width:920px;}
   .snapshot-note{
@@ -176,6 +183,26 @@
     </thead>
     <tbody id="riskBody"></tbody>
   </table>
+
+  <div class="proj-section">
+    <h2>Projected Usage &mdash; Mid-Cycle Check</h2>
+    <div class="list-head">
+      <span></span>
+      <span class="hint mono">last computed <span id="projAsof">SEP 01, 2026</span> &middot; refreshed Mon/Wed/Fri &middot; approximated from trailing 30-day pace, not each account's exact cycle days</span>
+    </div>
+    <table id="projectedTable">
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th>Tier</th>
+          <th>Projected Usage</th>
+          <th>Cycle Position</th>
+          <th>ACV</th>
+        </tr>
+      </thead>
+      <tbody id="projectedBody"></tbody>
+    </table>
+  </div>
 
   <footer>
     <p id="methodology">
@@ -319,11 +346,90 @@
     render(sorted);
   }
 
-  document.querySelectorAll("thead th").forEach(function(th){
+  document.querySelectorAll("#riskTable thead th").forEach(function(th){
     th.addEventListener("click", function(){ sortRows(th.getAttribute("data-key")); });
   });
 
   render(ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); }));
+
+  var PROJ_ROWS = [
+    {name:"Cayuga Mutual", id:"001OL00000VTlWPYA1", tier:"SMB", pct:0.0, acv:600, daysIntoCycle:12, daysRemaining:19, cycleLen:31},
+    {name:"Girones Lawyers", id:"001I9000005T4a9IAC", tier:"SMB", pct:0.0, acv:11188, daysIntoCycle:20, daysRemaining:11, cycleLen:31},
+    {name:"Halbrecht Orthopedics", id:"001OL00000TX14jYAD", tier:"Micro", pct:0.0, acv:650, daysIntoCycle:9, daysRemaining:22, cycleLen:31},
+    {name:"Integrity Legal Nurse Consulting", id:"001OL00000UmhEIYAZ", tier:"SMB", pct:0.0, acv:9000, daysIntoCycle:10, daysRemaining:21, cycleLen:31},
+    {name:"Jamie Irvine MD", id:"001OL00000D0AqjYAF", tier:"Micro", pct:0.0, acv:9576, daysIntoCycle:14, daysRemaining:17, cycleLen:31},
+    {name:"North Toronto Surgical", id:"001OL00000SE68iYAD", tier:"Micro", pct:0.0, acv:1920, daysIntoCycle:29, daysRemaining:2, cycleLen:31},
+    {name:"TrueLine Medical Legal Consulting", id:"001OL00000UBUYBYA5", tier:"SMB", pct:0.0, acv:12000, daysIntoCycle:0, daysRemaining:30, cycleLen:30},
+    {name:"Mohamed Khaled MD", id:"001OL00000D0B7XYAV", tier:"Micro", pct:0.9, acv:19349, daysIntoCycle:29, daysRemaining:2, cycleLen:31},
+    {name:"Chris Small Professional Medical Corporation", id:"001OL000008ibX8YAI", tier:"Micro", pct:1.4, acv:4800, daysIntoCycle:11, daysRemaining:20, cycleLen:31},
+    {name:"iMPROve Health", id:"001OL00000Ncj26YAB", tier:"SMB", pct:2.2, acv:36960, daysIntoCycle:17, daysRemaining:14, cycleLen:31},
+    {name:"Integrity Medical Evaluations", id:"001OL00000AU6wgYAD", tier:"Enterprise", pct:2.5, acv:158400, daysIntoCycle:7, daysRemaining:24, cycleLen:31},
+    {name:"Daugherty & Associates, LLC", id:"001OL00000SYxvHYAT", tier:"Micro", pct:4.5, acv:8400, daysIntoCycle:2, daysRemaining:29, cycleLen:31},
+    {name:"Orvosi Medical Management", id:"001OL00000BbZGdYAN", tier:"SMB", pct:5.5, acv:96000, daysIntoCycle:23, daysRemaining:8, cycleLen:31},
+    {name:"The Ivera Group", id:"001OL00000gAMVJYA4", tier:"SMB", pct:6.6, acv:80000, daysIntoCycle:9, daysRemaining:22, cycleLen:31},
+    {name:"Life Care Planning Solutions LLC", id:"001OL00000NseOJYAZ", tier:"SMB", pct:8.8, acv:8000, daysIntoCycle:9, daysRemaining:22, cycleLen:31},
+    {name:"Vocational Alternatives", id:"001OL00000byRmQYAU", tier:"SMB", pct:15.9, acv:9900, daysIntoCycle:22, daysRemaining:9, cycleLen:31},
+    {name:"JS Held - BioMechanics Group", id:"001OL000006SaZlYAK", tier:"SMB", pct:21.4, acv:23061.75, daysIntoCycle:24, daysRemaining:7, cycleLen:31},
+    {name:"Roebothan McKay Marshall (RMM)", id:"001I9000003c6huIAA", tier:"SMB", pct:25.1, acv:36000, daysIntoCycle:26, daysRemaining:5, cycleLen:31},
+    {name:"Northeast Life Care Planning", id:"001OL00000TANqiYAH", tier:"Micro", pct:26.4, acv:9250, daysIntoCycle:23, daysRemaining:8, cycleLen:31},
+    {name:"Medical Vocational Planning (MVP)", id:"001OL00000A5GPoYAN", tier:"SMB", pct:27.6, acv:115200, daysIntoCycle:0, daysRemaining:30, cycleLen:30},
+    {name:"Crannie Law", id:"001I9000005T4dLIAS", tier:"SMB", pct:28.7, acv:11896, daysIntoCycle:21, daysRemaining:10, cycleLen:31},
+    {name:"Zurich North America", id:"001I9000002tqUTIAY", tier:"Enterprise", pct:29.7, acv:88200, daysIntoCycle:0, daysRemaining:30, cycleLen:30},
+    {name:"NuHaven Health", id:"001OL00000VI1ofYAD", tier:"SMB", pct:31.4, acv:8100, daysIntoCycle:10, daysRemaining:21, cycleLen:31},
+    {name:"Breedon Mor LLP", id:"001I9000005T4bZIAS", tier:"SMB", pct:50.6, acv:15000, daysIntoCycle:20, daysRemaining:11, cycleLen:31},
+    {name:"Tri-Star Health Management Group Inc.", id:"001I9000007CYHEIA4", tier:"SMB", pct:52.6, acv:19250, daysIntoCycle:12, daysRemaining:19, cycleLen:31},
+    {name:"Physician Life Care Planning (PLCP)", id:"001OL00000KcO97YAF", tier:"SMB", pct:53.3, acv:845000, daysIntoCycle:25, daysRemaining:6, cycleLen:31},
+    {name:"Portage Mutual Insurance", id:"001OL00000SGW3tYAH", tier:"SMB", pct:53.6, acv:10200, daysIntoCycle:25, daysRemaining:6, cycleLen:31},
+    {name:"Integral Consulting Services Inc.", id:"001I9000007cllGIAQ", tier:"SMB", pct:54.1, acv:121500, daysIntoCycle:2, daysRemaining:29, cycleLen:31},
+    {name:"Hands-On Orthopedics", id:"001OL00000dg8ynYAA", tier:"Micro", pct:57.0, acv:14700, daysIntoCycle:26, daysRemaining:5, cycleLen:31},
+    {name:"Trillium Mutual Insurance Company", id:"001OL00000Q4fgjYAB", tier:"SMB", pct:58.1, acv:7000, daysIntoCycle:0, daysRemaining:30, cycleLen:30},
+    {name:"KLE Nurse Consultants", id:"001OL00000XOkQ8YAL", tier:"Micro", pct:58.5, acv:9000, daysIntoCycle:17, daysRemaining:14, cycleLen:31},
+    {name:"Alex Luczack MD", id:"001OL00000C5CzSYAV", tier:"Micro", pct:58.6, acv:4000, daysIntoCycle:0, daysRemaining:30, cycleLen:30},
+    {name:"Kevin Smith MD", id:"001OL00000D0B7IYAV", tier:"Micro", pct:67.4, acv:9000, daysIntoCycle:2, daysRemaining:29, cycleLen:31},
+    {name:"Kenney Shelton Liptak Nowak - KSLN law", id:"001OL00000Q4KAsYAN", tier:"SMB", pct:67.8, acv:41000, daysIntoCycle:9, daysRemaining:22, cycleLen:31},
+    {name:"Walnut Orchard Psychology Services", id:"001OL00000izh1xYAA", tier:"SMB", pct:71.6, acv:12500, daysIntoCycle:23, daysRemaining:8, cycleLen:31},
+    {name:"IMED Services", id:"001OL00000Io5WoYAJ", tier:"SMB", pct:90.3, acv:12000, daysIntoCycle:11, daysRemaining:20, cycleLen:31},
+    {name:"JHU Consulting", id:"001OL00000SYhk0YAD", tier:"Micro", pct:92.9, acv:6600, daysIntoCycle:2, daysRemaining:29, cycleLen:31},
+    {name:"Rehab First Inc.", id:"001OL00000Kf2yUYAR", tier:"SMB", pct:95.7, acv:18000, daysIntoCycle:29, daysRemaining:2, cycleLen:31},
+    {name:"AssessMed Inc.", id:"0015f00000IQRGHAA5", tier:"Enterprise", pct:100.4, acv:124000, daysIntoCycle:0, daysRemaining:30, cycleLen:30},
+    {name:"Janet Patterson MD", id:"001OL00000Czp9PYAR", tier:"Micro", pct:104.4, acv:27700, daysIntoCycle:2, daysRemaining:29, cycleLen:31},
+    {name:"Curtis Hlushak", id:"001OL00000C4p0PYAR", tier:"Micro", pct:114.3, acv:4500, daysIntoCycle:9, daysRemaining:22, cycleLen:31},
+    {name:"Boucher Medical Professional Corp.", id:"001OL0000087uk3YAA", tier:"Micro", pct:130.1, acv:11746, daysIntoCycle:11, daysRemaining:20, cycleLen:31},
+    {name:"Physiohealth Inc.", id:"001I9000004mawoIAA", tier:"Micro", pct:163.3, acv:1500, daysIntoCycle:17, daysRemaining:14, cycleLen:31},
+    {name:"Medivest", id:"001OL00000eL401YAC", tier:"SMB", pct:167.9, acv:100000, daysIntoCycle:0, daysRemaining:30, cycleLen:30},
+    {name:"Canadian Health Solutions Inc", id:"0015f00000IPHxuAAH", tier:"SMB", pct:170.7, acv:20000, daysIntoCycle:21, daysRemaining:10, cycleLen:31},
+    {name:"Peel Mutual Insurance Company", id:"001I900000362wRIAQ", tier:"SMB", pct:172.1, acv:5760, daysIntoCycle:7, daysRemaining:24, cycleLen:31},
+    {name:"Aua Consulting LLC", id:"001OL00000kV72oYAC", tier:"Micro", pct:188.6, acv:14000, daysIntoCycle:24, daysRemaining:7, cycleLen:31},
+    {name:"LCP Pro", id:"001OL00000i2nBOYAY", tier:"SMB", pct:200.8, acv:100000, daysIntoCycle:10, daysRemaining:21, cycleLen:31},
+    {name:"Hooper Law", id:"001I9000005T4bNIAS", tier:"SMB", pct:215.7, acv:6000, daysIntoCycle:0, daysRemaining:30, cycleLen:30},
+    {name:"ArthroBiologix Inc.", id:"001OL00000Ckjw6YAB", tier:"Micro", pct:1771.2, acv:10800, daysIntoCycle:0, daysRemaining:30, cycleLen:30},
+  ];
+
+  function projBadge(pct){
+    if (pct === null) return {cls:"normal", label:"N/A"};
+    if (pct < 25) return {cls:"low", label:"Low"};
+    if (pct > 115) return {cls:"high", label:"High"};
+    return {cls:"normal", label:"Normal"};
+  }
+
+  function renderProjected(rows){
+    var body = document.getElementById("projectedBody");
+    body.innerHTML = "";
+    rows.forEach(function(r){
+      var tr = document.createElement("tr");
+      var b = projBadge(r.pct);
+      var pctLabel = r.pct === null ? "N/A" : r.pct.toFixed(1) + "%";
+      tr.innerHTML =
+        '<td>' + acctLink(r, r.name, 'class="acct-name"') + '</td>' +
+        '<td>' + acctLink(r, r.tier, 'class="chip"') + '</td>' +
+        '<td>' + acctLink(r, '<span class="dot"></span>' + b.label + ' &middot; ' + pctLabel, 'class="proj-badge ' + b.cls + '"') + '</td>' +
+        '<td class="cycle-pos">Day ' + r.daysIntoCycle + ' of ' + r.cycleLen + ' (' + r.daysRemaining + ' left)</td>' +
+        '<td class="acv">' + acctLink(r, fmtMoney(r.acv)) + '</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  renderProjected(PROJ_ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); }));
 </script>
 </body>
 </html>

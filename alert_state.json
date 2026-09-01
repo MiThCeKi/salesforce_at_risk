@@ -1,0 +1,252 @@
+{
+  "0015f00000IPHxuAAH": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "high"
+  },
+  "0015f00000IQRGHAA5": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001I9000002tqUTIAY": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001I900000362wRIAQ": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "high"
+  },
+  "001I9000003c6huIAA": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001I9000004mawoIAA": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "high"
+  },
+  "001I9000005T4a9IAC": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001I9000005T4bNIAS": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "high"
+  },
+  "001I9000005T4bZIAS": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001I9000005T4dLIAS": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001I9000007CYHEIA4": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001I9000007cllGIAQ": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL000006SaZlYAK": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL0000087uk3YAA": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "high"
+  },
+  "001OL000008ibX8YAI": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000A5GPoYAN": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000AU6wgYAD": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000BbZGdYAN": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000C4p0PYAR": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000C5CzSYAV": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000Ckjw6YAB": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "high"
+  },
+  "001OL00000Czp9PYAR": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000D0AqjYAF": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000D0B7IYAV": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000D0B7XYAV": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000Io5WoYAJ": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000KcO97YAF": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000Kf2yUYAR": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000Ncj26YAB": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000NseOJYAZ": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000Q4KAsYAN": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000Q4fgjYAB": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000SE68iYAD": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000SGW3tYAH": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000SYhk0YAD": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000SYxvHYAT": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000TANqiYAH": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000TX14jYAD": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000UBUYBYA5": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000UmhEIYAZ": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000VI1ofYAD": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000VTlWPYA1": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000XOkQ8YAL": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000byRmQYAU": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000dg8ynYAA": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000eL401YAC": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "high"
+  },
+  "001OL00000gAMVJYA4": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000i2nBOYAY": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "high"
+  },
+  "001OL00000izh1xYAA": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000kV72oYAC": {
+    "last_alert": "2026-09-01",
+    "since": "2026-09-01",
+    "state": "high"
+  }
+}

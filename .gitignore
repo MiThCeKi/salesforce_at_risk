@@ -1,3 +1,4 @@
 credentials.rtf
 __pycache__/
 *.pyc
+pending_alerts.json

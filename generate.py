@@ -161,7 +161,65 @@ def render_rows_js(rows):
     return "\n".join(lines)
 
 
-def fill_template(template_text, accounts, today):
+def cycle_position(start_date_str, today):
+    """Returns (days_into_cycle, days_remaining, cycle_length_days) for the
+    account's current monthly billing cycle, anchored to the day-of-month of
+    its contract start date. Approximate: a shorter month clamps to its own
+    last day rather than precisely modeling calendar rollovers."""
+    import calendar
+    start = parse(start_date_str)
+    anchor_day = start.day
+
+    def month_add(d, months):
+        m = d.month - 1 + months
+        y = d.year + m // 12
+        m = m % 12 + 1
+        day = min(anchor_day, calendar.monthrange(y, m)[1])
+        return datetime.date(y, m, day)
+
+    cycle_start = datetime.date(today.year, today.month, min(anchor_day, calendar.monthrange(today.year, today.month)[1]))
+    if cycle_start > today:
+        cycle_start = month_add(cycle_start, -1)
+    cycle_end = month_add(cycle_start, 1)
+    days_into = (today - cycle_start).days
+    cycle_len = (cycle_end - cycle_start).days
+    return days_into, cycle_len - days_into, cycle_len
+
+
+def render_projected_js(rows):
+    lines = []
+    for r in rows:
+        pct_js = 'null' if r["pct"] is None else r["pct"]
+        lines.append(
+            '    {{name:"{name}", id:"{id}", tier:"{tier}", pct:{pct}, acv:{acv}, '
+            'daysIntoCycle:{days_into}, daysRemaining:{days_remaining}, cycleLen:{cycle_len}}},'.format(
+                name=js_escape(r["name"]),
+                id=r["id"],
+                tier=r["tier"],
+                pct=pct_js,
+                acv=(int(r["acv"]) if float(r["acv"]).is_integer() else r["acv"]),
+                days_into=r["daysIntoCycle"],
+                days_remaining=r["daysRemaining"],
+                cycle_len=r["cycleLen"],
+            )
+        )
+    return "\n".join(lines)
+
+
+def load_projected_snapshot(path="projected_snapshot.json"):
+    """Reads the mid-cycle projection snapshot written by check_alerts.py
+    (which runs Mon/Wed/Fri). Returns (asof_str, rows_js). If the file is
+    missing (e.g. before check_alerts.py has ever run), returns a
+    "not yet computed" placeholder rather than failing."""
+    import os
+    if not os.path.exists(path):
+        return "Not yet computed", ""
+    with open(path) as fh:
+        data = json.load(fh)
+    return data["asOf"], render_projected_js(data["rows"])
+
+
+def fill_template(template_text, accounts, today, projected_path="projected_snapshot.json"):
     all_rows = compute_rows(accounts, today)
     flagged = compute_flagged(all_rows)
     total_n = len(accounts)
@@ -185,6 +243,7 @@ def fill_template(template_text, accounts, today):
     asof = today.strftime("%b %d, %Y").upper()
 
     rows_js = render_rows_js(all_rows)
+    projected_asof, projected_rows_js = load_projected_snapshot(projected_path)
 
     out = template_text
     out = out.replace("__ASOF__", asof)
@@ -196,6 +255,8 @@ def fill_template(template_text, accounts, today):
     out = out.replace("__ENT_N__", str(ent_n))
     out = out.replace("__ENT_SUB__", ent_sub)
     out = out.replace("__ROWS_JS__", rows_js)
+    out = out.replace("__PROJECTED_ASOF__", projected_asof)
+    out = out.replace("__PROJECTED_ROWS_JS__", projected_rows_js)
 
     remaining = re.findall(r"__[A-Z_]+__", out)
     if remaining:
@@ -204,7 +265,7 @@ def fill_template(template_text, accounts, today):
     return out, {
         "flagged_n": flagged_n, "total_n": total_n, "acv_k": acv_k,
         "renew_n": renew_n, "renew_sub": renew_sub, "ent_n": ent_n, "ent_sub": ent_sub,
-        "asof": asof,
+        "asof": asof, "projected_asof": projected_asof,
     }
 
 
