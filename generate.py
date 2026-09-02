@@ -3,14 +3,21 @@ Fills /home/claude/sf-refresh/template.html with freshly computed at-risk data
 and writes out the final, ready-to-deploy HTML.
 
 This is the "recompute from Salesforce directly" pipeline step. The `accounts`
-list below was pulled live via SOQL against Salesforce on 2026-08-31 (the same
-query compute.py/generate.py's methodology has always used:
-Account.Stage__c = "Customer" AND Annual_Contract_Value__c > 0, selecting
-Name, Owner.Name, Account_Tier__c, Annual_Contract_Value__c,
+list below was pulled live via SOQL against Salesforce on 2026-09-02:
+Account.Stage__c IN ('Customer', 'SQL', 'Prospect') AND Annual_Contract_Value__c > 0,
+selecting Name, Owner.Name, Stage__c, Account_Tier__c, Annual_Contract_Value__c,
 Active_Contract_Start_Date__c, Subscription_End_Date__c, PageCountCap__c,
-Pages_Last_30__c, Hours_Last_30__c, Active_Users_Last_30__c). In the
-scheduled job, this list gets replaced by that same live SOQL query result
-each run, and TODAY becomes datetime.date.today() (already the case here).
+Pages_Last_30__c, Hours_Last_30__c, Active_Users_Last_30__c, LastActivityDate
+(the "Last Login" column, despite its name). Widened from Stage__c = "Customer"
+only on 2026-09-02 so SQL/Prospect deals already carrying usage and page-cap
+data (e.g. Litco Law LSO) show up too, not just signed customers. MainContact
+is derived per-account from summed Task+Event counts grouped by WhoId (via
+each activity's WhatId = the Account itself); LastEmail is the most recent
+ActivityDate among that account's TaskSubtype = 'Email' Tasks; NextMeeting is
+the earliest future StartDateTime among that account's Events (both WhatId =
+the Account) - null when there's no such record. In the scheduled job, this
+list gets replaced by that same live SOQL/activity pull each run, and TODAY
+becomes datetime.date.today() (already the case here).
 
 Usage: python3 generate.py
 Output: /home/claude/sf-refresh/AtRiskAccountsSnapshot_new.html
@@ -22,57 +29,66 @@ import re
 TODAY = datetime.date.today()
 
 accounts = [
-{"Name":"Alex Luczack MD","Id":"001OL00000C5CzSYAV","LastLogin":"2026-08-27","Owner":"Carla Chaytor","Tier":"Micro","ACV":4000,"Start":"2026-07-01","End":"2027-07-01","Cap":55000,"Pages":2686,"Hours":21.1402,"Users":1,"MainContact":"Alex Luczack"},
-{"Name":"ArthroBiologix Inc.","Id":"001OL00000Ckjw6YAB","LastLogin":"2026-08-19","Owner":"Carla Chaytor","Tier":"Micro","ACV":10800,"Start":"2026-04-01","End":"2027-03-31","Cap":15000,"Pages":22218,"Hours":14.193,"Users":2,"MainContact":"Alex Rabinovich"},
-{"Name":"AssessMed Inc.","Id":"0015f00000IQRGHAA5","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"Enterprise","ACV":124000,"Start":"2026-06-01","End":"2027-06-30","Cap":3100000,"Pages":230030,"Hours":354.5592,"Users":27,"MainContact":"Kelly Costa"},
-{"Name":"Aua Consulting LLC","Id":"001OL00000kV72oYAC","LastLogin":"2026-08-20","Owner":"Travis Bailey","Tier":"Micro","ACV":14000,"Start":"2026-06-08","End":"2027-06-14","Cap":80000,"Pages":12377,"Hours":5.6395,"Users":1,"MainContact":"Michael Schaufele"},
-{"Name":"Boucher Medical Professional Corp.","Id":"001OL0000087uk3YAA","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"Micro","ACV":11746,"Start":"2025-03-21","End":"2026-08-31","Cap":275000,"Pages":20627,"Hours":95.3605,"Users":3,"MainContact":"Michael Boucher"},
-{"Name":"Breedon Mor LLP","Id":"001I9000005T4bZIAS","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":15000,"Start":"2026-02-12","End":"2027-02-12","Cap":150000,"Pages":6154,"Hours":19.4049,"Users":6,"MainContact":"Jessica Mor"},
-{"Name":"Canadian Health Solutions Inc","Id":"0015f00000IPHxuAAH","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":20000,"Start":"2026-04-11","End":"2027-04-10","Cap":200000,"Pages":23530,"Hours":9.081,"Users":26,"MainContact":"Allison Smith"},
-{"Name":"Cayuga Mutual","Id":"001OL00000VTlWPYA1","LastLogin":"2025-11-19","Owner":"Travis Bailey","Tier":"SMB","ACV":600,"Start":"2025-10-20","End":"2026-10-19","Cap":5000,"Pages":0,"Hours":0,"Users":0,"MainContact":"Paul Tiller"},
-{"Name":"Chris Small Professional Medical Corporation","Id":"001OL000008ibX8YAI","LastLogin":"2026-08-15","Owner":"Carla Chaytor","Tier":"Micro","ACV":4800,"Start":"2026-03-21","End":"2027-03-21","Cap":20000,"Pages":24,"Hours":0.8222,"Users":1,"MainContact":"Christopher Small"},
-{"Name":"Crannie Law","Id":"001I9000005T4dLIAS","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":11896,"Start":"2026-05-11","End":"2027-05-11","Cap":125000,"Pages":2996,"Hours":48.3565,"Users":4,"MainContact":"Ruth Johnson"},
-{"Name":"Curtis Hlushak","Id":"001OL00000C4p0PYAR","LastLogin":"2026-08-29","Owner":"Carla Chaytor","Tier":"Micro","ACV":4500,"Start":"2026-02-23","End":"2027-02-23","Cap":30000,"Pages":2860,"Hours":6.34,"Users":1,"MainContact":"Curtis Hlushak"},
-{"Name":"Daugherty & Associates, LLC","Id":"001OL00000SYxvHYAT","LastLogin":"2026-08-13","Owner":"Carla Chaytor","Tier":"Micro","ACV":8400,"Start":"2026-07-30","End":"2027-07-29","Cap":60000,"Pages":1165,"Hours":70.1106,"Users":1,"MainContact":"Shirley Daugherty"},
-{"Name":"Girones Lawyers","Id":"001I9000005T4a9IAC","LastLogin":"2026-06-15","Owner":"Carla Chaytor","Tier":"SMB","ACV":11188,"Start":"2026-05-12","End":"2027-05-12","Cap":100000,"Pages":0,"Hours":0,"Users":5,"MainContact":"Andrea Girones"},
-{"Name":"Halbrecht Orthopedics","Id":"001OL00000TX14jYAD","LastLogin":"2026-01-21","Owner":"Peter Moyse","Tier":"Micro","ACV":650,"Start":"2025-11-23","End":"2026-11-23","Cap":5000,"Pages":0,"Hours":0,"Users":1,"MainContact":"Joanne Halbrecht"},
-{"Name":"Hands-On Orthopedics","Id":"001OL00000dg8ynYAA","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"Micro","ACV":14700,"Start":"2025-12-06","End":"2026-12-05","Cap":70000,"Pages":3335,"Hours":7.2089,"Users":4,"MainContact":"Ronald Williams"},
-{"Name":"Hooper Law","Id":"001I9000005T4bNIAS","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":6000,"Start":"2026-08-01","End":"2027-07-31","Cap":50000,"Pages":9018,"Hours":8.0293,"Users":10,"MainContact":"Paige Thompson"},
-{"Name":"IMED Services","Id":"001OL00000Io5WoYAJ","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":12000,"Start":"2026-05-21","End":"2027-05-20","Cap":60000,"Pages":4350,"Hours":64.6663,"Users":5,"MainContact":"John Byrne"},
-{"Name":"iMPROve Health","Id":"001OL00000Ncj26YAB","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"SMB","ACV":36960,"Start":"2025-09-15","End":"2026-09-30","Cap":336000,"Pages":591,"Hours":26.4569,"Users":7,"MainContact":"Leslie Howard"},
-{"Name":"Integral Consulting Services Inc.","Id":"001I9000007cllGIAQ","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"SMB","ACV":121500,"Start":"2026-06-30","End":"2027-06-30","Cap":2000000,"Pages":90091,"Hours":87.4752,"Users":3,"MainContact":"Renee Madonna"},
-{"Name":"Integrity Legal Nurse Consulting","Id":"001OL00000UmhEIYAZ","LastLogin":"2026-05-01","Owner":"Travis Bailey","Tier":"SMB","ACV":9000,"Start":"2025-09-22","End":"2026-09-21","Cap":60000,"Pages":0,"Hours":0,"Users":16,"MainContact":"Wendy Votroubek"},
-{"Name":"Integrity Medical Evaluations","Id":"001OL00000AU6wgYAD","LastLogin":"2026-08-28","Owner":"Travis Bailey","Tier":"Enterprise","ACV":158400,"Start":"2026-06-25","End":"2027-08-31","Cap":1440000,"Pages":7684,"Hours":5.1092,"Users":1,"MainContact":"Tiffany Sparks"},
-{"Name":"Jamie Irvine MD","Id":"001OL00000D0AqjYAF","LastLogin":"2026-08-12","Owner":"Carla Chaytor","Tier":"Micro","ACV":9576,"Start":"2026-02-18","End":"2027-02-18","Cap":60000,"Pages":0,"Hours":0.31,"Users":1,"MainContact":"James Irvine"},
-{"Name":"Janet Patterson MD","Id":"001OL00000Czp9PYAR","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"Micro","ACV":27700,"Start":"2026-06-30","End":"2027-06-30","Cap":400000,"Pages":28416,"Hours":44.669,"Users":6,"MainContact":"Raquel Bean"},
-{"Name":"JHU Consulting","Id":"001OL00000SYhk0YAD","LastLogin":"2026-08-26","Owner":"Carla Chaytor","Tier":"Micro","ACV":6600,"Start":"2026-01-30","End":"2027-01-30","Cap":30000,"Pages":2324,"Hours":5.7275,"Users":2,"MainContact":"Jessica Urie"},
-{"Name":"JS Held - BioMechanics Group","Id":"001OL000006SaZlYAK","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":23061.75,"Start":"2026-01-08","End":"2027-01-08","Cap":125000,"Pages":2233,"Hours":15.5071,"Users":7,"MainContact":"Karla Cassidy"},
-{"Name":"Kenney Shelton Liptak Nowak - KSLN law","Id":"001OL00000Q4KAsYAN","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":41000,"Start":"2026-06-23","End":"2027-06-23","Cap":300000,"Pages":17204,"Hours":43.5486,"Users":21,"MainContact":"Janine Smith"},
-{"Name":"Kevin Smith MD","Id":"001OL00000D0B7IYAV","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"Micro","ACV":9000,"Start":"2026-06-30","End":"2027-06-30","Cap":150000,"Pages":8429,"Hours":21.6467,"Users":5,"MainContact":"Kevin Smith"},
-{"Name":"KLE Nurse Consultants","Id":"001OL00000XOkQ8YAL","LastLogin":"2026-08-29","Owner":"Carla Chaytor","Tier":"Micro","ACV":9000,"Start":"2025-09-15","End":"2026-09-14","Cap":60000,"Pages":2934,"Hours":2.0496,"Users":3,"MainContact":"Kelly Ehrhardt"},
-{"Name":"LCP Pro","Id":"001OL00000i2nBOYAY","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"SMB","ACV":100000,"Start":"2026-05-22","End":"2027-05-21","Cap":950000,"Pages":166138,"Hours":360.3928,"Users":46,"MainContact":"Shelene Giles"},
-{"Name":"Life Care Planning Solutions LLC","Id":"001OL00000NseOJYAZ","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"SMB","ACV":8000,"Start":"2026-06-23","End":"2027-06-23","Cap":300000,"Pages":2194,"Hours":28.628,"Users":8,"MainContact":"Jennifer Post"},
-{"Name":"Medical Vocational Planning (MVP)","Id":"001OL00000A5GPoYAN","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"SMB","ACV":115200,"Start":"2025-11-01","End":"2027-12-01","Cap":1440000,"Pages":12301,"Hours":47.3866,"Users":6,"MainContact":"Eva Sarkinen"},
-{"Name":"Medivest","Id":"001OL00000eL401YAC","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"SMB","ACV":100000,"Start":"2026-04-01","End":"2027-03-31","Cap":1000000,"Pages":140422,"Hours":100.2814,"Users":12,"MainContact":"Anna Childers"},
-{"Name":"Mohamed Khaled MD","Id":"001OL00000D0B7XYAV","LastLogin":"2026-08-27","Owner":"Carla Chaytor","Tier":"Micro","ACV":19349,"Start":"2025-09-03","End":"2026-09-02","Cap":192000,"Pages":149,"Hours":0.1033,"Users":1,"MainContact":"Mohamed Khaled"},
-{"Name":"North Toronto Surgical","Id":"001OL00000SE68iYAD","LastLogin":"2026-07-07","Owner":"Carla Chaytor","Tier":"Micro","ACV":1920,"Start":"2026-06-03","End":"2027-06-03","Cap":24000,"Pages":0,"Hours":0,"Users":1,"MainContact":"Luis Figueroa"},
-{"Name":"Northeast Life Care Planning","Id":"001OL00000TANqiYAH","LastLogin":"2026-08-27","Owner":"Carla Chaytor","Tier":"Micro","ACV":9250,"Start":"2026-07-09","End":"2027-07-08","Cap":60000,"Pages":1326,"Hours":7.4339,"Users":1,"MainContact":"Barbara Bate"},
-{"Name":"NuHaven Health","Id":"001OL00000VI1ofYAD","LastLogin":"2026-08-28","Owner":"Carla Chaytor","Tier":"SMB","ACV":8100,"Start":"2025-09-22","End":"2026-09-21","Cap":90000,"Pages":2362,"Hours":10.0169,"Users":1,"MainContact":"Brad King"},
-{"Name":"Orvosi Medical Management","Id":"001OL00000BbZGdYAN","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"SMB","ACV":96000,"Start":"2026-01-09","End":"2027-01-08","Cap":1600000,"Pages":7398,"Hours":10.1603,"Users":7,"MainContact":"Rachel Stanga"},
-{"Name":"Peel Mutual Insurance Company","Id":"001I900000362wRIAQ","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":5760,"Start":"2025-08-25","End":"2026-08-24","Cap":38400,"Pages":5469,"Hours":8.0887,"Users":10,"MainContact":"Daniel Heap"},
-{"Name":"Physician Life Care Planning (PLCP)","Id":"001OL00000KcO97YAF","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"SMB","ACV":845000,"Start":"2025-11-07","End":"2027-11-07","Cap":6500000,"Pages":149309,"Hours":2246.9853,"Users":100,"MainContact":"Andres Martinez"},
-{"Name":"Physiohealth Inc.","Id":"001I9000004mawoIAA","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"Micro","ACV":1500,"Start":"2026-05-15","End":"2027-05-15","Cap":120000,"Pages":16346,"Hours":14.7165,"Users":1,"MainContact":"Dennis Polygenis"},
-{"Name":"Portage Mutual Insurance","Id":"001OL00000SGW3tYAH","LastLogin":"2026-08-27","Owner":"Travis Bailey","Tier":"SMB","ACV":10200,"Start":"2026-01-07","End":"2027-01-07","Cap":60000,"Pages":3137,"Hours":9.6559,"Users":11,"MainContact":"Chaussie Lawson"},
-{"Name":"Priddle Law Group","Id":"001I9000005T4fNIAS","LastLogin":"2026-03-06","Owner":"Matt Baldwin","Tier":"SMB","ACV":600,"Start":"2025-12-01","End":"2026-12-01","Cap":5000,"Pages":0,"Hours":0,"Users":0},
-{"Name":"Rehab First Inc.","Id":"001OL00000Kf2yUYAR","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":18000,"Start":"2025-11-03","End":"2026-11-02","Cap":180000,"Pages":9620,"Hours":6.4782,"Users":6,"MainContact":"Andrew Ferguson"},
-{"Name":"Roebothan McKay Marshall (RMM)","Id":"001I9000003c6huIAA","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":36000,"Start":"2026-06-06","End":"2027-06-06","Cap":480000,"Pages":9619,"Hours":53.8765,"Users":37,"MainContact":"Ashley Francis"},
-{"Name":"The Ivera Group","Id":"001OL00000gAMVJYA4","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":80000,"Start":"2026-03-23","End":"2027-03-22","Cap":800000,"Pages":5606,"Hours":4.9683,"Users":3,"MainContact":"Kristen Gruhler"},
-{"Name":"Tri-Star Health Management Group Inc.","Id":"001I9000007CYHEIA4","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"SMB","ACV":19250,"Start":"2026-01-20","End":"2027-01-20","Cap":275000,"Pages":12059,"Hours":113.9459,"Users":15,"MainContact":"Nicole Galeotalanza"},
-{"Name":"Trillium Mutual Insurance Company","Id":"001OL00000Q4fgjYAB","LastLogin":"2026-08-26","Owner":"Carla Chaytor","Tier":"SMB","ACV":7000,"Start":"2026-01-01","End":"2027-01-01","Cap":50000,"Pages":2423,"Hours":2.6652,"Users":2,"MainContact":"Christine Fizell"},
-{"Name":"TrueLine Medical Legal Consulting","Id":"001OL00000UBUYBYA5","LastLogin":"2026-06-12","Owner":"Peter Moyse","Tier":"SMB","ACV":12000,"Start":"2026-06-01","End":"2027-05-31","Cap":120000,"Pages":0,"Hours":0,"Users":1,"MainContact":"Khaleela Umheni"},
-{"Name":"Vocational Alternatives","Id":"001OL00000byRmQYAU","LastLogin":"2026-08-18","Owner":"Carla Chaytor","Tier":"SMB","ACV":9900,"Start":"2026-03-10","End":"2027-03-09","Cap":90000,"Pages":1194,"Hours":0.9789,"Users":3,"MainContact":"Jeff Cohen"},
-{"Name":"Walnut Orchard Psychology Services","Id":"001OL00000izh1xYAA","LastLogin":"2026-08-31","Owner":"Carla Chaytor","Tier":"SMB","ACV":12500,"Start":"2026-04-09","End":"2027-04-08","Cap":120000,"Pages":7185,"Hours":16.9796,"Users":2,"MainContact":"Shayna Nussbaum"},
-{"Name":"Zurich North America","Id":"001I9000002tqUTIAY","LastLogin":"2026-08-31","Owner":"Travis Bailey","Tier":"Enterprise","ACV":88200,"Start":"2026-04-01","End":"2028-03-31","Cap":900000,"Pages":13673,"Hours":16.2238,"Users":47,"MainContact":"Ryan Gussak"},
+{"Name":"Alex Luczack MD", "Id":"001OL00000C5CzSYAV", "LastLogin":"2026-08-18", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":4000, "Start":"2026-07-01", "End":"2027-07-01", "Cap":55000, "Pages":2686, "Hours":21.1402, "Users":1, "MainContact":"Alex Luczack", "LastEmail":"2026-02-18", "NextMeeting":None},
+{"Name":"ArthroBiologix Inc.", "Id":"001OL00000Ckjw6YAB", "LastLogin":"2026-08-19", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":10800, "Start":"2026-04-01", "End":"2027-03-31", "Cap":15000, "Pages":22218, "Hours":14.193, "Users":2, "MainContact":"Alex Rabinovich", "LastEmail":"2026-05-11", "NextMeeting":None},
+{"Name":"AssessMed Inc.", "Id":"0015f00000IQRGHAA5", "LastLogin":"2026-09-01", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"Enterprise", "ACV":124000, "Start":"2026-06-01", "End":"2027-06-30", "Cap":3100000, "Pages":259832, "Hours":373.2954, "Users":27, "MainContact":"Kelly Costa", "LastEmail":"2026-05-01", "NextMeeting":None},
+{"Name":"Assessnet", "Id":"001OL00000Xtpi4YAB", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"SQL", "Tier":"SMB", "ACV":18000, "Start":"2025-10-16", "End":"2026-10-15", "Cap":150000, "Pages":0, "Hours":0, "Users":0, "MainContact":"Joanne Dowd", "LastEmail":"2026-04-27", "NextMeeting":None},
+{"Name":"Aua Consulting LLC", "Id":"001OL00000kV72oYAC", "LastLogin":"2026-07-17", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"Micro", "ACV":14000, "Start":"2026-06-08", "End":"2027-06-14", "Cap":80000, "Pages":12377, "Hours":4.9829, "Users":1, "MainContact":"Michael Schaufele", "LastEmail":"2026-05-06", "NextMeeting":None},
+{"Name":"Boucher Medical Professional Corp.", "Id":"001OL0000087uk3YAA", "LastLogin":"2026-08-31", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":11746, "Start":"2025-03-21", "End":"2026-08-31", "Cap":275000, "Pages":20627, "Hours":102.1781, "Users":3, "MainContact":"Michael Boucher", "LastEmail":"2026-03-23", "NextMeeting":None},
+{"Name":"Breedon Mor LLP", "Id":"001I9000005T4bZIAS", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":15000, "Start":"2026-02-12", "End":"2027-02-12", "Cap":150000, "Pages":6336, "Hours":21.2149, "Users":6, "MainContact":"Jessica Mor", "LastEmail":"2026-02-09", "NextMeeting":None},
+{"Name":"Buckeye Medical Legal Consulting", "Id":"001OL00000SHtnxYAD", "LastLogin":"2026-08-20", "Owner":"Carla Chaytor", "Stage":"SQL", "Tier":"Micro", "ACV":13200, "Start":"2025-11-07", "End":"2026-10-31", "Cap":120000, "Pages":1150, "Hours":3.3724, "Users":1, "MainContact":"Dan Bravard", "LastEmail":"2026-06-04", "NextMeeting":None},
+{"Name":"Canadian Health Solutions Inc", "Id":"0015f00000IPHxuAAH", "LastLogin":"2026-09-08", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":20000, "Start":"2026-04-11", "End":"2027-04-10", "Cap":200000, "Pages":26758, "Hours":7.4509, "Users":26, "MainContact":"Allison Smith", "LastEmail":"2026-05-08", "NextMeeting":None},
+{"Name":"Cayuga Mutual", "Id":"001OL00000VTlWPYA1", "LastLogin":"2026-08-06", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":600, "Start":"2025-10-20", "End":"2026-10-19", "Cap":5000, "Pages":0, "Hours":0, "Users":0, "MainContact":"Paul Tiller", "LastEmail":"2026-04-23", "NextMeeting":None},
+{"Name":"Chris Small Professional Medical Corporation", "Id":"001OL000008ibX8YAI", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":4800, "Start":"2026-03-21", "End":"2027-03-21", "Cap":20000, "Pages":24, "Hours":0.8222, "Users":1, "MainContact":"Christopher Small", "LastEmail":"2026-03-05", "NextMeeting":None},
+{"Name":"Crannie Law", "Id":"001I9000005T4dLIAS", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":11896, "Start":"2026-05-11", "End":"2027-05-11", "Cap":125000, "Pages":3113, "Hours":51.2205, "Users":4, "MainContact":"Ruth Johnson", "LastEmail":"2026-08-11", "NextMeeting":None},
+{"Name":"Curtis Hlushak", "Id":"001OL00000C4p0PYAR", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":4500, "Start":"2026-02-23", "End":"2027-02-23", "Cap":30000, "Pages":2860, "Hours":7.2453, "Users":1, "MainContact":"Curtis Hlushak", "LastEmail":"2026-04-07", "NextMeeting":None},
+{"Name":"Daugherty & Associates, LLC", "Id":"001OL00000SYxvHYAT", "LastLogin":"2026-08-18", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":8400, "Start":"2026-07-30", "End":"2027-07-29", "Cap":60000, "Pages":34, "Hours":66.1956, "Users":1, "MainContact":"Shirley Daugherty", "LastEmail":"2026-03-16", "NextMeeting":None},
+{"Name":"Dr. Rick Hu", "Id":"001OL00000YiPK6YAN", "LastLogin":"2026-09-02", "Owner":"Carla Chaytor", "Stage":"SQL", "Tier":"Micro", "ACV":9600, "Start":"2025-10-09", "End":"2026-09-24", "Cap":120000, "Pages":3501, "Hours":25.2662, "Users":1, "MainContact":"Rick Hu", "LastEmail":"2026-05-04", "NextMeeting":None},
+{"Name":"Dr. Yaacov Markus", "Id":"001OL00000p3vHKYAY", "LastLogin":"2026-08-24", "Owner":"Carla Chaytor", "Stage":"Prospect", "Tier":None, "ACV":13800, "Start":"2026-06-09", "End":"2027-06-30", "Cap":60000, "Pages":0, "Hours":0, "Users":0, "MainContact":"Yaacov Markus", "LastEmail":"2026-08-24", "NextMeeting":None},
+{"Name":"E4 Life Care Planning, LLC", "Id":"001OL00000RHvTmYAL", "LastLogin":"2026-08-13", "Owner":"Travis Bailey", "Stage":"Prospect", "Tier":"Micro", "ACV":9618, "Start":"2026-07-28", "End":"2027-07-27", "Cap":60000, "Pages":148, "Hours":1.1007, "Users":1, "MainContact":"Alison Wohlhuter", "LastEmail":"2026-06-23", "NextMeeting":None},
+{"Name":"Gateway Health Solutions Inc.", "Id":"001OL00000jFWbzYAG", "LastLogin":"2026-06-25", "Owner":"Peter Moyse", "Stage":"Prospect", "Tier":"Micro", "ACV":5998, "Start":None, "End":None, "Cap":None, "Pages":0, "Hours":0, "Users":1, "MainContact":"David Sheps", "LastEmail":"2026-03-24", "NextMeeting":None},
+{"Name":"Girones Lawyers", "Id":"001I9000005T4a9IAC", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":11188, "Start":"2026-05-12", "End":"2027-05-12", "Cap":100000, "Pages":0, "Hours":0, "Users":5, "MainContact":"Andrea Girones", "LastEmail":"2026-05-14", "NextMeeting":None},
+{"Name":"Hands-On Orthopedics", "Id":"001OL00000dg8ynYAA", "LastLogin":"2026-06-30", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":14700, "Start":"2025-12-06", "End":"2026-12-05", "Cap":70000, "Pages":3335, "Hours":9.6283, "Users":4, "MainContact":"Ronald Williams", "LastEmail":"2026-02-19", "NextMeeting":None},
+{"Name":"Hooper Law", "Id":"001I9000005T4bNIAS", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":6000, "Start":"2026-08-01", "End":"2027-07-31", "Cap":50000, "Pages":9018, "Hours":8.3668, "Users":10, "MainContact":"Paige Thompson", "LastEmail":"2026-02-24", "NextMeeting":None},
+{"Name":"IMED Services", "Id":"001OL00000Io5WoYAJ", "LastLogin":"2026-09-02", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":12000, "Start":"2026-05-21", "End":"2027-05-20", "Cap":60000, "Pages":4532, "Hours":67.2805, "Users":5, "MainContact":"John Byrne", "LastEmail":"2026-05-11", "NextMeeting":None},
+{"Name":"Integral Consulting Services Inc.", "Id":"001I9000007cllGIAQ", "LastLogin":"2026-08-31", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":121500, "Start":"2026-06-30", "End":"2027-06-30", "Cap":2000000, "Pages":92768, "Hours":94.6953, "Users":3, "MainContact":"Renee Madonna", "LastEmail":"2026-01-19", "NextMeeting":None},
+{"Name":"Integrity Legal Nurse Consulting", "Id":"001OL00000UmhEIYAZ", "LastLogin":"2026-09-15", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":9000, "Start":"2025-09-22", "End":"2026-09-21", "Cap":60000, "Pages":0, "Hours":0, "Users":16, "MainContact":"Wendy Votroubek", "LastEmail":"2026-04-17", "NextMeeting":None},
+{"Name":"Integrity Medical Evaluations", "Id":"001OL00000AU6wgYAD", "LastLogin":"2026-09-02", "Owner":"Michael King", "Stage":"Customer", "Tier":"Enterprise", "ACV":158400, "Start":"2026-06-25", "End":"2027-08-31", "Cap":1440000, "Pages":2496, "Hours":3.707, "Users":1, "MainContact":"Tiffany Sparks", "LastEmail":"2026-08-07", "NextMeeting":None},
+{"Name":"JHU Consulting", "Id":"001OL00000SYhk0YAD", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":6600, "Start":"2026-01-30", "End":"2027-01-30", "Cap":30000, "Pages":2324, "Hours":3.1922, "Users":2, "MainContact":"Jessica Urie", "LastEmail":"2025-10-21", "NextMeeting":None},
+{"Name":"JS Held - BioMechanics Group", "Id":"001OL000006SaZlYAK", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":23061.75, "Start":"2026-01-08", "End":"2027-01-08", "Cap":125000, "Pages":2233, "Hours":18.2296, "Users":7, "MainContact":"Karla Cassidy", "LastEmail":None, "NextMeeting":None},
+{"Name":"Jamie Irvine MD", "Id":"001OL00000D0AqjYAF", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":9576, "Start":"2026-02-18", "End":"2027-02-18", "Cap":60000, "Pages":0, "Hours":0.31, "Users":1, "MainContact":"James Irvine", "LastEmail":None, "NextMeeting":None},
+{"Name":"Janet Patterson MD", "Id":"001OL00000Czp9PYAR", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":27700, "Start":"2026-06-30", "End":"2027-06-30", "Cap":400000, "Pages":34835, "Hours":47.3734, "Users":6, "MainContact":"Raquel Bean", "LastEmail":"2026-05-15", "NextMeeting":None},
+{"Name":"KLE Nurse Consultants", "Id":"001OL00000XOkQ8YAL", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":9000, "Start":"2025-09-15", "End":"2026-09-14", "Cap":60000, "Pages":2934, "Hours":2.8743, "Users":3, "MainContact":"Kelly Ehrhardt", "LastEmail":"2026-03-10", "NextMeeting":None},
+{"Name":"Kenney Shelton Liptak Nowak - KSLN law", "Id":"001OL00000Q4KAsYAN", "LastLogin":"2027-04-01", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":41000, "Start":"2026-06-23", "End":"2027-06-23", "Cap":300000, "Pages":17106, "Hours":42.9013, "Users":21, "MainContact":"Janine Smith", "LastEmail":"2026-08-28", "NextMeeting":None},
+{"Name":"Kevin Smith MD", "Id":"001OL00000D0B7IYAV", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":9000, "Start":"2026-06-30", "End":"2027-06-30", "Cap":150000, "Pages":8429, "Hours":17.9728, "Users":5, "MainContact":"Kevin Smith", "LastEmail":"2026-02-26", "NextMeeting":None},
+{"Name":"LCP Pro", "Id":"001OL00000i2nBOYAY", "LastLogin":"2026-09-02", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":100000, "Start":"2026-05-22", "End":"2027-05-21", "Cap":950000, "Pages":156132, "Hours":344.0166, "Users":46, "MainContact":"Shelene Giles", "LastEmail":"2026-09-02", "NextMeeting":None},
+{"Name":"Laxton Consulting, LLC", "Id":"001OL00000YdWpQYAV", "LastLogin":"2026-07-21", "Owner":"Carla Chaytor", "Stage":"Prospect", "Tier":"Micro", "ACV":9000, "Start":"2025-10-17", "End":"2026-10-17", "Cap":60000, "Pages":7215, "Hours":7.1035, "Users":1, "MainContact":"Theresa Laxton", "LastEmail":"2026-01-19", "NextMeeting":None},
+{"Name":"Life Care Planning Solutions LLC", "Id":"001OL00000NseOJYAZ", "LastLogin":"2026-08-11", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":8000, "Start":"2026-06-23", "End":"2027-06-23", "Cap":300000, "Pages":2266, "Hours":30.3813, "Users":8, "MainContact":"Jennifer Post", "LastEmail":"2026-05-04", "NextMeeting":None},
+{"Name":"Litco Law LSO", "Id":"001I9000006SKfQIAW", "LastLogin":"2026-09-03", "Owner":"Travis Bailey", "Stage":"SQL", "Tier":"Enterprise", "ACV":62500, "Start":"2026-07-15", "End":"2027-07-14", "Cap":600000, "Pages":197, "Hours":7.8855, "Users":3, "MainContact":"Liz Detmold", "LastEmail":"2026-05-11", "NextMeeting":None},
+{"Name":"Medical Vocational Planning (MVP)", "Id":"001OL00000A5GPoYAN", "LastLogin":"2026-10-28", "Owner":"Michael King", "Stage":"Customer", "Tier":"SMB", "ACV":115200, "Start":"2025-11-01", "End":"2027-12-01", "Cap":1440000, "Pages":15993, "Hours":50.0289, "Users":6, "MainContact":"Eva Sarkinen", "LastEmail":"2025-11-05", "NextMeeting":None},
+{"Name":"Medivest", "Id":"001OL00000eL401YAC", "LastLogin":"2026-09-04", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":100000, "Start":"2026-04-01", "End":"2027-03-31", "Cap":1000000, "Pages":140422, "Hours":104.8003, "Users":12, "MainContact":"Anna Childers", "LastEmail":"2026-08-06", "NextMeeting":None},
+{"Name":"Mohamed Khaled MD", "Id":"001OL00000D0B7XYAV", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":19349, "Start":"2025-09-03", "End":"2026-09-02", "Cap":192000, "Pages":149, "Hours":0.1033, "Users":1, "MainContact":"Mohamed Khaled", "LastEmail":"2025-10-14", "NextMeeting":None},
+{"Name":"National Medical Reviews (NMR)", "Id":"001I9000007bWXNIA2", "LastLogin":"2026-08-25", "Owner":"Travis Bailey", "Stage":"Prospect", "Tier":"Enterprise", "ACV":350000, "Start":"2026-07-01", "End":"2027-06-30", "Cap":3500000, "Pages":6371, "Hours":11.2638, "Users":8, "MainContact":"Nicole Borror", "LastEmail":"2026-05-06", "NextMeeting":None},
+{"Name":"North Toronto Surgical", "Id":"001OL00000SE68iYAD", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":1920, "Start":"2026-06-03", "End":"2027-06-03", "Cap":24000, "Pages":0, "Hours":0, "Users":1, "MainContact":"Luis Figueroa", "LastEmail":"2026-03-10", "NextMeeting":None},
+{"Name":"Northeast Life Care Planning", "Id":"001OL00000TANqiYAH", "LastLogin":"2026-08-18", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":9250, "Start":"2026-07-09", "End":"2027-07-08", "Cap":60000, "Pages":1326, "Hours":7.5536, "Users":1, "MainContact":"Barbara Bate", "LastEmail":"2026-02-19", "NextMeeting":None},
+{"Name":"NuHaven Health", "Id":"001OL00000VI1ofYAD", "LastLogin":"2026-08-17", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":8100, "Start":"2025-09-22", "End":"2026-09-21", "Cap":90000, "Pages":2421, "Hours":10.0283, "Users":1, "MainContact":"Brad King", "LastEmail":"2026-01-20", "NextMeeting":None},
+{"Name":"Orvosi Medical Management", "Id":"001OL00000BbZGdYAN", "LastLogin":"2026-08-31", "Owner":"Zackary Chaulk", "Stage":"Customer", "Tier":"SMB", "ACV":96000, "Start":"2026-01-09", "End":"2027-01-08", "Cap":1600000, "Pages":7847, "Hours":12.6401, "Users":7, "MainContact":"Rachel Stanga", "LastEmail":"2026-05-20", "NextMeeting":None},
+{"Name":"Peel Mutual Insurance Company", "Id":"001I900000362wRIAQ", "LastLogin":"2026-09-28", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":5760, "Start":"2025-08-25", "End":"2026-08-24", "Cap":38400, "Pages":5525, "Hours":9.1041, "Users":10, "MainContact":"Daniel Heap", "LastEmail":"2026-03-06", "NextMeeting":None},
+{"Name":"Physician Life Care Planning (PLCP)", "Id":"001OL00000KcO97YAF", "LastLogin":"2026-09-02", "Owner":"Nitla Cooke", "Stage":"Customer", "Tier":"SMB", "ACV":845000, "Start":"2025-11-07", "End":"2027-11-07", "Cap":6500000, "Pages":147958, "Hours":2410.6839, "Users":100, "MainContact":"Andres Martinez", "LastEmail":"2026-05-08", "NextMeeting":None},
+{"Name":"Physiohealth Inc.", "Id":"001I9000004mawoIAA", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":1500, "Start":"2026-05-15", "End":"2027-05-15", "Cap":120000, "Pages":15993, "Hours":12.1965, "Users":1, "MainContact":"Dennis Polygenis", "LastEmail":None, "NextMeeting":None},
+{"Name":"Portage Mutual Insurance", "Id":"001OL00000SGW3tYAH", "LastLogin":"2026-08-11", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":10200, "Start":"2026-01-07", "End":"2027-01-07", "Cap":60000, "Pages":2738, "Hours":8.7267, "Users":11, "MainContact":"Chaussie Lawson", "LastEmail":"2026-05-26", "NextMeeting":None},
+{"Name":"PsycIME", "Id":"0015f00000WHoQUAA1", "LastLogin":"2026-09-01", "Owner":"Michael King", "Stage":"SQL", "Tier":"Enterprise", "ACV":105000, "Start":"2025-09-30", "End":"2027-09-30", "Cap":1500000, "Pages":51066, "Hours":119.8926, "Users":5, "MainContact":"Jacqueline Buck", "LastEmail":"2026-09-01", "NextMeeting":None},
+{"Name":"Rehab First Inc.", "Id":"001OL00000Kf2yUYAR", "LastLogin":"2026-10-08", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":18000, "Start":"2025-11-03", "End":"2026-11-02", "Cap":180000, "Pages":15275, "Hours":9.6713, "Users":6, "MainContact":"Andrew Ferguson", "LastEmail":"2026-02-19", "NextMeeting":None},
+{"Name":"Roebothan McKay Marshall (RMM)", "Id":"001I9000003c6huIAA", "LastLogin":"2026-08-27", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":36000, "Start":"2026-06-06", "End":"2027-06-06", "Cap":480000, "Pages":11890, "Hours":52.7138, "Users":37, "MainContact":"Ashley Francis", "LastEmail":"2026-06-15", "NextMeeting":None},
+{"Name":"Sutton Special Risk", "Id":"001OL00000r94PIYAY", "LastLogin":"2026-09-01", "Owner":"Carla Chaytor", "Stage":"Prospect", "Tier":"SMB", "ACV":5000, "Start":"2026-08-10", "End":"2027-08-09", "Cap":30000, "Pages":747, "Hours":3.8094, "Users":3, "MainContact":None, "LastEmail":None, "NextMeeting":None},
+{"Name":"The Ivera Group", "Id":"001OL00000gAMVJYA4", "LastLogin":"2026-09-02", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":80000, "Start":"2026-03-23", "End":"2027-03-22", "Cap":800000, "Pages":4820, "Hours":5.4733, "Users":3, "MainContact":"Kristen Gruhler", "LastEmail":"2026-03-13", "NextMeeting":None},
+{"Name":"Tri-Star Health Management Group Inc.", "Id":"001I9000007CYHEIA4", "LastLogin":"2026-09-02", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":19250, "Start":"2026-01-20", "End":"2027-01-20", "Cap":275000, "Pages":12195, "Hours":120.7742, "Users":15, "MainContact":"Nicole Galeotalanza", "LastEmail":"2026-05-25", "NextMeeting":None},
+{"Name":"Trillium Mutual Insurance Company", "Id":"001OL00000Q4fgjYAB", "LastLogin":"2026-09-18", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":7000, "Start":"2026-01-01", "End":"2027-01-01", "Cap":50000, "Pages":2423, "Hours":3.3544, "Users":2, "MainContact":"Christine Fizell", "LastEmail":"2025-12-10", "NextMeeting":None},
+{"Name":"TrueLine Medical Legal Consulting", "Id":"001OL00000UBUYBYA5", "LastLogin":"2026-07-27", "Owner":"Peter Moyse", "Stage":"Customer", "Tier":"SMB", "ACV":12000, "Start":"2026-06-01", "End":"2027-05-31", "Cap":120000, "Pages":0, "Hours":0, "Users":1, "MainContact":"Khaleela Umheni", "LastEmail":"2026-07-27", "NextMeeting":None},
+{"Name":"Vocational Alternatives", "Id":"001OL00000byRmQYAU", "LastLogin":"2026-07-15", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":9900, "Start":"2026-03-10", "End":"2027-03-09", "Cap":90000, "Pages":1194, "Hours":0.9789, "Users":3, "MainContact":"Jeff Cohen", "LastEmail":"2026-05-25", "NextMeeting":None},
+{"Name":"Walnut Orchard Psychology Services", "Id":"001OL00000izh1xYAA", "LastLogin":"2026-06-23", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":12500, "Start":"2026-04-09", "End":"2027-04-08", "Cap":120000, "Pages":7185, "Hours":16.8766, "Users":2, "MainContact":"Shayna Nussbaum", "LastEmail":"2026-06-23", "NextMeeting":None},
+{"Name":"Zurich North America", "Id":"001I9000002tqUTIAY", "LastLogin":"2026-08-31", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"Enterprise", "ACV":88200, "Start":"2026-04-01", "End":"2028-03-31", "Cap":900000, "Pages":12175, "Hours":21.6125, "Users":48, "MainContact":"Ryan Gussak", "LastEmail":"2026-09-01", "NextMeeting":None},
+{"Name":"iMPROve Health", "Id":"001OL00000Ncj26YAB", "LastLogin":"2026-09-17", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":36960, "Start":"2025-09-15", "End":"2026-09-30", "Cap":336000, "Pages":581, "Hours":29.8478, "Users":9, "MainContact":"Leslie Howard", "LastEmail":"2026-05-07", "NextMeeting":None}
 ]
 
 SEVERITY_CODE = {"Critical": 0, "High": 1, "Watch": 2, "Healthy": 3, "Unknown": 4}
@@ -86,6 +102,8 @@ def prorated_monthly_cap(a):
     """The account's page cap divided by its contract term in months - an
     average monthly allowance, independent of calendar position. Returns
     None if it can't be computed (missing contract dates or a zero cap)."""
+    if not a.get("Start") or not a.get("End") or not a.get("Cap"):
+        return None
     start = parse(a["Start"])
     end = parse(a["End"])
     months = (end - start).days / 30.44
@@ -123,16 +141,21 @@ def compute_rows(accounts, today):
         else:
             sev = "Healthy"
 
-        days_to_renewal = (parse(a["End"]) - today).days
+        end = a.get("End")
+        days_to_renewal = (parse(end) - today).days if end else None
         last_login = a.get("LastLogin")
         days_since_login = (today - parse(last_login)).days if last_login else None
+        stage = a.get("Stage")
+        stage_label = "{} ({})".format(stage, a["Tier"]) if stage == "Customer" and a.get("Tier") else stage
         rows.append({
             "Name": a["Name"], "Id": a["Id"], "Owner": a["Owner"], "Tier": a["Tier"], "Severity": sev,
+            "Stage": stage, "StageLabel": stage_label,
             "UsagePct": (round(usage_pct, 1) if usage_pct is not None else None),
             "Pages": a["Pages"], "Hours": round(a["Hours"], 1),
-            "Users": a["Users"], "ACV": a["ACV"], "Renewal": a["End"], "Days": days_to_renewal,
+            "Users": a["Users"], "ACV": a["ACV"], "Renewal": end, "Days": days_to_renewal,
             "LastLogin": last_login, "DaysSinceLogin": days_since_login,
             "MainContact": a.get("MainContact"),
+            "LastEmail": a.get("LastEmail"), "NextMeeting": a.get("NextMeeting"),
         })
     rows.sort(key=lambda x: (x["UsagePct"] is None, x["UsagePct"] if x["UsagePct"] is not None else 0))
     return rows
@@ -154,28 +177,39 @@ def render_rows_js(rows):
         last_login_js = 'null' if f["LastLogin"] is None else '"{}"'.format(f["LastLogin"])
         days_since_login_js = 'null' if f["DaysSinceLogin"] is None else f["DaysSinceLogin"]
         pct_js = 'null' if f["UsagePct"] is None else f["UsagePct"]
+        renewal_js = 'null' if f["Renewal"] is None else '"{}"'.format(f["Renewal"])
+        days_js = 'null' if f["Days"] is None else f["Days"]
         main_contact = f.get("MainContact")
         main_contact_js = 'null' if not main_contact else '"{}"'.format(js_escape(main_contact))
+        last_email = f.get("LastEmail")
+        last_email_js = 'null' if not last_email else '"{}"'.format(last_email)
+        next_meeting = f.get("NextMeeting")
+        next_meeting_js = 'null' if not next_meeting else '"{}"'.format(next_meeting)
         lines.append(
-            '    {{name:"{name}", id:"{id}", owner:"{owner}", tier:"{tier}", severity:{sev}, '
+            '    {{name:"{name}", id:"{id}", owner:"{owner}", tier:"{tier}", stage:"{stage}", '
+            'stageLabel:"{stage_label}", severity:{sev}, '
             'pct:{pct}, pages:{pages}, hours:{hours}, users:{users}, acv:{acv}, '
-            'renewal:"{renewal}", days:{days}, lastLogin:{last_login}, daysSinceLogin:{days_since_login}, '
-            'mainContact:{main_contact}}},'.format(
+            'renewal:{renewal}, days:{days}, lastLogin:{last_login}, daysSinceLogin:{days_since_login}, '
+            'mainContact:{main_contact}, lastEmail:{last_email}, nextMeeting:{next_meeting}}},'.format(
                 name=js_escape(f["Name"]),
                 id=f["Id"],
                 owner=js_escape(f["Owner"]),
                 tier=f["Tier"],
+                stage=js_escape(f["Stage"]),
+                stage_label=js_escape(f["StageLabel"]),
                 sev=SEVERITY_CODE[f["Severity"]],
                 pct=pct_js,
                 pages=f["Pages"],
                 hours=f["Hours"],
                 users=f["Users"],
                 acv=(int(f["ACV"]) if float(f["ACV"]).is_integer() else f["ACV"]),
-                renewal=f["Renewal"],
-                days=f["Days"],
+                renewal=renewal_js,
+                days=days_js,
                 last_login=last_login_js,
                 days_since_login=days_since_login_js,
                 main_contact=main_contact_js,
+                last_email=last_email_js,
+                next_meeting=next_meeting_js,
             )
         )
     return "\n".join(lines)
