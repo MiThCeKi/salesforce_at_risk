@@ -197,8 +197,8 @@
   </div>
 
   <div class="tabs" role="tablist">
-    <button type="button" class="tab-btn active" data-tab="expected" role="tab" aria-selected="true">Expected Monthly</button>
-    <button type="button" class="tab-btn" data-tab="projected" role="tab" aria-selected="false">Projected End of Month Usage</button>
+    <button type="button" class="tab-btn active" data-tab="expected" role="tab" aria-selected="true">Expected Monthly <span class="info-tip" tabindex="0" data-tip="Pages uploaded in the last 30 days. This compares their actual usage to their contracted page allowance, scaled to a monthly rate (contract page cap &divide; contract length in months). This is a recent-pace estimate, not cumulative usage - it will differ from Salesforce's own cumulative % Used chart on the Account record, which compares total pages since the contract started against the full contract cap.">&#9432;</span></button>
+    <button type="button" class="tab-btn" data-tab="projected" role="tab" aria-selected="false">Projected End of Month Usage <span class="info-tip" tabindex="0" data-tip="Projects each account's likely usage by the end of the current calendar month, based on real pace so far this month (summed from the 1st, not a rolling 30-day window) scaled up to a full month. Refreshed Mon/Wed/Fri. Early in the month this is based on very little data - check Cycle Position to see how far into the month the projection is based on.">&#9432;</span></button>
   </div>
 
   <div class="tab-panel" data-panel="expected">
@@ -369,7 +369,8 @@ __ROWS_JS__
   applyFilter();
 
   document.querySelectorAll(".tab-btn").forEach(function(btn){
-    btn.addEventListener("click", function(){
+    btn.addEventListener("click", function(e){
+      if (e.target.closest(".info-tip")) return;
       document.querySelectorAll(".tab-btn").forEach(function(b){
         b.classList.remove("active");
         b.setAttribute("aria-selected", "false");
