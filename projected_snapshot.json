@@ -1,5 +1,5 @@
 {
-  "asOf": "SEP 01, 2026",
+  "asOf": "SEP 02, 2026",
   "rows": [
     {
       "name": "Cayuga Mutual",
@@ -7,8 +7,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 600.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -17,8 +17,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 11188.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -27,8 +27,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 650.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -37,8 +37,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 9000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -47,8 +47,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 9576.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -57,8 +57,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 1920.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -67,48 +67,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 12000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
-      "cycleLen": 30
-    },
-    {
-      "name": "Mohamed Khaled MD",
-      "id": "001OL00000D0B7XYAV",
-      "tier": "Micro",
-      "pct": 0.0,
-      "acv": 19349.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
-      "cycleLen": 30
-    },
-    {
-      "name": "Chris Small Professional Medical Corporation",
-      "id": "001OL000008ibX8YAI",
-      "tier": "Micro",
-      "pct": 0.0,
-      "acv": 4800.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
-      "cycleLen": 30
-    },
-    {
-      "name": "iMPROve Health",
-      "id": "001OL00000Ncj26YAB",
-      "tier": "SMB",
-      "pct": 0.0,
-      "acv": 36960.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
-      "cycleLen": 30
-    },
-    {
-      "name": "Integrity Medical Evaluations",
-      "id": "001OL00000AU6wgYAD",
-      "tier": "Enterprise",
-      "pct": 0.0,
-      "acv": 158400.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -117,38 +77,78 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 8400.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
+      "cycleLen": 30
+    },
+    {
+      "name": "Mohamed Khaled MD",
+      "id": "001OL00000D0B7XYAV",
+      "tier": "Micro",
+      "pct": 0.0,
+      "acv": 19349.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
+      "cycleLen": 30
+    },
+    {
+      "name": "Chris Small Professional Medical Corporation",
+      "id": "001OL000008ibX8YAI",
+      "tier": "Micro",
+      "pct": 0.0,
+      "acv": 4800.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
+      "cycleLen": 30
+    },
+    {
+      "name": "iMPROve Health",
+      "id": "001OL00000Ncj26YAB",
+      "tier": "SMB",
+      "pct": 0.0,
+      "acv": 36960.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
+      "cycleLen": 30
+    },
+    {
+      "name": "Integrity Medical Evaluations",
+      "id": "001OL00000AU6wgYAD",
+      "tier": "Enterprise",
+      "pct": 0.0,
+      "acv": 158400.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Orvosi Medical Management",
       "id": "001OL00000BbZGdYAN",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 5.0,
       "acv": 96000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "The Ivera Group",
       "id": "001OL00000gAMVJYA4",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 9.8,
       "acv": 80000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Life Care Planning Solutions LLC",
       "id": "001OL00000NseOJYAZ",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 4.3,
       "acv": 8000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -157,8 +157,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 9900.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -167,18 +167,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 23061.75,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
-      "cycleLen": 30
-    },
-    {
-      "name": "Roebothan McKay Marshall (RMM)",
-      "id": "001I9000003c6huIAA",
-      "tier": "SMB",
-      "pct": 0.0,
-      "acv": 36000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -187,48 +177,58 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 9250.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Medical Vocational Planning (MVP)",
       "id": "001OL00000A5GPoYAN",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 2.1,
       "acv": 115200.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
+      "cycleLen": 30
+    },
+    {
+      "name": "Roebothan McKay Marshall (RMM)",
+      "id": "001I9000003c6huIAA",
+      "tier": "SMB",
+      "pct": 69.2,
+      "acv": 36000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Crannie Law",
       "id": "001I9000005T4dLIAS",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 18.0,
       "acv": 11896.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
-      "cycleLen": 30
-    },
-    {
-      "name": "Zurich North America",
-      "id": "001I9000002tqUTIAY",
-      "tier": "Enterprise",
-      "pct": 0.0,
-      "acv": 88200.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "NuHaven Health",
       "id": "001OL00000VI1ofYAD",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 11.8,
       "acv": 8100.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
+      "cycleLen": 30
+    },
+    {
+      "name": "Zurich North America",
+      "id": "001I9000002tqUTIAY",
+      "tier": "Enterprise",
+      "pct": 41.6,
+      "acv": 88200.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -237,48 +237,48 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 15000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Tri-Star Health Management Group Inc.",
       "id": "001I9000007CYHEIA4",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 8.5,
       "acv": 19250.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Physician Life Care Planning (PLCP)",
       "id": "001OL00000KcO97YAF",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 18.8,
       "acv": 845000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Portage Mutual Insurance",
       "id": "001OL00000SGW3tYAH",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 17.1,
       "acv": 10200.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Integral Consulting Services Inc.",
       "id": "001I9000007cllGIAQ",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 22.4,
       "acv": 121500.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -287,8 +287,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 14700.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -297,8 +297,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 7000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -307,8 +307,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 9000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -317,8 +317,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 4000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -327,18 +327,18 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 9000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Kenney Shelton Liptak Nowak - KSLN law",
       "id": "001OL00000Q4KAsYAN",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 9.1,
       "acv": 41000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -347,8 +347,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 12500.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -357,8 +357,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 12000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -367,28 +367,18 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 6600.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
       "name": "Rehab First Inc.",
       "id": "001OL00000Kf2yUYAR",
       "tier": "SMB",
-      "pct": 0.0,
+      "pct": 86.2,
       "acv": 18000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
-      "cycleLen": 30
-    },
-    {
-      "name": "AssessMed Inc.",
-      "id": "0015f00000IQRGHAA5",
-      "tier": "Enterprise",
-      "pct": 0.0,
-      "acv": 124000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -397,8 +387,18 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 27700.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
+      "cycleLen": 30
+    },
+    {
+      "name": "AssessMed Inc.",
+      "id": "0015f00000IQRGHAA5",
+      "tier": "Enterprise",
+      "pct": 120.7,
+      "acv": 124000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -407,8 +407,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 4500.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -417,8 +417,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 11746.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -427,18 +427,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 1500.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
-      "cycleLen": 30
-    },
-    {
-      "name": "Medivest",
-      "id": "001OL00000eL401YAC",
-      "tier": "SMB",
-      "pct": 0.0,
-      "acv": 100000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -447,8 +437,18 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 20000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
+      "cycleLen": 30
+    },
+    {
+      "name": "Medivest",
+      "id": "001OL00000eL401YAC",
+      "tier": "SMB",
+      "pct": 0.0,
+      "acv": 100000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -457,8 +457,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 5760.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -467,8 +467,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 14000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -477,8 +477,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 100000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -487,8 +487,8 @@
       "tier": "SMB",
       "pct": 0.0,
       "acv": 6000.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     },
     {
@@ -497,8 +497,8 @@
       "tier": "Micro",
       "pct": 0.0,
       "acv": 10800.0,
-      "daysIntoCycle": 1,
-      "daysRemaining": 29,
+      "daysIntoCycle": 2,
+      "daysRemaining": 28,
       "cycleLen": 30
     }
   ]
