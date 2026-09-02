@@ -252,7 +252,7 @@ __ROWS_JS__
     return ACCOUNT_URL_BASE + r.id + '/view';
   }
   function acctLink(r, inner, attrs){
-    return '<a' + (attrs ? ' ' + attrs : '') + ' href="' + acctHref(r) + '" target="_top">' + inner + '</a>';
+    return '<a' + (attrs ? ' ' + attrs : '') + ' href="' + acctHref(r) + '" target="_blank" rel="noopener noreferrer">' + inner + '</a>';
   }
 
   function render(rows){
