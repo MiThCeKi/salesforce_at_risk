@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>At-Risk Accounts</title>
+<title>Accounts Dash</title>
 <style>
   :root{
     --bg:#0c0e11;
@@ -57,6 +57,11 @@
   .stat .value.plain{color:var(--text);}
   .stat .sub{font-size:13px;color:var(--muted);line-height:1.5;}
   h2{font-family:Georgia,serif;font-size:22px;margin:0 0 4px;font-weight:700;}
+  h3.table-label{
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    margin:0 0 10px;font-weight:600;
+  }
   .list-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
   .list-head .hint{font-size:12px;color:var(--muted-2);}
   .search-box{
@@ -134,7 +139,7 @@
 
   <div class="eyebrow mono"><span class="dot"></span>SIFTMED &middot; ACCOUNT HEALTH &middot; AS OF <span id="asof">__ASOF__</span></div>
 
-  <h1>At-Risk Accounts</h1>
+  <h1>Accounts Dash</h1>
 
   <p class="dek" id="dek">
     <span id="flaggedN">__FLAGGED_N__</span> of SiftMed's <span id="totalCustomers">__TOTAL_N__</span> real, paying customers used
@@ -170,7 +175,7 @@
     </div>
   </div>
 
-  <h2>All accounts</h2>
+  <h3 class="table-label">At Risk Accounts</h3>
   <div class="list-head">
     <input type="text" id="acctSearch" class="search-box" placeholder="Search accounts, owners, contacts&hellip;" autocomplete="off">
     <span class="hint mono" id="listHint">showing all __TOTAL_N__ accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
