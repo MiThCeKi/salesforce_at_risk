@@ -59,6 +59,12 @@
   h2{font-family:Georgia,serif;font-size:22px;margin:0 0 4px;font-weight:700;}
   .list-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
   .list-head .hint{font-size:12px;color:var(--muted-2);}
+  .search-box{
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:4px;color:var(--text);
+    font-size:13px;padding:7px 12px;min-width:240px;font-family:inherit;
+  }
+  .search-box::placeholder{color:var(--muted-2);}
+  .search-box:focus{outline:none;border-color:var(--teal);}
   table{width:100%;border-collapse:collapse;font-size:14px;}
   thead th{
     text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
@@ -166,8 +172,8 @@
 
   <h2>All accounts</h2>
   <div class="list-head">
-    <span></span>
-    <span class="hint mono">showing all 51 accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
+    <input type="text" id="acctSearch" class="search-box" placeholder="Search accounts, owners, contacts&hellip;" autocomplete="off">
+    <span class="hint mono" id="listHint">showing all 51 accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
   </div>
 
   <table id="riskTable">
@@ -336,23 +342,45 @@
   }
 
   var sortState = {key:"pct", dir:-1};
+  var currentSorted = ROWS.slice();
+
+  function matchesSearch(r, q){
+    return (r.name && r.name.toLowerCase().indexOf(q) !== -1) ||
+      (r.owner && r.owner.toLowerCase().indexOf(q) !== -1) ||
+      (r.mainContact && r.mainContact.toLowerCase().indexOf(q) !== -1) ||
+      (r.tier && r.tier.toLowerCase().indexOf(q) !== -1);
+  }
+
+  function applyFilter(){
+    var q = document.getElementById("acctSearch").value.trim().toLowerCase();
+    var visible = q ? currentSorted.filter(function(r){ return matchesSearch(r, q); }) : currentSorted;
+    render(visible);
+    var hint = document.getElementById("listHint");
+    hint.textContent = q
+      ? "showing " + visible.length + " of " + ROWS.length + " accounts matching \"" + document.getElementById("acctSearch").value.trim() + "\""
+      : "showing all " + ROWS.length + " accounts · click a column to sort · sorted by usage % (highest first) by default";
+  }
+
   function sortRows(key){
     if (sortState.key === key){ sortState.dir *= -1; } else { sortState.key = key; sortState.dir = 1; }
-    var sorted = ROWS.slice().sort(function(a,b){
+    currentSorted = ROWS.slice().sort(function(a,b){
       var av = a[key], bv = b[key];
       if (typeof av === "string"){ av = av.toLowerCase(); bv = bv.toLowerCase(); }
       if (av < bv) return -1 * sortState.dir;
       if (av > bv) return 1 * sortState.dir;
       return 0;
     });
-    render(sorted);
+    applyFilter();
   }
 
   document.querySelectorAll("#riskTable thead th").forEach(function(th){
     th.addEventListener("click", function(){ sortRows(th.getAttribute("data-key")); });
   });
 
-  render(ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); }));
+  document.getElementById("acctSearch").addEventListener("input", applyFilter);
+
+  currentSorted = ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); });
+  applyFilter();
 
   var PROJ_ROWS = [
     {name:"Cayuga Mutual", id:"001OL00000VTlWPYA1", tier:"SMB", pct:0.0, acv:600, daysIntoCycle:2, daysRemaining:28, cycleLen:30},
