@@ -6,18 +6,18 @@
 <title>Accounts Dash</title>
 <style>
   :root{
-    --bg:#0c0e11;
-    --panel:#15171c;
-    --panel-border:#262932;
-    --text:#e7e5df;
-    --muted:#8b929e;
-    --muted-2:#666d78;
-    --teal:#4fd8b8;
-    --coral:#e2896c;
-    --critical:#e2796a;
-    --high:#e0a95c;
-    --watch:#d9c15c;
-    --row-hover:#1a1d23;
+    --bg:#f3f2f2;
+    --panel:#ffffff;
+    --panel-border:#dddbda;
+    --text:#181818;
+    --muted:#706e6b;
+    --muted-2:#969492;
+    --teal:#0176d3;
+    --coral:#c23934;
+    --critical:#ba0517;
+    --high:#fe9339;
+    --watch:#e5c81a;
+    --row-hover:#f3f2f2;
   }
   *{box-sizing:border-box;}
   a{color:inherit;text-decoration:none;}
@@ -42,12 +42,10 @@
     font-family:Georgia,"Times New Roman",serif;
     font-size:56px;line-height:1.05;margin:0 0 20px;font-weight:700;
   }
-  .dek{font-size:17px;line-height:1.65;color:#c7c9cf;max-width:920px;margin:0 0 28px;}
-  .dek b{color:var(--text);}
   hr.rule{border:none;border-top:1px solid var(--panel-border);margin:0 0 28px;}
   .stats{
     display:grid;grid-template-columns:repeat(4,1fr);
-    border:1px solid var(--panel-border);border-radius:4px;overflow:hidden;
+    border:1px solid var(--panel-border);border-radius:4px;
     margin-bottom:40px;background:var(--panel);
   }
   .stat{padding:22px 24px;border-right:1px solid var(--panel-border);}
@@ -89,7 +87,7 @@
     width:260px;background:var(--panel);border:1px solid var(--panel-border);
     color:var(--text);font-size:12px;font-weight:400;text-transform:none;letter-spacing:normal;
     white-space:normal;line-height:1.5;padding:10px 12px;border-radius:4px;
-    box-shadow:0 6px 16px rgba(0,0,0,.45);z-index:20;cursor:auto;
+    box-shadow:0 6px 16px rgba(0,0,0,.18);z-index:20;cursor:auto;
   }
   tbody tr{border-bottom:1px solid var(--panel-border);position:relative;}
   tbody tr:hover{background:var(--row-hover);}
@@ -115,7 +113,7 @@
   .badge.healthy{color:var(--teal);} .badge.healthy .dot{background:var(--teal);}
   .badge.unknown{color:var(--muted);} .badge.unknown .dot{background:var(--muted);}
   .usage-pct{font-weight:700;margin-bottom:6px;}
-  .usage-bar{height:4px;border-radius:2px;background:#24272d;overflow:hidden;width:140px;margin-bottom:6px;}
+  .usage-bar{height:4px;border-radius:2px;background:#ecebea;overflow:hidden;width:140px;margin-bottom:6px;}
   .usage-bar > span{display:block;height:100%;border-radius:2px;}
   tr[data-tier="critical"] .usage-bar > span{background:var(--critical);}
   tr[data-tier="high"] .usage-bar > span{background:var(--high);}
@@ -161,11 +159,6 @@
   <div class="eyebrow mono"><span class="dot"></span>SIFTMED &middot; ACCOUNT HEALTH &middot; AS OF <span id="asof">__ASOF__</span></div>
 
   <h1>Accounts Dash</h1>
-
-  <p class="dek" id="dek">
-    <span id="flaggedN">__FLAGGED_N__</span> of SiftMed's <span id="totalCustomers">__TOTAL_N__</span> real, paying customers used
-    <b>under 25% of their contracted monthly page cap</b> in the last 30 days.
-  </p>
 
   <hr class="rule">
 
