@@ -78,6 +78,19 @@
   }
   thead th:hover{color:var(--text);}
   thead th .arrow{opacity:.5;font-size:10px;margin-left:3px;}
+  .info-tip{
+    position:relative;display:inline-block;margin-left:3px;font-size:13px;
+    color:var(--muted);cursor:help;text-transform:none;letter-spacing:normal;font-weight:400;
+  }
+  .info-tip:hover, .info-tip:focus{color:var(--teal);outline:none;}
+  .info-tip:hover::after, .info-tip:focus::after{
+    content:attr(data-tip);
+    position:absolute;bottom:135%;left:50%;transform:translateX(-50%);
+    width:260px;background:var(--panel);border:1px solid var(--panel-border);
+    color:var(--text);font-size:12px;font-weight:400;text-transform:none;letter-spacing:normal;
+    white-space:normal;line-height:1.5;padding:10px 12px;border-radius:4px;
+    box-shadow:0 6px 16px rgba(0,0,0,.45);z-index:20;cursor:auto;
+  }
   tbody tr{border-bottom:1px solid var(--panel-border);position:relative;}
   tbody tr:hover{background:var(--row-hover);}
   tbody td{padding:14px;vertical-align:middle;}
@@ -187,7 +200,7 @@
         <th data-key="name">Account <span class="arrow">↕</span></th>
         <th data-key="tier">Tier <span class="arrow">↕</span></th>
         <th data-key="severity">Risk <span class="arrow">↕</span></th>
-        <th data-key="pct">Expected Monthly Usage <span class="arrow">↓</span></th>
+        <th data-key="pct">Expected Monthly Usage <span class="info-tip" tabindex="0" data-tip="Pages uploaded in the last 30 days &divide; this account's cap prorated to one month (contract page cap &divide; contract length in months). This is a recent-pace estimate, not cumulative usage - it will differ from Salesforce's own cumulative % Used chart on the Account record, which compares total pages since the contract started against the full contract cap.">&#9432;</span> <span class="arrow">↓</span></th>
         <th data-key="acv">ACV <span class="arrow">↕</span></th>
         <th data-key="days">Renewal <span class="arrow">↕</span></th>
         <th data-key="daysSinceLogin">Last Login <span class="arrow">↕</span></th>
@@ -329,7 +342,10 @@ __ROWS_JS__
   }
 
   document.querySelectorAll("#riskTable thead th").forEach(function(th){
-    th.addEventListener("click", function(){ sortRows(th.getAttribute("data-key")); });
+    th.addEventListener("click", function(e){
+      if (e.target.closest(".info-tip")) return;
+      sortRows(th.getAttribute("data-key"));
+    });
   });
 
   document.getElementById("acctSearch").addEventListener("input", applyFilter);
