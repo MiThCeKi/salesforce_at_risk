@@ -22,16 +22,6 @@
       "cycleLen": 30
     },
     {
-      "name": "Halbrecht Orthopedics",
-      "id": "001OL00000TX14jYAD",
-      "tier": "Micro",
-      "pct": 0.0,
-      "acv": 650.0,
-      "daysIntoCycle": 2,
-      "daysRemaining": 28,
-      "cycleLen": 30
-    },
-    {
       "name": "Integrity Legal Nurse Consulting",
       "id": "001OL00000UmhEIYAZ",
       "tier": "SMB",
