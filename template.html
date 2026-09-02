@@ -132,7 +132,15 @@
   .last-login .ago{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
   .last-login.stale{color:var(--critical);}
   .last-login.stale .ago{color:var(--critical);opacity:.85;}
-  .proj-section{margin-top:44px;}
+  .tabs{display:flex;gap:20px;border-bottom:1px solid var(--panel-border);margin-bottom:24px;}
+  .tab-btn{
+    background:none;border:none;color:var(--muted);font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    padding:0 0 10px;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  .tab-btn:hover{color:var(--text);}
+  .tab-btn.active{color:var(--teal);border-bottom-color:var(--teal);}
+  .tab-panel[hidden]{display:none;}
   .proj-badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;}
   .proj-badge .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
   .proj-badge.low{color:var(--critical);} .proj-badge.low .dot{background:var(--critical);}
@@ -188,32 +196,39 @@
     </div>
   </div>
 
-  <h3 class="table-label">At Risk Accounts</h3>
-  <div class="list-head">
-    <input type="text" id="acctSearch" class="search-box" placeholder="Search accounts, owners, contacts&hellip;" autocomplete="off">
-    <span class="hint mono" id="listHint">showing all __TOTAL_N__ accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab-btn active" data-tab="expected" role="tab" aria-selected="true">Expected Monthly</button>
+    <button type="button" class="tab-btn" data-tab="projected" role="tab" aria-selected="false">Projected End of Month Usage</button>
   </div>
 
-  <table id="riskTable">
-    <thead>
-      <tr>
-        <th data-key="name">Account <span class="arrow">↕</span></th>
-        <th data-key="tier">Tier <span class="arrow">↕</span></th>
-        <th data-key="severity">Risk <span class="arrow">↕</span></th>
-        <th data-key="pct">Expected Monthly Usage <span class="info-tip" tabindex="0" data-tip="Pages uploaded in the last 30 days &divide; this account's cap prorated to one month (contract page cap &divide; contract length in months). This is a recent-pace estimate, not cumulative usage - it will differ from Salesforce's own cumulative % Used chart on the Account record, which compares total pages since the contract started against the full contract cap.">&#9432;</span> <span class="arrow">↓</span></th>
-        <th data-key="acv">ACV <span class="arrow">↕</span></th>
-        <th data-key="days">Renewal <span class="arrow">↕</span></th>
-        <th data-key="daysSinceLogin">Last Login <span class="arrow">↕</span></th>
-      </tr>
-    </thead>
-    <tbody id="riskBody"></tbody>
-  </table>
+  <div class="tab-panel" data-panel="expected">
+    <h3 class="table-label">At Risk Accounts</h3>
+    <div class="list-head">
+      <input type="text" id="acctSearch" class="search-box" placeholder="Search accounts, owners, contacts&hellip;" autocomplete="off">
+      <span class="hint mono" id="listHint">showing all __TOTAL_N__ accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
+    </div>
 
-  <div class="proj-section">
-    <h2>Projected Usage &mdash; Mid-Cycle Check</h2>
+    <table id="riskTable">
+      <thead>
+        <tr>
+          <th data-key="name">Account <span class="arrow">↕</span></th>
+          <th data-key="tier">Tier <span class="arrow">↕</span></th>
+          <th data-key="severity">Risk <span class="arrow">↕</span></th>
+          <th data-key="pct">Expected Usage <span class="info-tip" tabindex="0" data-tip="Pages uploaded in the last 30 days. This compares their actual usage to their contracted page allowance, scaled to a monthly rate (contract page cap &divide; contract length in months). This is a recent-pace estimate, not cumulative usage - it will differ from Salesforce's own cumulative % Used chart on the Account record, which compares total pages since the contract started against the full contract cap.">&#9432;</span> <span class="arrow">↓</span></th>
+          <th data-key="acv">ACV <span class="arrow">↕</span></th>
+          <th data-key="days">Renewal <span class="arrow">↕</span></th>
+          <th data-key="daysSinceLogin">Last Login <span class="arrow">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="riskBody"></tbody>
+    </table>
+  </div>
+
+  <div class="tab-panel" data-panel="projected" hidden>
+    <h3 class="table-label">Projected End of Month Usage <span class="info-tip" tabindex="0" data-tip="Projects each account's likely usage by the end of the current calendar month, based on real pace so far this month (summed from the 1st, not a rolling 30-day window) scaled up to a full month. Refreshed Mon/Wed/Fri. Early in the month this is based on very little data - check Cycle Position to see how far into the month the projection is based on.">&#9432;</span></h3>
     <div class="list-head">
       <span></span>
-      <span class="hint mono">last computed <span id="projAsof">__PROJECTED_ASOF__</span> &middot; refreshed Mon/Wed/Fri &middot; usage resets on a shared monthly cycle, projected against the current calendar month</span>
+      <span class="hint mono">last computed <span id="projAsof">__PROJECTED_ASOF__</span> &middot; refreshed Mon/Wed/Fri</span>
     </div>
     <table id="projectedTable">
       <thead>
@@ -352,6 +367,19 @@ __ROWS_JS__
 
   currentSorted = ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); });
   applyFilter();
+
+  document.querySelectorAll(".tab-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".tab-btn").forEach(function(b){
+        b.classList.remove("active");
+        b.setAttribute("aria-selected", "false");
+      });
+      document.querySelectorAll(".tab-panel").forEach(function(p){ p.hidden = true; });
+      btn.classList.add("active");
+      btn.setAttribute("aria-selected", "true");
+      document.querySelector('.tab-panel[data-panel="' + btn.getAttribute("data-tab") + '"]').hidden = false;
+    });
+  });
 
   var PROJ_ROWS = [
 __PROJECTED_ROWS_JS__
