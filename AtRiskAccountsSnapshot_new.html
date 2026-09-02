@@ -159,18 +159,18 @@
 
   <div class="stats">
     <div class="stat">
-      <div class="label">Flagged Accounts <span class="info-tip" tabindex="0" data-tip="22 of SiftMed's 60 tracked accounts (customers, plus SQL and Prospect deals already in the pipeline) used under 25% of their contracted or projected monthly page cap in the last 30 days &mdash; the same usage-cliff pattern that showed up, months in advance, ahead of every one of SiftMed's nine confirmed churns this year. The monthly cap is prorated to each account's actual contract length rather than assumed to be 12 months, which cleared two multi-year contracts (Zurich North America, Physician Life Care Planning) that would otherwise have looked at-risk only because their page cap covers 24 months, not one.">&#9432;</span></div>
-      <div class="value" id="statFlagged">22</div>
-      <div class="sub">of <span id="statTotal">60</span> tracked accounts</div>
+      <div class="label">Flagged Accounts <span class="info-tip" tabindex="0" data-tip="31 of SiftMed's 72 tracked accounts (any account with a contract length, page cap, and usage on file, regardless of sales/lifecycle stage) used under 25% of their contracted or projected monthly page cap in the last 30 days &mdash; the same usage-cliff pattern that showed up, months in advance, ahead of every one of SiftMed's nine confirmed churns this year. The monthly cap is prorated to each account's actual contract length rather than assumed to be 12 months, which cleared two multi-year contracts (Zurich North America, Physician Life Care Planning) that would otherwise have looked at-risk only because their page cap covers 24 months, not one.">&#9432;</span></div>
+      <div class="value" id="statFlagged">31</div>
+      <div class="sub">of <span id="statTotal">72</span> tracked accounts</div>
     </div>
     <div class="stat">
       <div class="label">ACV Represented</div>
-      <div class="value" id="statACV">$956.3K</div>
+      <div class="value" id="statACV">$1144.3K</div>
       <div class="sub">annual contract value, flagged accounts</div>
     </div>
     <div class="stat">
       <div class="label">Renewing Within 60 Days</div>
-      <div class="value" id="statRenew">6</div>
+      <div class="value" id="statRenew">8</div>
       <div class="sub" id="statRenewSub">Mohamed Khaled MD &mdash; 0 days, 0.9% usage</div>
     </div>
     <div class="stat">
@@ -189,7 +189,7 @@
     <h3 class="table-label">At Risk Accounts</h3>
     <div class="list-head">
       <input type="text" id="acctSearch" class="search-box" placeholder="Search accounts, owners, contacts&hellip;" autocomplete="off">
-      <span class="hint mono" id="listHint">showing all 60 accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
+      <span class="hint mono" id="listHint">showing all 72 accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
     </div>
 
     <table id="riskTable">
@@ -232,19 +232,24 @@
 
   <footer>
     <p id="methodology">
-      Tracks SiftMed's tracked accounts (Salesforce Account.Stage__c &isin; &ldquo;Customer&rdquo;, &ldquo;SQL&rdquo;,
-      &ldquo;Prospect&rdquo;) whose trailing 30-day product usage (Pages_Last_30__c) is low relative to their
-      contracted or projected page cap (PageCountCap__c), prorated to each account's actual contract length
-      (Active_Contract_Start_Date__c to Subscription_End_Date__c) rather than a flat 12-month assumption &mdash;
-      the same usage-cliff pattern that preceded all nine of SiftMed's confirmed churns. Accounts missing a start
-      date, end date, or page cap, or with a zero page cap, are excluded from the calculation (shown as N/A).
-      Non-real and internal Account records (null or zero Annual_Contract_Value__c), and accounts at any other
-      stage (Previous Customer, Unqualifed, Kick Back, etc.), are excluded from the 60 tracked-account
-      base entirely. The Stage column shows the account's tier alongside a Customer-stage account, e.g. &ldquo;Customer
-      (Enterprise)&rdquo;; SQL and Prospect accounts are still in the sales pipeline and haven't necessarily signed
-      a contract yet, so their page cap and usage figures may be provisional. Last Email reflects the most recent
-      logged Email-type Task on the Account; Next Meeting reflects the earliest future-dated Event on the Account
-      &mdash; both show &ldquo;Never&rdquo; / &ldquo;Not scheduled&rdquo; when there's no such record on file.
+      Tracks any SiftMed account with a non-zero Annual_Contract_Value__c, a non-zero page cap
+      (PageCountCap__c), and both contract dates on file &mdash; regardless of Salesforce pipeline stage
+      (Customer, Previous Customer, SQL, Prospect, Unqualifed, Kick Back, etc. all qualify if the data's
+      there). This deliberately has no Stage__c filter: the criterion is whether an account has the data to
+      compute a usage %, not which stage it currently carries, so already-churned (Previous Customer) and
+      still-selling (SQL, Prospect) accounts appear alongside signed customers. Usage compares trailing 30-day
+      product usage (Pages_Last_30__c) to the contracted or projected page cap, prorated to each account's actual
+      contract length (Active_Contract_Start_Date__c to Subscription_End_Date__c) rather than a flat 12-month
+      assumption &mdash; the same usage-cliff pattern that preceded all nine of SiftMed's confirmed churns.
+      Accounts missing a start date, end date, or page cap, or with a zero page cap or a negative contract length,
+      are excluded from the calculation (shown as N/A) but still listed. Non-real and internal Account records
+      (null or zero Annual_Contract_Value__c) are excluded from the 72 tracked-account base entirely.
+      The Stage column shows the account's tier alongside a Customer-stage account, e.g. &ldquo;Customer
+      (Enterprise)&rdquo;; every other stage shows just the stage name &mdash; those accounts haven't necessarily
+      signed a contract yet (or, for Previous Customer, no longer have one), so their page cap and usage figures
+      may be provisional or stale. Last Email reflects the most recent logged Email-type Task on the Account;
+      Next Meeting reflects the earliest future-dated Event on the Account &mdash; both show &ldquo;Never&rdquo; /
+      &ldquo;Not scheduled&rdquo; when there's no such record on file.
     </p>
     <div class="snapshot-note mono">
       This is a point-in-time snapshot embedded in Salesforce as a Static Resource. The live, auto-refreshing version
@@ -258,17 +263,25 @@
 <script>
   var ROWS = [
     {name:"Assessnet", id:"001OL00000Xtpi4YAB", owner:"Carla Chaytor", tier:"SMB", stage:"SQL", stageLabel:"SQL", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:18000, renewal:"2026-10-15", days:43, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Joanne Dowd", lastEmail:"2026-04-27", nextMeeting:null},
+    {name:"Bobbie Ross MD", id:"001OL00000D0ArZYAV", owner:"Carla Chaytor", tier:"Micro", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:3000, renewal:"2026-03-16", days:-170, lastLogin:"2026-03-19", daysSinceLogin:167, mainContact:"Bobbie Ross", lastEmail:"2026-03-06", nextMeeting:null},
+    {name:"Carol Bierbrier & Associates - CBA", id:"001I9000007Bwg5IAC", owner:"Carla Chaytor", tier:"Micro", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:6840, renewal:"2026-05-01", days:-124, lastLogin:"2026-05-01", daysSinceLogin:124, mainContact:"Alyssa Bierbrier", lastEmail:"2026-05-01", nextMeeting:null},
     {name:"Cayuga Mutual", id:"001OL00000VTlWPYA1", owner:"Travis Bailey", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-10-19", days:47, lastLogin:"2026-08-06", daysSinceLogin:27, mainContact:"Paul Tiller", lastEmail:"2026-04-23", nextMeeting:null},
-    {name:"Dr. Yaacov Markus", id:"001OL00000p3vHKYAY", owner:"Carla Chaytor", tier:"None", stage:"Prospect", stageLabel:"Prospect", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:13800, renewal:"2027-06-30", days:301, lastLogin:"2026-08-24", daysSinceLogin:9, mainContact:"Yaacov Markus", lastEmail:"2026-08-24", nextMeeting:null},
+    {name:"Dr. Yaacov Markus", id:"001OL00000p3vHKYAY", owner:"Carla Chaytor", tier:"None", stage:"Prospect", stageLabel:"Prospect", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:13800, renewal:"2027-06-30", days:301, lastLogin:"2026-09-02", daysSinceLogin:0, mainContact:"Yaacov Markus", lastEmail:"2026-08-24", nextMeeting:null},
+    {name:"Drass and Associates Behavioral Healthcare and Legal Nurse Consulting", id:"001OL00000UZty1YAD", owner:"Peter Moyse", tier:"Micro", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:0.0, pages:0, hours:0, users:3, acv:600, renewal:"2026-08-28", days:-5, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Theresa Drass", lastEmail:"2026-02-21", nextMeeting:null},
     {name:"Girones Lawyers", id:"001I9000005T4a9IAC", owner:"Carla Chaytor", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:0, pct:0.0, pages:0, hours:0, users:5, acv:11188, renewal:"2027-05-12", days:252, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Andrea Girones", lastEmail:"2026-05-14", nextMeeting:null},
+    {name:"Halbrecht Orthopedics", id:"001OL00000TX14jYAD", owner:"Peter Moyse", tier:"Micro", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:650, renewal:"2026-11-23", days:82, lastLogin:"2026-05-11", daysSinceLogin:114, mainContact:"Joanne Halbrecht", lastEmail:"2026-05-11", nextMeeting:null},
     {name:"Integrity Legal Nurse Consulting", id:"001OL00000UmhEIYAZ", owner:"Travis Bailey", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:0, pct:0.0, pages:0, hours:0, users:16, acv:9000, renewal:"2026-09-21", days:19, lastLogin:"2026-09-15", daysSinceLogin:-13, mainContact:"Wendy Votroubek", lastEmail:"2026-04-17", nextMeeting:null},
     {name:"Jamie Irvine MD", id:"001OL00000D0AqjYAF", owner:"Carla Chaytor", tier:"Micro", stage:"Customer", stageLabel:"Customer (Micro)", severity:0, pct:0.0, pages:0, hours:0.3, users:1, acv:9576, renewal:"2027-02-18", days:169, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"James Irvine", lastEmail:null, nextMeeting:null},
     {name:"North Toronto Surgical", id:"001OL00000SE68iYAD", owner:"Carla Chaytor", tier:"Micro", stage:"Customer", stageLabel:"Customer (Micro)", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:1920, renewal:"2027-06-03", days:274, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Luis Figueroa", lastEmail:"2026-03-10", nextMeeting:null},
+    {name:"Paul Zalzal MD", id:"001OL00000Co9OYYAZ", owner:"John Byrne", tier:"Micro", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:4752, renewal:"2026-08-30", days:-3, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Paul Zalzal", lastEmail:"2026-03-30", nextMeeting:null},
+    {name:"Rachel Yeboah MD", id:"001OL00000Czp7tYAB", owner:"Matt Baldwin", tier:"Micro", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:5400, renewal:"2026-10-22", days:50, lastLogin:"2026-05-04", daysSinceLogin:121, mainContact:"Rachel Yeboah", lastEmail:"2026-05-04", nextMeeting:null},
     {name:"TrueLine Medical Legal Consulting", id:"001OL00000UBUYBYA5", owner:"Peter Moyse", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:0, pct:0.0, pages:0, hours:0, users:1, acv:12000, renewal:"2027-05-31", days:271, lastLogin:"2026-07-27", daysSinceLogin:37, mainContact:"Khaleela Umheni", lastEmail:"2026-07-27", nextMeeting:null},
     {name:"Litco Law LSO", id:"001I9000006SKfQIAW", owner:"Travis Bailey", tier:"Enterprise", stage:"SQL", stageLabel:"SQL", severity:0, pct:0.4, pages:197, hours:7.9, users:3, acv:62500, renewal:"2027-07-14", days:315, lastLogin:"2026-09-03", daysSinceLogin:-1, mainContact:"Liz Detmold", lastEmail:"2026-05-11", nextMeeting:null},
     {name:"Daugherty & Associates, LLC", id:"001OL00000SYxvHYAT", owner:"Carla Chaytor", tier:"Micro", stage:"Customer", stageLabel:"Customer (Micro)", severity:0, pct:0.7, pages:34, hours:66.2, users:1, acv:8400, renewal:"2027-07-29", days:330, lastLogin:"2026-08-18", daysSinceLogin:15, mainContact:"Shirley Daugherty", lastEmail:"2026-03-16", nextMeeting:null},
     {name:"Mohamed Khaled MD", id:"001OL00000D0B7XYAV", owner:"Carla Chaytor", tier:"Micro", stage:"Customer", stageLabel:"Customer (Micro)", severity:0, pct:0.9, pages:149, hours:0.1, users:1, acv:19349, renewal:"2026-09-02", days:0, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Mohamed Khaled", lastEmail:"2025-10-14", nextMeeting:null},
+    {name:"Viewpoint Medical Assessments", id:"0015f00000L4E4IAAV", owner:"Travis Bailey", tier:"SMB", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:0.9, pages:2537, hours:5.6, users:12, acv:126000, renewal:"2026-08-31", days:-2, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Melinda Popa", lastEmail:"2026-03-12", nextMeeting:null},
     {name:"Chris Small Professional Medical Corporation", id:"001OL000008ibX8YAI", owner:"Carla Chaytor", tier:"Micro", stage:"Customer", stageLabel:"Customer (Micro)", severity:0, pct:1.4, pages:24, hours:0.8, users:1, acv:4800, renewal:"2027-03-21", days:200, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Christopher Small", lastEmail:"2026-03-05", nextMeeting:null},
+    {name:"SEA & Associates Medical Legal Consulting Inc", id:"001OL00000TtYQBYA3", owner:"Carla Chaytor", tier:"SMB", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:2.0, pages:718, hours:0.3, users:2, acv:24000, renewal:"2026-09-25", days:23, lastLogin:"2026-08-25", daysSinceLogin:8, mainContact:"Suzanne Arragg", lastEmail:"2026-05-25", nextMeeting:null},
     {name:"National Medical Reviews (NMR)", id:"001I9000007bWXNIA2", owner:"Travis Bailey", tier:"Enterprise", stage:"Prospect", stageLabel:"Prospect", severity:0, pct:2.2, pages:6371, hours:11.3, users:8, acv:350000, renewal:"2027-06-30", days:301, lastLogin:"2026-08-25", daysSinceLogin:8, mainContact:"Nicole Borror", lastEmail:"2026-05-06", nextMeeting:null},
     {name:"iMPROve Health", id:"001OL00000Ncj26YAB", owner:"Travis Bailey", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:0, pct:2.2, pages:581, hours:29.8, users:9, acv:36960, renewal:"2026-09-30", days:28, lastLogin:"2026-09-17", daysSinceLogin:-15, mainContact:"Leslie Howard", lastEmail:"2026-05-07", nextMeeting:null},
     {name:"Integrity Medical Evaluations", id:"001OL00000AU6wgYAD", owner:"Michael King", tier:"Enterprise", stage:"Customer", stageLabel:"Customer (Enterprise)", severity:0, pct:2.5, pages:2496, hours:3.7, users:1, acv:158400, renewal:"2027-08-31", days:363, lastLogin:"2026-09-02", daysSinceLogin:0, mainContact:"Tiffany Sparks", lastEmail:"2026-08-07", nextMeeting:null},
@@ -278,15 +291,19 @@
     {name:"Life Care Planning Solutions LLC", id:"001OL00000NseOJYAZ", owner:"Travis Bailey", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:1, pct:9.1, pages:2266, hours:30.4, users:8, acv:8000, renewal:"2027-06-23", days:294, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Jennifer Post", lastEmail:"2026-05-04", nextMeeting:null},
     {name:"Buckeye Medical Legal Consulting", id:"001OL00000SHtnxYAD", owner:"Carla Chaytor", tier:"Micro", stage:"SQL", stageLabel:"SQL", severity:1, pct:11.3, pages:1150, hours:3.4, users:1, acv:13200, renewal:"2026-10-31", days:59, lastLogin:"2026-08-20", daysSinceLogin:13, mainContact:"Dan Bravard", lastEmail:"2026-06-04", nextMeeting:null},
     {name:"Vocational Alternatives", id:"001OL00000byRmQYAU", owner:"Carla Chaytor", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:2, pct:15.9, pages:1194, hours:1.0, users:3, acv:9900, renewal:"2027-03-09", days:188, lastLogin:"2026-07-15", daysSinceLogin:49, mainContact:"Jeff Cohen", lastEmail:"2026-05-25", nextMeeting:null},
+    {name:"Medical and Life Care Consulting", id:"001OL00000SL1U6YAL", owner:"Carla Chaytor", tier:"Micro", stage:"Unqualifed", stageLabel:"Unqualifed", severity:2, pct:20.6, pages:2064, hours:2.1, users:4, acv:16800, renewal:"2026-11-03", days:62, lastLogin:"2026-09-24", daysSinceLogin:-22, mainContact:"April Pettengill", lastEmail:"2026-04-17", nextMeeting:null},
     {name:"JS Held - BioMechanics Group", id:"001OL000006SaZlYAK", owner:"Carla Chaytor", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:2, pct:21.4, pages:2233, hours:18.2, users:7, acv:23061.75, renewal:"2027-01-08", days:128, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Karla Cassidy", lastEmail:null, nextMeeting:null},
     {name:"Northeast Life Care Planning", id:"001OL00000TANqiYAH", owner:"Carla Chaytor", tier:"Micro", stage:"Customer", stageLabel:"Customer (Micro)", severity:3, pct:26.4, pages:1326, hours:7.6, users:1, acv:9250, renewal:"2027-07-08", days:309, lastLogin:"2026-08-18", daysSinceLogin:15, mainContact:"Barbara Bate", lastEmail:"2026-02-19", nextMeeting:null},
     {name:"Medical Vocational Planning (MVP)", id:"001OL00000A5GPoYAN", owner:"Michael King", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:3, pct:27.7, pages:15993, hours:50.0, users:6, acv:115200, renewal:"2027-12-01", days:455, lastLogin:"2026-10-28", daysSinceLogin:-56, mainContact:"Eva Sarkinen", lastEmail:"2025-11-05", nextMeeting:null},
+    {name:"Tamming Law", id:"001I9000005T4eYIAS", owner:"Carla Chaytor", tier:"SMB", stage:"Unqualifed", stageLabel:"Unqualifed", severity:3, pct:28.2, pages:1414, hours:0.4, users:3, acv:9600, renewal:"2026-09-10", days:8, lastLogin:"2026-07-25", daysSinceLogin:39, mainContact:"Jessica Macinnes", lastEmail:"2026-02-20", nextMeeting:null},
     {name:"Roebothan McKay Marshall (RMM)", id:"001I9000003c6huIAA", owner:"Carla Chaytor", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:3, pct:29.7, pages:11890, hours:52.7, users:37, acv:36000, renewal:"2027-06-06", days:277, lastLogin:"2026-08-27", daysSinceLogin:6, mainContact:"Ashley Francis", lastEmail:"2026-06-15", nextMeeting:null},
     {name:"Sutton Special Risk", id:"001OL00000r94PIYAY", owner:"Carla Chaytor", tier:"SMB", stage:"Prospect", stageLabel:"Prospect", severity:3, pct:29.8, pages:747, hours:3.8, users:3, acv:5000, renewal:"2027-08-09", days:341, lastLogin:"2026-09-01", daysSinceLogin:1, mainContact:null, lastEmail:null, nextMeeting:null},
     {name:"Crannie Law", id:"001I9000005T4dLIAS", owner:"Carla Chaytor", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:3, pct:29.9, pages:3113, hours:51.2, users:4, acv:11896, renewal:"2027-05-11", days:251, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Ruth Johnson", lastEmail:"2026-08-11", nextMeeting:null},
     {name:"NuHaven Health", id:"001OL00000VI1ofYAD", owner:"Carla Chaytor", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:3, pct:32.2, pages:2421, hours:10.0, users:1, acv:8100, renewal:"2026-09-21", days:19, lastLogin:"2026-08-17", daysSinceLogin:16, mainContact:"Brad King", lastEmail:"2026-01-20", nextMeeting:null},
     {name:"Zurich North America", id:"001I9000002tqUTIAY", owner:"Travis Bailey", tier:"Enterprise", stage:"Customer", stageLabel:"Customer (Enterprise)", severity:3, pct:32.4, pages:12175, hours:21.6, users:48, acv:88200, renewal:"2028-03-31", days:576, lastLogin:"2026-08-31", daysSinceLogin:2, mainContact:"Ryan Gussak", lastEmail:"2026-09-01", nextMeeting:null},
+    {name:"Integrated Insurance Resources", id:"001OL00000i3vA5YAI", owner:"Carla Chaytor", tier:"SMB", stage:"Unqualifed", stageLabel:"Unqualifed", severity:3, pct:32.7, pages:1640, hours:4.0, users:5, acv:9000, renewal:"2027-03-31", days:210, lastLogin:"2026-08-12", daysSinceLogin:21, mainContact:"Jacqueline Caceres", lastEmail:"2026-08-12", nextMeeting:null},
     {name:"Dr. Rick Hu", id:"001OL00000YiPK6YAN", owner:"Carla Chaytor", tier:"Micro", stage:"SQL", stageLabel:"SQL", severity:3, pct:33.5, pages:3501, hours:25.3, users:1, acv:9600, renewal:"2026-09-24", days:22, lastLogin:"2026-09-02", daysSinceLogin:0, mainContact:"Rick Hu", lastEmail:"2026-05-04", nextMeeting:null},
+    {name:"Dr. Jordi Cisa Medical Corporation", id:"001OL00000BxtGiYAJ", owner:"Carla Chaytor", tier:"Micro", stage:"Kick Back", stageLabel:"Kick Back", severity:3, pct:35.6, pages:1072, hours:3.6, users:2, acv:4590, renewal:"2026-10-08", days:36, lastLogin:"2026-08-13", daysSinceLogin:20, mainContact:"Anne Lagace", lastEmail:"2026-01-27", nextMeeting:null},
     {name:"Breedon Mor LLP", id:"001I9000005T4bZIAS", owner:"Carla Chaytor", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:3, pct:50.6, pages:6336, hours:21.2, users:6, acv:15000, renewal:"2027-02-12", days:163, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Jessica Mor", lastEmail:"2026-02-09", nextMeeting:null},
     {name:"Tri-Star Health Management Group Inc.", id:"001I9000007CYHEIA4", owner:"Travis Bailey", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:3, pct:53.2, pages:12195, hours:120.8, users:15, acv:19250, renewal:"2027-01-20", days:140, lastLogin:"2026-09-02", daysSinceLogin:0, mainContact:"Nicole Galeotalanza", lastEmail:"2026-05-25", nextMeeting:null},
     {name:"Physician Life Care Planning (PLCP)", id:"001OL00000KcO97YAF", owner:"Nitla Cooke", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:3, pct:54.6, pages:147958, hours:2410.7, users:100, acv:845000, renewal:"2027-11-07", days:431, lastLogin:"2026-09-02", daysSinceLogin:0, mainContact:"Andres Martinez", lastEmail:"2026-05-08", nextMeeting:null},
@@ -316,7 +333,7 @@
     {name:"LCP Pro", id:"001OL00000i2nBOYAY", owner:"Travis Bailey", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:3, pct:196.5, pages:156132, hours:344.0, users:46, acv:100000, renewal:"2027-05-21", days:261, lastLogin:"2026-09-02", daysSinceLogin:0, mainContact:"Shelene Giles", lastEmail:"2026-09-02", nextMeeting:null},
     {name:"Hooper Law", id:"001I9000005T4bNIAS", owner:"Carla Chaytor", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:3, pct:215.7, pages:9018, hours:8.4, users:10, acv:6000, renewal:"2027-07-31", days:332, lastLogin:"2026-08-11", daysSinceLogin:22, mainContact:"Paige Thompson", lastEmail:"2026-02-24", nextMeeting:null},
     {name:"ArthroBiologix Inc.", id:"001OL00000Ckjw6YAB", owner:"Carla Chaytor", tier:"Micro", stage:"Customer", stageLabel:"Customer (Micro)", severity:3, pct:1771.2, pages:22218, hours:14.2, users:2, acv:10800, renewal:"2027-03-31", days:210, lastLogin:"2026-08-19", daysSinceLogin:14, mainContact:"Alex Rabinovich", lastEmail:"2026-05-11", nextMeeting:null},
-    {name:"Gateway Health Solutions Inc.", id:"001OL00000jFWbzYAG", owner:"Peter Moyse", tier:"Micro", stage:"Prospect", stageLabel:"Prospect", severity:4, pct:null, pages:0, hours:0, users:1, acv:5998, renewal:null, days:null, lastLogin:"2026-06-25", daysSinceLogin:69, mainContact:"David Sheps", lastEmail:"2026-03-24", nextMeeting:null},
+    {name:"Priddle Law Group", id:"001I9000005T4fNIAS", owner:"Matt Baldwin", tier:"SMB", stage:"Previous Customer", stageLabel:"Previous Customer", severity:4, pct:null, pages:0, hours:0, users:0, acv:600, renewal:"2025-04-29", days:-491, lastLogin:"2026-06-10", daysSinceLogin:84, mainContact:null, lastEmail:"2026-03-13", nextMeeting:null},
   ];
 
   var ACCOUNT_URL_BASE = "https://siftmed.lightning.force.com/lightning/r/Account/";
@@ -345,7 +362,8 @@
     rows.forEach(function(r){
       var tr = document.createElement("tr");
       tr.setAttribute("data-tier", SEV[r.severity]);
-      var soon = r.days !== null && r.days <= 30;
+      var soon = r.days !== null && r.days >= 0 && r.days <= 30;
+      var lapsed = r.days !== null && r.days < 0;
       var stale = r.daysSinceLogin !== null && r.daysSinceLogin > 30;
       var pctLabel = r.pct === null ? 'N/A' : r.pct.toFixed(1) + '%';
       var barWidth = r.pct === null ? 0 : Math.min(100, r.pct);
@@ -366,7 +384,9 @@
         '<td class="renewal' + (soon ? ' soon' : '') + '">' +
           (r.renewal === null
             ? acctLink(r, 'N/A')
-            : acctLink(r, fmtDate(r.renewal) + '<span class="days">in ' + r.days + ' day' + (r.days === 1 ? '' : 's') + '</span>')) +
+            : lapsed
+              ? acctLink(r, fmtDate(r.renewal) + '<span class="days">' + (-r.days) + ' day' + (r.days === -1 ? '' : 's') + ' ago</span>')
+              : acctLink(r, fmtDate(r.renewal) + '<span class="days">in ' + r.days + ' day' + (r.days === 1 ? '' : 's') + '</span>')) +
         '</td>' +
         '<td class="last-login' + (stale ? ' stale' : '') + '">' +
           (r.lastLogin === null

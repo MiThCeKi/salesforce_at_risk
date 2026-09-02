@@ -159,7 +159,7 @@
 
   <div class="stats">
     <div class="stat">
-      <div class="label">Flagged Accounts <span class="info-tip" tabindex="0" data-tip="__FLAGGED_N__ of SiftMed's __TOTAL_N__ tracked accounts (customers, plus SQL and Prospect deals already in the pipeline) used under 25% of their contracted or projected monthly page cap in the last 30 days &mdash; the same usage-cliff pattern that showed up, months in advance, ahead of every one of SiftMed's nine confirmed churns this year. The monthly cap is prorated to each account's actual contract length rather than assumed to be 12 months, which cleared two multi-year contracts (Zurich North America, Physician Life Care Planning) that would otherwise have looked at-risk only because their page cap covers 24 months, not one.">&#9432;</span></div>
+      <div class="label">Flagged Accounts <span class="info-tip" tabindex="0" data-tip="__FLAGGED_N__ of SiftMed's __TOTAL_N__ tracked accounts (any account with a contract length, page cap, and usage on file, regardless of sales/lifecycle stage) used under 25% of their contracted or projected monthly page cap in the last 30 days &mdash; the same usage-cliff pattern that showed up, months in advance, ahead of every one of SiftMed's nine confirmed churns this year. The monthly cap is prorated to each account's actual contract length rather than assumed to be 12 months, which cleared two multi-year contracts (Zurich North America, Physician Life Care Planning) that would otherwise have looked at-risk only because their page cap covers 24 months, not one.">&#9432;</span></div>
       <div class="value" id="statFlagged">__FLAGGED_N__</div>
       <div class="sub">of <span id="statTotal">__TOTAL_N__</span> tracked accounts</div>
     </div>
@@ -232,19 +232,24 @@
 
   <footer>
     <p id="methodology">
-      Tracks SiftMed's tracked accounts (Salesforce Account.Stage__c &isin; &ldquo;Customer&rdquo;, &ldquo;SQL&rdquo;,
-      &ldquo;Prospect&rdquo;) whose trailing 30-day product usage (Pages_Last_30__c) is low relative to their
-      contracted or projected page cap (PageCountCap__c), prorated to each account's actual contract length
-      (Active_Contract_Start_Date__c to Subscription_End_Date__c) rather than a flat 12-month assumption &mdash;
-      the same usage-cliff pattern that preceded all nine of SiftMed's confirmed churns. Accounts missing a start
-      date, end date, or page cap, or with a zero page cap, are excluded from the calculation (shown as N/A).
-      Non-real and internal Account records (null or zero Annual_Contract_Value__c), and accounts at any other
-      stage (Previous Customer, Unqualifed, Kick Back, etc.), are excluded from the __TOTAL_N__ tracked-account
-      base entirely. The Stage column shows the account's tier alongside a Customer-stage account, e.g. &ldquo;Customer
-      (Enterprise)&rdquo;; SQL and Prospect accounts are still in the sales pipeline and haven't necessarily signed
-      a contract yet, so their page cap and usage figures may be provisional. Last Email reflects the most recent
-      logged Email-type Task on the Account; Next Meeting reflects the earliest future-dated Event on the Account
-      &mdash; both show &ldquo;Never&rdquo; / &ldquo;Not scheduled&rdquo; when there's no such record on file.
+      Tracks any SiftMed account with a non-zero Annual_Contract_Value__c, a non-zero page cap
+      (PageCountCap__c), and both contract dates on file &mdash; regardless of Salesforce pipeline stage
+      (Customer, Previous Customer, SQL, Prospect, Unqualifed, Kick Back, etc. all qualify if the data's
+      there). This deliberately has no Stage__c filter: the criterion is whether an account has the data to
+      compute a usage %, not which stage it currently carries, so already-churned (Previous Customer) and
+      still-selling (SQL, Prospect) accounts appear alongside signed customers. Usage compares trailing 30-day
+      product usage (Pages_Last_30__c) to the contracted or projected page cap, prorated to each account's actual
+      contract length (Active_Contract_Start_Date__c to Subscription_End_Date__c) rather than a flat 12-month
+      assumption &mdash; the same usage-cliff pattern that preceded all nine of SiftMed's confirmed churns.
+      Accounts missing a start date, end date, or page cap, or with a zero page cap or a negative contract length,
+      are excluded from the calculation (shown as N/A) but still listed. Non-real and internal Account records
+      (null or zero Annual_Contract_Value__c) are excluded from the __TOTAL_N__ tracked-account base entirely.
+      The Stage column shows the account's tier alongside a Customer-stage account, e.g. &ldquo;Customer
+      (Enterprise)&rdquo;; every other stage shows just the stage name &mdash; those accounts haven't necessarily
+      signed a contract yet (or, for Previous Customer, no longer have one), so their page cap and usage figures
+      may be provisional or stale. Last Email reflects the most recent logged Email-type Task on the Account;
+      Next Meeting reflects the earliest future-dated Event on the Account &mdash; both show &ldquo;Never&rdquo; /
+      &ldquo;Not scheduled&rdquo; when there's no such record on file.
     </p>
     <div class="snapshot-note mono">
       This is a point-in-time snapshot embedded in Salesforce as a Static Resource. The live, auto-refreshing version
@@ -286,7 +291,8 @@ __ROWS_JS__
     rows.forEach(function(r){
       var tr = document.createElement("tr");
       tr.setAttribute("data-tier", SEV[r.severity]);
-      var soon = r.days !== null && r.days <= 30;
+      var soon = r.days !== null && r.days >= 0 && r.days <= 30;
+      var lapsed = r.days !== null && r.days < 0;
       var stale = r.daysSinceLogin !== null && r.daysSinceLogin > 30;
       var pctLabel = r.pct === null ? 'N/A' : r.pct.toFixed(1) + '%';
       var barWidth = r.pct === null ? 0 : Math.min(100, r.pct);
@@ -307,7 +313,9 @@ __ROWS_JS__
         '<td class="renewal' + (soon ? ' soon' : '') + '">' +
           (r.renewal === null
             ? acctLink(r, 'N/A')
-            : acctLink(r, fmtDate(r.renewal) + '<span class="days">in ' + r.days + ' day' + (r.days === 1 ? '' : 's') + '</span>')) +
+            : lapsed
+              ? acctLink(r, fmtDate(r.renewal) + '<span class="days">' + (-r.days) + ' day' + (r.days === -1 ? '' : 's') + ' ago</span>')
+              : acctLink(r, fmtDate(r.renewal) + '<span class="days">in ' + r.days + ' day' + (r.days === 1 ? '' : 's') + '</span>')) +
         '</td>' +
         '<td class="last-login' + (stale ? ' stale' : '') + '">' +
           (r.lastLogin === null
