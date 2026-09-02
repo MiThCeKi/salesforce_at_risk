@@ -213,14 +213,14 @@
   <div class="tab-panel" data-panel="projected" hidden>
     <h3 class="table-label">Projected End of Month Usage <span class="info-tip" tabindex="0" data-tip="Projects each account's likely usage by the end of the current calendar month, based on real pace so far this month (summed from the 1st, not a rolling 30-day window) scaled up to a full month. Refreshed Mon/Wed/Fri. Early in the month this is based on very little data - check Cycle Position to see how far into the month the projection is based on.">&#9432;</span></h3>
     <div class="list-head">
-      <span></span>
-      <span class="hint mono">last computed <span id="projAsof">__PROJECTED_ASOF__</span> &middot; refreshed Mon/Wed/Fri</span>
+      <input type="text" id="projSearch" class="search-box" placeholder="Search accounts, stage&hellip;" autocomplete="off">
+      <span class="hint mono" id="projHint">last computed <span id="projAsof">__PROJECTED_ASOF__</span> &middot; refreshed Mon/Wed/Fri</span>
     </div>
     <table id="projectedTable">
       <thead>
         <tr>
           <th>Account</th>
-          <th>Tier</th>
+          <th>Stage</th>
           <th>Projected Usage</th>
           <th>Cycle Position</th>
           <th>ACV</th>
@@ -408,9 +408,10 @@ __PROJECTED_ROWS_JS__
       var tr = document.createElement("tr");
       var b = projBadge(r.pct);
       var pctLabel = r.pct === null ? "N/A" : r.pct.toFixed(1) + "%";
+      var stageLabel = r.stageLabel || r.tier;
       tr.innerHTML =
         '<td>' + acctLink(r, r.name, 'class="acct-name"') + '</td>' +
-        '<td>' + acctLink(r, r.tier, 'class="chip"') + '</td>' +
+        '<td>' + acctLink(r, stageLabel, 'class="chip"') + '</td>' +
         '<td>' + acctLink(r, '<span class="dot"></span>' + b.label + ' &middot; ' + pctLabel, 'class="proj-badge ' + b.cls + '"') + '</td>' +
         '<td class="cycle-pos">Day ' + r.daysIntoCycle + ' of ' + r.cycleLen + ' (' + r.daysRemaining + ' left)</td>' +
         '<td class="acv">' + acctLink(r, fmtMoney(r.acv)) + '</td>';
@@ -418,7 +419,28 @@ __PROJECTED_ROWS_JS__
     });
   }
 
-  renderProjected(PROJ_ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); }));
+  var projSortedAll = PROJ_ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); });
+  var projAsofText = document.getElementById("projAsof").outerHTML;
+
+  function matchesProjSearch(r, q){
+    return r.name.toLowerCase().indexOf(q) !== -1 ||
+      ((r.stageLabel || r.tier) && (r.stageLabel || r.tier).toLowerCase().indexOf(q) !== -1);
+  }
+
+  function applyProjectedFilter(){
+    var q = document.getElementById("projSearch").value.trim().toLowerCase();
+    var visible = q ? projSortedAll.filter(function(r){ return matchesProjSearch(r, q); }) : projSortedAll;
+    renderProjected(visible);
+    var hint = document.getElementById("projHint");
+    hint.innerHTML = (q
+      ? "showing " + visible.length + " of " + projSortedAll.length + " accounts matching \"" + document.getElementById("projSearch").value.trim() + "\" &middot; "
+      : "showing all " + projSortedAll.length + " accounts &middot; ") +
+      "last computed " + projAsofText + " &middot; refreshed Mon/Wed/Fri";
+  }
+
+  document.getElementById("projSearch").addEventListener("input", applyProjectedFilter);
+
+  applyProjectedFilter();
 </script>
 </body>
 </html>

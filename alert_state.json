@@ -9,6 +9,16 @@
     "since": null,
     "state": "normal"
   },
+  "0015f00000L4E4IAAV": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
+  "0015f00000WHoQUAA1": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
   "001I9000002tqUTIAY": {
     "last_alert": null,
     "since": null,
@@ -49,10 +59,30 @@
     "since": null,
     "state": "normal"
   },
+  "001I9000005T4eYIAS": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001I9000006SKfQIAW": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
+  "001I9000007Bwg5IAC": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
   "001I9000007CYHEIA4": {
     "last_alert": null,
     "since": null,
     "state": "normal"
+  },
+  "001I9000007bWXNIA2": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
   },
   "001I9000007cllGIAQ": {
     "last_alert": null,
@@ -89,6 +119,11 @@
     "since": "2026-09-01",
     "state": "low"
   },
+  "001OL00000BxtGiYAJ": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
   "001OL00000C4p0PYAR": {
     "last_alert": null,
     "since": null,
@@ -104,6 +139,16 @@
     "since": "2026-09-01",
     "state": "high"
   },
+  "001OL00000Co9OYYAZ": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
+  "001OL00000Czp7tYAB": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
   "001OL00000Czp9PYAR": {
     "last_alert": null,
     "since": null,
@@ -112,6 +157,11 @@
   "001OL00000D0AqjYAF": {
     "last_alert": "2026-09-01",
     "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000D0ArZYAV": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
     "state": "low"
   },
   "001OL00000D0B7IYAV": {
@@ -159,6 +209,11 @@
     "since": null,
     "state": "normal"
   },
+  "001OL00000RHvTmYAL": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
   "001OL00000SE68iYAD": {
     "last_alert": "2026-09-01",
     "since": "2026-09-01",
@@ -168,6 +223,16 @@
     "last_alert": null,
     "since": null,
     "state": "normal"
+  },
+  "001OL00000SHtnxYAD": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
+  "001OL00000SL1U6YAL": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
   },
   "001OL00000SYhk0YAD": {
     "last_alert": null,
@@ -189,9 +254,19 @@
     "since": "2026-09-01",
     "state": "low"
   },
+  "001OL00000TtYQBYA3": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
   "001OL00000UBUYBYA5": {
     "last_alert": "2026-09-01",
     "since": "2026-09-01",
+    "state": "low"
+  },
+  "001OL00000UZty1YAD": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
     "state": "low"
   },
   "001OL00000UmhEIYAZ": {
@@ -210,6 +285,21 @@
     "state": "low"
   },
   "001OL00000XOkQ8YAL": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
+  "001OL00000Xtpi4YAB": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
+  "001OL00000YdWpQYAV": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "high"
+  },
+  "001OL00000YiPK6YAN": {
     "last_alert": null,
     "since": null,
     "state": "normal"
@@ -239,6 +329,11 @@
     "since": "2026-09-01",
     "state": "high"
   },
+  "001OL00000i3vA5YAI": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
+  },
   "001OL00000izh1xYAA": {
     "last_alert": null,
     "since": null,
@@ -248,5 +343,15 @@
     "last_alert": "2026-09-01",
     "since": "2026-09-01",
     "state": "high"
+  },
+  "001OL00000p3vHKYAY": {
+    "last_alert": "2026-09-02",
+    "since": "2026-09-02",
+    "state": "low"
+  },
+  "001OL00000r94PIYAY": {
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
   }
 }

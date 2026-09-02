@@ -128,11 +128,20 @@ def fetch_month_to_date_pages(my_domain, token, today):
 
 
 def fetch_accounts(my_domain, token):
+    """Same account universe as generate.py's accounts list: no Stage__c
+    filter (deliberately dropped 2026-09-02 - see generate.py's module
+    docstring) - just a non-zero ACV, a non-zero page cap, and both contract
+    dates on file. Kept identical to generate.py's criteria on purpose so
+    the Projected End of Month Usage table tracks the exact same accounts
+    as the main Expected Monthly table; do not reintroduce a Stage__c
+    filter here without also changing generate.py."""
     query = (
-        "SELECT Id, Name, Owner.Name, Account_Tier__c, Annual_Contract_Value__c, "
+        "SELECT Id, Name, Owner.Name, Stage__c, Account_Tier__c, Annual_Contract_Value__c, "
         "PageCountCap__c, Active_Contract_Start_Date__c, Subscription_End_Date__c, "
         "Pages_Last_30__c, Hours_Last_30__c, Active_Users_Last_30__c "
-        "FROM Account WHERE Stage__c = 'Customer' AND Annual_Contract_Value__c > 0 ORDER BY Name"
+        "FROM Account WHERE Annual_Contract_Value__c > 0 AND PageCountCap__c > 0 "
+        "AND Active_Contract_Start_Date__c != null AND Subscription_End_Date__c != null "
+        "ORDER BY Name"
     )
     records = soql(my_domain, token, query)
     accounts = []
@@ -142,6 +151,7 @@ def fetch_accounts(my_domain, token):
             "Name": r["Name"],
             "Id": r["Id"],
             "Owner": owner.get("Name", ""),
+            "Stage": r.get("Stage__c"),
             "Tier": r.get("Account_Tier__c"),
             "ACV": r.get("Annual_Contract_Value__c") or 0,
             "Cap": r.get("PageCountCap__c") or 0,
@@ -238,8 +248,11 @@ def main():
             projected_pct = round((pages_so_far / days_into * cycle_len) / prorated_cap * 100, 1)
         else:
             projected_pct = None
+        stage = accounts_by_id[acct_id].get("Stage")
+        stage_label = "{} ({})".format(stage, r["Tier"]) if stage == "Customer" and r["Tier"] else stage
         projected.append({
             "name": r["Name"], "id": acct_id, "tier": r["Tier"],
+            "stage": stage, "stageLabel": stage_label,
             "pct": projected_pct, "acv": r["ACV"],
             "daysIntoCycle": days_into, "daysRemaining": days_remaining, "cycleLen": cycle_len,
         })
