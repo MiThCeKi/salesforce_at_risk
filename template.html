@@ -327,6 +327,8 @@ __ROWS_JS__
         '</td>' +
         '<td class="last-login">' +
           (r.nextMeeting === null ? acctLink(r, 'Not scheduled') : acctLink(r, fmtDate(r.nextMeeting))) +
+          (r.nextMeetingTitle ? '<div class="acct-owner">' + r.nextMeetingTitle + '</div>' : '') +
+          (r.nextMeetingWith ? '<div class="acct-owner">' + r.nextMeetingWith + '</div>' : '') +
         '</td>';
       body.appendChild(tr);
     });
