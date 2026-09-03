@@ -89,13 +89,24 @@ the minimum of both sources, never one or the other unconditionally. This
 data source (Google Calendar + Gmail) is NOT reachable via the plain
 Salesforce REST API this script otherwise uses - it requires a Google
 Calendar/Gmail-connected session (the interactive session that made this
-fix had both). Neither of the two scheduled automation jobs that keep this
-page/artifact refreshed currently has Calendar/Gmail connector access
-(checked 2026-09-02: both show connectors: null), so an account picking up
-a brand-new weekly recurring meeting after this date will silently show
-NextMeeting=null again in the daily automated runs until someone either
-grants those connectors to the scheduled jobs or re-runs this
-cross-reference by hand.
+fix had both).
+
+Follow-up 2026-09-03: tried to close this by attaching an explicit
+Calendar/Gmail connector grant to the two scheduled Routines via
+create_trigger's `connectors` param - rejected outright: "the connectors
+parameter is not available for this organization." That's an org-wide
+platform restriction, not something fixable from this repo/script. It's
+less of a problem than it sounds, though: the "At-Risk Accounts daily
+refresh" Routine's 2026-09-03 run (connectors: null the whole time) still
+had working Calendar/Gmail access on its own and independently found/
+fixed Integrity Medical Evaluations' next meeting - so this environment
+appears to hand every session Gmail/Calendar tools ambiently, and the
+(disabled) connector-grant mechanism was never actually the thing gating
+access here. Net effect: the STEP 2D/1D Calendar cross-check documented
+above should keep working in the scheduled jobs same as it does
+interactively; there's no known lever to make that more certain than "it
+worked yesterday and today," since the org-level connectors setting can't
+be turned on to force-guarantee it.
 
 Usage: python3 generate.py
 Output: /home/claude/sf-refresh/AtRiskAccountsSnapshot_new.html
