@@ -329,6 +329,7 @@ __ROWS_JS__
           (r.nextMeeting === null ? acctLink(r, 'Not scheduled') : acctLink(r, fmtDate(r.nextMeeting))) +
           (r.nextMeetingTitle ? '<div class="acct-owner">' + r.nextMeetingTitle + '</div>' : '') +
           (r.nextMeetingWith ? '<div class="acct-owner">' + r.nextMeetingWith + '</div>' : '') +
+          (r.nextInternalMeetingTitle ? '<div class="acct-owner">Internal: ' + fmtDate(r.nextInternalMeeting) + ' – ' + r.nextInternalMeetingTitle + '</div>' : '') +
         '</td>';
       body.appendChild(tr);
     });

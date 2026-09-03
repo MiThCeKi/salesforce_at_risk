@@ -133,6 +133,25 @@ this specific naming convention (do not match on the account name or
 abbreviation appearing anywhere in the Subject) - that would reintroduce
 the false-positive risk this pattern was built to avoid.
 
+CORRECTION 2026-09-03 (same day, user feedback right after the fix above
+shipped): an internal-only meeting (no external/customer attendee) must
+NOT become the account's main NextMeeting date - that field is meant to
+answer "when do we next talk to the customer," and an internal prep call
+answers a different question. The initial fix wrongly set MVP's main
+NextMeeting to the Sep 18 internal-only "SiftMed x MVP Sync" sync,
+displacing the real Oct 28 customer-facing "Quarterly Check-in #4".
+Corrected model: NextMeeting/NextMeetingTitle/NextMeetingWith always come
+from a meeting with at least one external/customer attendee (an SF Event
+Contact-join match, or a Calendar match - by external attendee per the
+SECOND gap above, or by title-pattern per the THIRD gap above PROVIDED
+that same event also has an external attendee). A title-pattern match
+that has NO external attendee at all is genuinely internal-only and must
+go into the separate NextInternalMeeting/NextInternalMeetingTitle fields
+instead, rendered as an extra line of context below the main date, not
+as the date itself. MVP now correctly carries both: NextMeeting=Oct 28
+(the real customer QBR) and NextInternalMeeting=Sep 18 ("SiftMed x MVP
+Sync", shown as supplementary text) side by side.
+
 Usage: python3 generate.py
 Output: /home/claude/sf-refresh/AtRiskAccountsSnapshot_new.html
 """
@@ -184,7 +203,7 @@ accounts = [
 {"Name":"Laxton Consulting, LLC", "Id":"001OL00000YdWpQYAV", "LastLogin":"2026-07-21", "Owner":"Carla Chaytor", "Stage":"Prospect", "Tier":"Micro", "ACV":9000.0, "Start":"2025-10-17", "End":"2026-10-17", "Cap":60000.0, "Pages":7215.0, "Hours":9.1257, "Users":1.0, "MainContact":"Theresa Laxton", "LastEmail":"2026-06-30", "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None},
 {"Name":"Life Care Planning Solutions LLC", "Id":"001OL00000NseOJYAZ", "LastLogin":"2026-08-11", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":8000.0, "Start":"2026-06-23", "End":"2027-06-23", "Cap":300000.0, "Pages":4162.0, "Hours":32.7357, "Users":8.0, "MainContact":"Jennifer Post", "LastEmail":"2026-07-16", "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None},
 {"Name":"Litco Law LSO", "Id":"001I9000006SKfQIAW", "LastLogin":"2026-09-11", "Owner":"Travis Bailey", "Stage":"SQL", "Tier":"Enterprise", "ACV":62500.0, "Start":"2026-07-15", "End":"2027-07-14", "Cap":600000.0, "Pages":197.0, "Hours":7.8855, "Users":3.0, "MainContact":"Liz Detmold", "LastEmail":"2026-08-04", "NextMeeting":"2026-09-11", "NextMeetingTitle":"SiftMed x Valent Template Review", "NextMeetingWith":"Travis Bailey, Zackary Chaulk"},
-{"Name":"Medical Vocational Planning (MVP)", "Id":"001OL00000A5GPoYAN", "LastLogin":"2026-10-28", "Owner":"Michael King", "Stage":"Customer", "Tier":"SMB", "ACV":115200.0, "Start":"2025-11-01", "End":"2027-12-01", "Cap":1440000.0, "Pages":17901.0, "Hours":54.5506, "Users":6.0, "MainContact":"Eva Sarkinen", "LastEmail":"2026-09-02", "NextMeeting":"2026-09-18", "NextMeetingTitle":"SiftMed x MVP Sync", "NextMeetingWith":"Travis Bailey, Michael King"},
+{"Name":"Medical Vocational Planning (MVP)", "Id":"001OL00000A5GPoYAN", "LastLogin":"2026-10-28", "Owner":"Michael King", "Stage":"Customer", "Tier":"SMB", "ACV":115200.0, "Start":"2025-11-01", "End":"2027-12-01", "Cap":1440000.0, "Pages":17901.0, "Hours":54.5506, "Users":6.0, "MainContact":"Eva Sarkinen", "LastEmail":"2026-09-02", "NextMeeting":"2026-10-28", "NextMeetingTitle":"SiftMed <> Med Voc Planning: Quarterly Check-in #4", "NextMeetingWith":"Michael King", "NextInternalMeeting":"2026-09-18", "NextInternalMeetingTitle":"SiftMed x MVP Sync"},
 {"Name":"Medical and Life Care Consulting", "Id":"001OL00000SL1U6YAL", "LastLogin":"2026-09-24", "Owner":"Carla Chaytor", "Stage":"Unqualifed", "Tier":"Micro", "ACV":16800.0, "Start":"2025-11-03", "End":"2026-11-03", "Cap":120000.0, "Pages":2064.0, "Hours":2.092, "Users":4.0, "MainContact":"Cynthia Bourbeau", "LastEmail":"2026-08-04", "NextMeeting":"2026-09-24", "NextMeetingTitle":"SiftMed <> MLCC Quarterly Business Review", "NextMeetingWith":"Mike Mensink"},
 {"Name":"Medivest", "Id":"001OL00000eL401YAC", "LastLogin":"2026-09-04", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":100000.0, "Start":"2026-04-01", "End":"2027-03-31", "Cap":1000000.0, "Pages":140422.0, "Hours":104.8003, "Users":12.0, "MainContact":"Anna Childers", "LastEmail":"2026-09-03", "NextMeeting":"2026-09-04", "NextMeetingTitle":"Medivest Index Review", "NextMeetingWith":"John Byrne, Travis Bailey"},
 {"Name":"Mohamed Khaled MD", "Id":"001OL00000D0B7XYAV", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":19349.0, "Start":"2025-09-03", "End":"2026-09-02", "Cap":192000.0, "Pages":149.0, "Hours":0.1033, "Users":1.0, "MainContact":"Mohamed Khaled", "LastEmail":"2026-06-24", "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None},
@@ -283,6 +302,8 @@ def compute_rows(accounts, today):
             "MainContact": a.get("MainContact"),
             "LastEmail": a.get("LastEmail"), "NextMeeting": a.get("NextMeeting"),
             "NextMeetingTitle": a.get("NextMeetingTitle"), "NextMeetingWith": a.get("NextMeetingWith"),
+            "NextInternalMeeting": a.get("NextInternalMeeting"),
+            "NextInternalMeetingTitle": a.get("NextInternalMeetingTitle"),
         })
     rows.sort(key=lambda x: (x["UsagePct"] is None, x["UsagePct"] if x["UsagePct"] is not None else 0))
     return rows
@@ -316,13 +337,18 @@ def render_rows_js(rows):
         next_meeting_title_js = 'null' if not next_meeting_title else '"{}"'.format(js_escape(next_meeting_title))
         next_meeting_with = f.get("NextMeetingWith")
         next_meeting_with_js = 'null' if not next_meeting_with else '"{}"'.format(js_escape(next_meeting_with))
+        next_internal_meeting = f.get("NextInternalMeeting")
+        next_internal_meeting_js = 'null' if not next_internal_meeting else '"{}"'.format(next_internal_meeting)
+        next_internal_meeting_title = f.get("NextInternalMeetingTitle")
+        next_internal_meeting_title_js = 'null' if not next_internal_meeting_title else '"{}"'.format(js_escape(next_internal_meeting_title))
         lines.append(
             '    {{name:"{name}", id:"{id}", owner:"{owner}", tier:"{tier}", stage:"{stage}", '
             'stageLabel:"{stage_label}", severity:{sev}, '
             'pct:{pct}, pages:{pages}, hours:{hours}, users:{users}, acv:{acv}, '
             'renewal:{renewal}, days:{days}, lastLogin:{last_login}, daysSinceLogin:{days_since_login}, '
             'mainContact:{main_contact}, lastEmail:{last_email}, nextMeeting:{next_meeting}, '
-            'nextMeetingTitle:{next_meeting_title}, nextMeetingWith:{next_meeting_with}}},'.format(
+            'nextMeetingTitle:{next_meeting_title}, nextMeetingWith:{next_meeting_with}, '
+            'nextInternalMeeting:{next_internal_meeting}, nextInternalMeetingTitle:{next_internal_meeting_title}}},'.format(
                 name=js_escape(f["Name"]),
                 id=f["Id"],
                 owner=js_escape(f["Owner"]),
@@ -344,6 +370,8 @@ def render_rows_js(rows):
                 next_meeting=next_meeting_js,
                 next_meeting_title=next_meeting_title_js,
                 next_meeting_with=next_meeting_with_js,
+                next_internal_meeting=next_internal_meeting_js,
+                next_internal_meeting_title=next_internal_meeting_title_js,
             )
         )
     return "\n".join(lines)
