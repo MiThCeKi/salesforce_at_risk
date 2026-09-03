@@ -58,6 +58,45 @@ of WhatId). Fixed by running the per-account WhoId GROUP BY query directly
 (one account at a time keeps the result set small enough to parse) instead
 of one org-wide query across all 72 accounts' contacts at once.
 
+IMPORTANT - NextMeeting has a second, more serious gap (found 2026-09-02,
+same day, after the user reported it looked wrong): Salesforce Event
+records are NOT the only place real customer meetings live. This rep books
+recurring weekly Zoom syncs with several accounts (Zurich North America,
+Integrity Medical Evaluations, PsycIME, Medivest, Physician Life Care
+Planning (PLCP), NuHaven Health) via Google Calendar/Zoom invites sent
+straight from Gmail - and those meetings are NEVER logged back into
+Salesforce as an Event on the contact. So the Contact-join-on-Event query
+above is necessary but not sufficient: it was still showing
+NextMeeting=null for 5 real, weekly-recurring, currently-scheduled
+customer meetings (Zurich, Integrity, PsycIME, NuHaven, PLCP), confirmed
+by cross-referencing the rep's Google Calendar (external-domain attendees
+matched to Contact.Email, e.g. ryan.gussak@zurich.com -> Zurich's main
+contact) AND Gmail invite threads ("Invitation: Siftmed x Zurich Weekly
+Sync @ Weekly ... on Tuesday", etc. - both sources agreed exactly).
+PLCP's real contact showed up as a guest on a meeting titled "Medivest
+Weekly Sync" (rpese@physicianlcp.com), not a PLCP-titled meeting, because
+Medivest and PLCP share reps who take joint calls - so don't assume a
+literal name match between meeting title and account name is required,
+only that a matched attendee's email belongs to that account's Contacts.
+Correct NextMeeting per account = the EARLIER of (a) the Contact-join
+Event query above and (b) the nearest future Google Calendar event with
+an external (non-@siftmed.ca) attendee whose email matches one of that
+account's Contacts - Medivest is the proof this matters both ways: its
+Salesforce Event ("Medivest Index Review", 2026-09-04) is genuinely
+earlier than its recurring Google Calendar sync (2026-09-08), so it was
+already correct and should NOT be overwritten by the calendar date - take
+the minimum of both sources, never one or the other unconditionally. This
+data source (Google Calendar + Gmail) is NOT reachable via the plain
+Salesforce REST API this script otherwise uses - it requires a Google
+Calendar/Gmail-connected session (the interactive session that made this
+fix had both). Neither of the two scheduled automation jobs that keep this
+page/artifact refreshed currently has Calendar/Gmail connector access
+(checked 2026-09-02: both show connectors: null), so an account picking up
+a brand-new weekly recurring meeting after this date will silently show
+NextMeeting=null again in the daily automated runs until someone either
+grants those connectors to the scheduled jobs or re-runs this
+cross-reference by hand.
+
 Usage: python3 generate.py
 Output: /home/claude/sf-refresh/AtRiskAccountsSnapshot_new.html
 """
@@ -97,7 +136,7 @@ accounts = [
 {"Name":"Integral Consulting Services Inc.", "Id":"001I9000007cllGIAQ", "LastLogin":"2026-08-31", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":121500, "Start":"2026-06-30", "End":"2027-06-30", "Cap":2000000, "Pages":92768, "Hours":94.6953, "Users":3, "MainContact":"Renee Madonna", "LastEmail":"2026-08-31", "NextMeeting":None},
 {"Name":"Integrated Insurance Resources", "Id":"001OL00000i3vA5YAI", "LastLogin":"2026-08-12", "Owner":"Carla Chaytor", "Stage":"Unqualifed", "Tier":"SMB", "ACV":9000, "Start":"2026-04-01", "End":"2027-03-31", "Cap":60000, "Pages":1640, "Hours":4.0302, "Users":5, "MainContact":"Jacqueline Caceres", "LastEmail":"2026-08-12", "NextMeeting":None},
 {"Name":"Integrity Legal Nurse Consulting", "Id":"001OL00000UmhEIYAZ", "LastLogin":"2026-09-15", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":9000, "Start":"2025-09-22", "End":"2026-09-21", "Cap":60000, "Pages":0, "Hours":0, "Users":16, "MainContact":"Wendy Votroubek", "LastEmail":"2026-06-18", "NextMeeting":"2026-09-15"},
-{"Name":"Integrity Medical Evaluations", "Id":"001OL00000AU6wgYAD", "LastLogin":"2026-09-02", "Owner":"Michael King", "Stage":"Customer", "Tier":"Enterprise", "ACV":158400, "Start":"2026-06-25", "End":"2027-08-31", "Cap":1440000, "Pages":2496, "Hours":3.707, "Users":1, "MainContact":"Tiffany Sparks", "LastEmail":"2026-09-02", "NextMeeting":None},
+{"Name":"Integrity Medical Evaluations", "Id":"001OL00000AU6wgYAD", "LastLogin":"2026-09-02", "Owner":"Michael King", "Stage":"Customer", "Tier":"Enterprise", "ACV":158400, "Start":"2026-06-25", "End":"2027-08-31", "Cap":1440000, "Pages":2496, "Hours":3.707, "Users":1, "MainContact":"Tiffany Sparks", "LastEmail":"2026-09-02", "NextMeeting":"2026-09-08"},
 {"Name":"JHU Consulting", "Id":"001OL00000SYhk0YAD", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":6600, "Start":"2026-01-30", "End":"2027-01-30", "Cap":30000, "Pages":2324, "Hours":3.1922, "Users":2, "MainContact":"Jessica Urie", "LastEmail":"2026-07-15", "NextMeeting":None},
 {"Name":"JS Held - BioMechanics Group", "Id":"001OL000006SaZlYAK", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":23061.75, "Start":"2026-01-08", "End":"2027-01-08", "Cap":125000, "Pages":2233, "Hours":18.2296, "Users":7, "MainContact":"Karla Cassidy", "LastEmail":"2026-08-11", "NextMeeting":None},
 {"Name":"Jamie Irvine MD", "Id":"001OL00000D0AqjYAF", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":9576, "Start":"2026-02-18", "End":"2027-02-18", "Cap":60000, "Pages":0, "Hours":0.31, "Users":1, "MainContact":"James Irvine", "LastEmail":"2026-06-15", "NextMeeting":None},
@@ -116,15 +155,15 @@ accounts = [
 {"Name":"National Medical Reviews (NMR)", "Id":"001I9000007bWXNIA2", "LastLogin":"2026-08-25", "Owner":"Travis Bailey", "Stage":"Prospect", "Tier":"Enterprise", "ACV":350000, "Start":"2026-07-01", "End":"2027-06-30", "Cap":3500000, "Pages":6371, "Hours":11.2638, "Users":8, "MainContact":"Nicole Borror", "LastEmail":"2026-09-02", "NextMeeting":None},
 {"Name":"North Toronto Surgical", "Id":"001OL00000SE68iYAD", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":1920, "Start":"2026-06-03", "End":"2027-06-03", "Cap":24000, "Pages":0, "Hours":0, "Users":1, "MainContact":"Luis Figueroa", "LastEmail":"2026-06-10", "NextMeeting":None},
 {"Name":"Northeast Life Care Planning", "Id":"001OL00000TANqiYAH", "LastLogin":"2026-08-18", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":9250, "Start":"2026-07-09", "End":"2027-07-08", "Cap":60000, "Pages":1326, "Hours":7.5536, "Users":1, "MainContact":"Barbara Bate", "LastEmail":"2026-06-30", "NextMeeting":None},
-{"Name":"NuHaven Health", "Id":"001OL00000VI1ofYAD", "LastLogin":"2026-08-17", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":8100, "Start":"2025-09-22", "End":"2026-09-21", "Cap":90000, "Pages":2421, "Hours":10.0283, "Users":1, "MainContact":"Brad King", "LastEmail":"2026-08-11", "NextMeeting":None},
+{"Name":"NuHaven Health", "Id":"001OL00000VI1ofYAD", "LastLogin":"2026-08-17", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":8100, "Start":"2025-09-22", "End":"2026-09-21", "Cap":90000, "Pages":2421, "Hours":10.0283, "Users":1, "MainContact":"Brad King", "LastEmail":"2026-08-11", "NextMeeting":"2026-09-09"},
 {"Name":"Orvosi Medical Management", "Id":"001OL00000BbZGdYAN", "LastLogin":"2026-08-31", "Owner":"Zackary Chaulk", "Stage":"Customer", "Tier":"SMB", "ACV":96000, "Start":"2026-01-09", "End":"2027-01-08", "Cap":1600000, "Pages":7847, "Hours":12.6401, "Users":7, "MainContact":"Rachel Stanga", "LastEmail":"2026-09-01", "NextMeeting":None},
 {"Name":"Paul Zalzal MD", "Id":"001OL00000Co9OYYAZ", "LastLogin":"2026-08-11", "Owner":"John Byrne", "Stage":"Previous Customer", "Tier":"Micro", "ACV":4752, "Start":"2024-08-30", "End":"2026-08-30", "Cap":48000, "Pages":0, "Hours":0, "Users":1, "MainContact":"Paul Zalzal", "LastEmail":"2026-03-30", "NextMeeting":None},
 {"Name":"Peel Mutual Insurance Company", "Id":"001I900000362wRIAQ", "LastLogin":"2026-09-28", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":5760, "Start":"2025-08-25", "End":"2026-08-24", "Cap":38400, "Pages":5525, "Hours":9.1041, "Users":10, "MainContact":"Daniel Heap", "LastEmail":"2026-07-31", "NextMeeting":"2026-09-03"},
-{"Name":"Physician Life Care Planning (PLCP)", "Id":"001OL00000KcO97YAF", "LastLogin":"2026-09-02", "Owner":"Nitla Cooke", "Stage":"Customer", "Tier":"SMB", "ACV":845000, "Start":"2025-11-07", "End":"2027-11-07", "Cap":6500000, "Pages":147958, "Hours":2410.6839, "Users":100, "MainContact":"Andres Martinez", "LastEmail":"2026-09-02", "NextMeeting":None},
+{"Name":"Physician Life Care Planning (PLCP)", "Id":"001OL00000KcO97YAF", "LastLogin":"2026-09-02", "Owner":"Nitla Cooke", "Stage":"Customer", "Tier":"SMB", "ACV":845000, "Start":"2025-11-07", "End":"2027-11-07", "Cap":6500000, "Pages":147958, "Hours":2410.6839, "Users":100, "MainContact":"Andres Martinez", "LastEmail":"2026-09-02", "NextMeeting":"2026-09-08"},
 {"Name":"Physiohealth Inc.", "Id":"001I9000004mawoIAA", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":1500, "Start":"2026-05-15", "End":"2027-05-15", "Cap":120000, "Pages":15993, "Hours":12.1965, "Users":1, "MainContact":"Dennis Polygenis", "LastEmail":"2026-07-17", "NextMeeting":None},
 {"Name":"Portage Mutual Insurance", "Id":"001OL00000SGW3tYAH", "LastLogin":"2026-08-11", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":10200, "Start":"2026-01-07", "End":"2027-01-07", "Cap":60000, "Pages":2738, "Hours":8.7267, "Users":11, "MainContact":"Chaussie Lawson", "LastEmail":"2026-08-11", "NextMeeting":None},
 {"Name":"Priddle Law Group", "Id":"001I9000005T4fNIAS", "LastLogin":"2026-06-10", "Owner":"Matt Baldwin", "Stage":"Previous Customer", "Tier":"SMB", "ACV":600, "Start":"2025-12-01", "End":"2025-04-29", "Cap":5000, "Pages":0, "Hours":0, "Users":0, "MainContact":"Jasmine Kooner", "LastEmail":"2026-03-13", "NextMeeting":None},
-{"Name":"PsycIME", "Id":"0015f00000WHoQUAA1", "LastLogin":"2026-09-01", "Owner":"Michael King", "Stage":"SQL", "Tier":"Enterprise", "ACV":105000, "Start":"2025-09-30", "End":"2027-09-30", "Cap":1500000, "Pages":51066, "Hours":119.8926, "Users":5, "MainContact":"Jacqueline Buck", "LastEmail":"2026-09-01", "NextMeeting":None},
+{"Name":"PsycIME", "Id":"0015f00000WHoQUAA1", "LastLogin":"2026-09-01", "Owner":"Michael King", "Stage":"SQL", "Tier":"Enterprise", "ACV":105000, "Start":"2025-09-30", "End":"2027-09-30", "Cap":1500000, "Pages":51066, "Hours":119.8926, "Users":5, "MainContact":"Jacqueline Buck", "LastEmail":"2026-09-01", "NextMeeting":"2026-09-10"},
 {"Name":"Rachel Yeboah MD", "Id":"001OL00000Czp7tYAB", "LastLogin":"2026-05-04", "Owner":"Matt Baldwin", "Stage":"Previous Customer", "Tier":"Micro", "ACV":5400, "Start":"2025-10-23", "End":"2026-10-22", "Cap":36000, "Pages":0, "Hours":0, "Users":1, "MainContact":"Rachel Yeboah", "LastEmail":"2026-05-04", "NextMeeting":None},
 {"Name":"Rehab First Inc.", "Id":"001OL00000Kf2yUYAR", "LastLogin":"2026-10-08", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":18000, "Start":"2025-11-03", "End":"2026-11-02", "Cap":180000, "Pages":15275, "Hours":9.6713, "Users":6, "MainContact":"Andrew Ferguson", "LastEmail":"2026-09-02", "NextMeeting":"2026-10-08"},
 {"Name":"Roebothan McKay Marshall (RMM)", "Id":"001I9000003c6huIAA", "LastLogin":"2026-08-27", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":36000, "Start":"2026-06-06", "End":"2027-06-06", "Cap":480000, "Pages":11890, "Hours":52.7138, "Users":37, "MainContact":"Ashley Francis", "LastEmail":"2026-08-27", "NextMeeting":None},
@@ -138,7 +177,7 @@ accounts = [
 {"Name":"Viewpoint Medical Assessments", "Id":"0015f00000L4E4IAAV", "LastLogin":"2026-08-11", "Owner":"Travis Bailey", "Stage":"Previous Customer", "Tier":"SMB", "ACV":126000, "Start":"2025-09-01", "End":"2026-08-31", "Cap":3500000, "Pages":2537, "Hours":5.5825, "Users":12, "MainContact":"Melinda Popa", "LastEmail":"2026-08-11", "NextMeeting":None},
 {"Name":"Vocational Alternatives", "Id":"001OL00000byRmQYAU", "LastLogin":"2026-07-15", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":9900, "Start":"2026-03-10", "End":"2027-03-09", "Cap":90000, "Pages":1194, "Hours":0.9789, "Users":3, "MainContact":"Jeff Cohen", "LastEmail":"2026-07-15", "NextMeeting":None},
 {"Name":"Walnut Orchard Psychology Services", "Id":"001OL00000izh1xYAA", "LastLogin":"2026-06-23", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":12500, "Start":"2026-04-09", "End":"2027-04-08", "Cap":120000, "Pages":7185, "Hours":16.8766, "Users":2, "MainContact":"Shayna Nussbaum", "LastEmail":"2026-06-23", "NextMeeting":None},
-{"Name":"Zurich North America", "Id":"001I9000002tqUTIAY", "LastLogin":"2026-08-31", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"Enterprise", "ACV":88200, "Start":"2026-04-01", "End":"2028-03-31", "Cap":900000, "Pages":12175, "Hours":21.6125, "Users":48, "MainContact":"Ryan Gussak", "LastEmail":"2026-09-01", "NextMeeting":None},
+{"Name":"Zurich North America", "Id":"001I9000002tqUTIAY", "LastLogin":"2026-08-31", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"Enterprise", "ACV":88200, "Start":"2026-04-01", "End":"2028-03-31", "Cap":900000, "Pages":12175, "Hours":21.6125, "Users":48, "MainContact":"Ryan Gussak", "LastEmail":"2026-09-01", "NextMeeting":"2026-09-08"},
 {"Name":"iMPROve Health", "Id":"001OL00000Ncj26YAB", "LastLogin":"2026-09-17", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":36960, "Start":"2025-09-15", "End":"2026-09-30", "Cap":336000, "Pages":581, "Hours":29.8478, "Users":9, "MainContact":"Leslie Howard", "LastEmail":"2026-09-02", "NextMeeting":"2026-09-03"}
 ]
 
