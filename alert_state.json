@@ -35,9 +35,9 @@
     "state": "normal"
   },
   "001I9000004mawoIAA": {
-    "last_alert": "2026-09-01",
-    "since": "2026-09-01",
-    "state": "high"
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
   },
   "001I9000005T4a9IAC": {
     "last_alert": "2026-09-01",
@@ -63,6 +63,11 @@
     "last_alert": null,
     "since": null,
     "state": "normal"
+  },
+  "001I9000005T4fNIAS": {
+    "last_alert": "2026-09-08",
+    "since": "2026-09-08",
+    "state": "low"
   },
   "001I9000006SKfQIAW": {
     "last_alert": "2026-09-02",
@@ -95,9 +100,9 @@
     "state": "low"
   },
   "001OL0000087uk3YAA": {
-    "last_alert": "2026-09-01",
-    "since": "2026-09-01",
-    "state": "high"
+    "last_alert": null,
+    "since": null,
+    "state": "normal"
   },
   "001OL000008ibX8YAI": {
     "last_alert": "2026-09-01",
@@ -125,9 +130,9 @@
     "state": "normal"
   },
   "001OL00000C4p0PYAR": {
-    "last_alert": null,
-    "since": null,
-    "state": "normal"
+    "last_alert": "2026-09-08",
+    "since": "2026-09-08",
+    "state": "low"
   },
   "001OL00000C5CzSYAV": {
     "last_alert": null,
@@ -185,9 +190,9 @@
     "state": "normal"
   },
   "001OL00000Kf2yUYAR": {
-    "last_alert": null,
-    "since": null,
-    "state": "normal"
+    "last_alert": "2026-09-08",
+    "since": "2026-09-08",
+    "state": "high"
   },
   "001OL00000Ncj26YAB": {
     "last_alert": "2026-09-01",
@@ -285,9 +290,9 @@
     "state": "low"
   },
   "001OL00000XOkQ8YAL": {
-    "last_alert": null,
-    "since": null,
-    "state": "normal"
+    "last_alert": "2026-09-08",
+    "since": "2026-09-08",
+    "state": "low"
   },
   "001OL00000Xtpi4YAB": {
     "last_alert": "2026-09-02",
@@ -335,14 +340,14 @@
     "state": "normal"
   },
   "001OL00000izh1xYAA": {
+    "last_alert": "2026-09-08",
+    "since": "2026-09-08",
+    "state": "high"
+  },
+  "001OL00000kV72oYAC": {
     "last_alert": null,
     "since": null,
     "state": "normal"
-  },
-  "001OL00000kV72oYAC": {
-    "last_alert": "2026-09-01",
-    "since": "2026-09-01",
-    "state": "high"
   },
   "001OL00000p3vHKYAY": {
     "last_alert": "2026-09-02",
