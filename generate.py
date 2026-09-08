@@ -181,6 +181,24 @@ NextMeeting WhatId bug earlier in this file - never take a Salesforce
 convenience/rollup field (LastActivityDate here, WhatId there) at face
 value without checking what it actually aggregates over.
 
+Follow-up 2026-09-08 - NOT a bug, a real calendar change: the "SiftMed x
+MVP Sync" internal-only event (see the THIRD-gap section above) was
+updated live at 2026-09-08T19:39:41Z to add real external attendees
+(eva@medvocplan.com - Eva Sarkinen, MVP's MainContact - plus
+sharla@medvocplan.com and staceylittle825@gmail.com). It is no longer
+internal-only, and Sep 18 is earlier than the Oct 28 "Quarterly
+Check-in #4" that had been the main NextMeeting. Per the STEP 1F/2F
+correction rule, a title-pattern match that gains an external attendee
+is promoted to a normal earliest-wins Calendar match (same as Medivest/
+PsycIME) - so MVP's NextMeeting is now correctly Sep 18 (title "SiftMed
+x MVP Sync", with Travis Bailey + Michael King - Zack Chaulk still
+excluded, still declined) and NextInternalMeeting is back to null since
+there is no longer a separate internal-only meeting to report. Caught by
+routine auditing after the user asked "how is the Next Meeting column
+performing" - this is a good example of the correction rule doing
+exactly what it was designed to do when a meeting's attendee list
+changes after the fact.
+
 Usage: python3 generate.py
 Output: /home/claude/sf-refresh/AtRiskAccountsSnapshot_new.html
 """
@@ -232,7 +250,7 @@ accounts = [
 {"Name":"Laxton Consulting, LLC", "Id":"001OL00000YdWpQYAV", "LastLogin":"2026-07-21", "Owner":"Carla Chaytor", "Stage":"Prospect", "Tier":"Micro", "ACV":9000.0, "Start":"2025-10-17", "End":"2026-10-17", "Cap":60000.0, "Pages":7215.0, "Hours":9.1257, "Users":1.0, "MainContact":"Theresa Laxton", "LastEmail":"2026-06-30", "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None},
 {"Name":"Life Care Planning Solutions LLC", "Id":"001OL00000NseOJYAZ", "LastLogin":"2026-08-11", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":8000.0, "Start":"2026-06-23", "End":"2027-06-23", "Cap":300000.0, "Pages":4162.0, "Hours":32.7357, "Users":8.0, "MainContact":"Jennifer Post", "LastEmail":"2026-07-16", "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None},
 {"Name":"Litco Law LSO", "Id":"001I9000006SKfQIAW", "LastLogin":"2026-09-03", "Owner":"Travis Bailey", "Stage":"SQL", "Tier":"Enterprise", "ACV":62500.0, "Start":"2026-07-15", "End":"2027-07-14", "Cap":600000.0, "Pages":197.0, "Hours":7.8855, "Users":3.0, "MainContact":"Liz Detmold", "LastEmail":"2026-08-04", "NextMeeting":"2026-09-11", "NextMeetingTitle":"SiftMed x Valent Template Review", "NextMeetingWith":"Travis Bailey, Zackary Chaulk"},
-{"Name":"Medical Vocational Planning (MVP)", "Id":"001OL00000A5GPoYAN", "LastLogin":"2026-09-03", "Owner":"Michael King", "Stage":"Customer", "Tier":"SMB", "ACV":115200.0, "Start":"2025-11-01", "End":"2027-12-01", "Cap":1440000.0, "Pages":17901.0, "Hours":54.5506, "Users":6.0, "MainContact":"Eva Sarkinen", "LastEmail":"2026-09-02", "NextMeeting":"2026-10-28", "NextMeetingTitle":"SiftMed <> Med Voc Planning: Quarterly Check-in #4", "NextMeetingWith":"Michael King", "NextInternalMeeting":"2026-09-18", "NextInternalMeetingTitle":"SiftMed x MVP Sync"},
+{"Name":"Medical Vocational Planning (MVP)", "Id":"001OL00000A5GPoYAN", "LastLogin":"2026-09-03", "Owner":"Michael King", "Stage":"Customer", "Tier":"SMB", "ACV":115200.0, "Start":"2025-11-01", "End":"2027-12-01", "Cap":1440000.0, "Pages":17901.0, "Hours":54.5506, "Users":6.0, "MainContact":"Eva Sarkinen", "LastEmail":"2026-09-02", "NextMeeting":"2026-09-18", "NextMeetingTitle":"SiftMed x MVP Sync", "NextMeetingWith":"Travis Bailey, Michael King", "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"Medical and Life Care Consulting", "Id":"001OL00000SL1U6YAL", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Unqualifed", "Tier":"Micro", "ACV":16800.0, "Start":"2025-11-03", "End":"2026-11-03", "Cap":120000.0, "Pages":2064.0, "Hours":2.092, "Users":4.0, "MainContact":"Cynthia Bourbeau", "LastEmail":"2026-08-04", "NextMeeting":"2026-09-24", "NextMeetingTitle":"SiftMed <> MLCC Quarterly Business Review", "NextMeetingWith":"Mike Mensink"},
 {"Name":"Medivest", "Id":"001OL00000eL401YAC", "LastLogin":"2026-09-03", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":100000.0, "Start":"2026-04-01", "End":"2027-03-31", "Cap":1000000.0, "Pages":140422.0, "Hours":104.8003, "Users":12.0, "MainContact":"Anna Childers", "LastEmail":"2026-09-03", "NextMeeting":"2026-09-04", "NextMeetingTitle":"Medivest Index Review", "NextMeetingWith":"John Byrne, Travis Bailey"},
 {"Name":"Mohamed Khaled MD", "Id":"001OL00000D0B7XYAV", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":19349.0, "Start":"2025-09-03", "End":"2026-09-02", "Cap":192000.0, "Pages":149.0, "Hours":0.1033, "Users":1.0, "MainContact":"Mohamed Khaled", "LastEmail":"2026-06-24", "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None},
