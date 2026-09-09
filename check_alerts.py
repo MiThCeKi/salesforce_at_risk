@@ -238,6 +238,55 @@ def push_projected_section_live(my_domain, token, asof, rows):
     return patch_static_resource_body(my_domain, token, STATIC_RESOURCE_ID, updated)
 
 
+def decide_alert(entry, pct, today):
+    """Pure hysteresis decision for one account: given its persisted state
+    entry (as stored in alert_state.json - defaults already applied by the
+    caller), its current rolling UsagePct (never None - the caller skips
+    Unknown-severity accounts before calling this), and today's date,
+    returns (send, new_entry).
+
+    `send` is None or one of "high_new"/"high_reminder"/"low_new"/
+    "low_reminder". `new_entry` is the state dict to persist for this
+    account this run. Implements exactly the rules in this module's
+    docstring ("Alert rules") - pulled out of main() as a standalone pure
+    function so that hysteresis/reminder state machine (the part of this
+    pipeline most prone to silent off-by-one bugs) can be unit tested
+    without mocking Salesforce or the filesystem."""
+    cur_state = entry["state"]
+    new_state = cur_state
+    send = None
+
+    if cur_state == "high":
+        if pct <= HIGH_THRESHOLD:
+            new_state = "normal"
+        elif entry["last_alert"] is None or (today - generate.parse(entry["last_alert"])).days >= REMINDER_DAYS:
+            send = "high_reminder"
+    elif cur_state == "low":
+        if pct > LOW_RESET_THRESHOLD:
+            new_state = "normal"
+        elif entry["last_alert"] is None or (today - generate.parse(entry["last_alert"])).days >= REMINDER_DAYS:
+            send = "low_reminder"
+    else:  # normal
+        if pct > HIGH_THRESHOLD:
+            new_state = "high"
+            send = "high_new"
+        elif pct < LOW_ALERT_THRESHOLD:
+            new_state = "low"
+            send = "low_new"
+
+    if send:
+        since = entry["since"] if new_state == cur_state else today.isoformat()
+        new_entry = {"state": new_state, "since": since, "last_alert": today.isoformat()}
+    elif new_state != cur_state:
+        # Full reset back to normal - clear the reminder clock too, so a
+        # future re-crossing starts a fresh "first time" alert.
+        new_entry = {"state": "normal", "since": None, "last_alert": None}
+    else:
+        new_entry = {"state": cur_state, "since": entry["since"], "last_alert": entry["last_alert"]}
+
+    return send, new_entry
+
+
 def main():
     # SF_MY_DOMAIN disappeared from this environment's config on 2026-09-01
     # (SF_CONSUMER_KEY/SECRET were still present) - falling back to the known
@@ -283,41 +332,13 @@ def main():
             continue
 
         entry = state.get(acct_id, {"state": "normal", "since": None, "last_alert": None})
-        cur_state = entry["state"]
-        new_state = cur_state
-        send = None
-
-        if cur_state == "high":
-            if pct <= HIGH_THRESHOLD:
-                new_state = "normal"
-            elif entry["last_alert"] is None or (today - generate.parse(entry["last_alert"])).days >= REMINDER_DAYS:
-                send = "high_reminder"
-        elif cur_state == "low":
-            if pct > LOW_RESET_THRESHOLD:
-                new_state = "normal"
-            elif entry["last_alert"] is None or (today - generate.parse(entry["last_alert"])).days >= REMINDER_DAYS:
-                send = "low_reminder"
-        else:  # normal
-            if pct > HIGH_THRESHOLD:
-                new_state = "high"
-                send = "high_new"
-            elif pct < LOW_ALERT_THRESHOLD:
-                new_state = "low"
-                send = "low_new"
+        send, entry = decide_alert(entry, pct, today)
 
         if send:
             pending.append({
                 "accountId": acct_id, "accountName": r["Name"], "owner": r["Owner"],
                 "pct": pct, "projectedPct": projected_pct, "type": send,
             })
-            since = entry["since"] if new_state == cur_state else today.isoformat()
-            entry = {"state": new_state, "since": since, "last_alert": today.isoformat()}
-        elif new_state != cur_state:
-            # Full reset back to normal - clear the reminder clock too, so a
-            # future re-crossing starts a fresh "first time" alert.
-            entry = {"state": "normal", "since": None, "last_alert": None}
-        else:
-            entry = {"state": cur_state, "since": entry["since"], "last_alert": entry["last_alert"]}
 
         state[acct_id] = entry
 
