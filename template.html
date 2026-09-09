@@ -247,7 +247,8 @@
       The Stage column shows the account's tier alongside a Customer-stage account, e.g. &ldquo;Customer
       (Enterprise)&rdquo;; every other stage shows just the stage name &mdash; those accounts haven't necessarily
       signed a contract yet (or, for Previous Customer, no longer have one), so their page cap and usage figures
-      may be provisional or stale. Last Email reflects the most recent logged Email-type Task on the Account;
+      may be provisional or stale. Last Email reflects the most recent logged Email-type Task on the Account,
+      with the sending rep shown beneath the date when known;
       Next Meeting reflects the earliest future-dated Event on the Account &mdash; both show &ldquo;Never&rdquo; /
       &ldquo;Not scheduled&rdquo; when there's no such record on file.
     </p>
@@ -324,6 +325,7 @@ __ROWS_JS__
         '</td>' +
         '<td class="last-login">' +
           (r.lastEmail === null ? acctLink(r, 'Never') : acctLink(r, fmtDate(r.lastEmail))) +
+          (r.lastEmailBy ? '<div class="acct-owner">by ' + r.lastEmailBy + '</div>' : '') +
         '</td>' +
         '<td class="last-login">' +
           (r.nextMeeting === null ? acctLink(r, 'Not scheduled') : acctLink(r, fmtDate(r.nextMeeting))) +
@@ -342,6 +344,7 @@ __ROWS_JS__
     return (r.name && r.name.toLowerCase().indexOf(q) !== -1) ||
       (r.owner && r.owner.toLowerCase().indexOf(q) !== -1) ||
       (r.mainContact && r.mainContact.toLowerCase().indexOf(q) !== -1) ||
+      (r.lastEmailBy && r.lastEmailBy.toLowerCase().indexOf(q) !== -1) ||
       (r.stageLabel && r.stageLabel.toLowerCase().indexOf(q) !== -1);
   }
 

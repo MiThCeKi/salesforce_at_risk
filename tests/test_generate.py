@@ -19,7 +19,7 @@ def make_account(**over):
         "Stage": "Customer", "Tier": "SMB", "ACV": 12000.0,
         "Start": "2026-01-01", "End": "2027-01-01", "Cap": 120000.0,
         "Pages": 5000.0, "Hours": 3.0, "Users": 4.0,
-        "MainContact": "Bob Contact", "LastEmail": "2026-09-01",
+        "MainContact": "Bob Contact", "LastEmail": "2026-09-01", "LastEmailBy": "Jane Rep",
         "LastLogin": "2026-09-01",
         "NextMeeting": None, "NextMeetingTitle": None, "NextMeetingWith": None,
         "NextInternalMeeting": None, "NextInternalMeetingTitle": None,
@@ -172,15 +172,24 @@ class TestRenderRowsJs(unittest.TestCase):
 
     def test_optional_fields_null_when_missing(self):
         js = self.rendered_for(
-            MainContact=None, LastEmail=None, NextMeeting=None,
+            MainContact=None, LastEmail=None, LastEmailBy=None, NextMeeting=None,
             NextMeetingTitle=None, NextMeetingWith=None,
             NextInternalMeeting=None, NextInternalMeetingTitle=None,
         )
         for field in (
-            "mainContact", "lastEmail", "nextMeeting", "nextMeetingTitle",
+            "mainContact", "lastEmail", "lastEmailBy", "nextMeeting", "nextMeetingTitle",
             "nextMeetingWith", "nextInternalMeeting", "nextInternalMeetingTitle",
         ):
             self.assertIn(f"{field}:null", js)
+
+    def test_last_email_by_null_when_last_email_present_but_sender_unknown(self):
+        # LastEmailBy can legitimately be null even when LastEmail isn't - a
+        # defensive case, not one the live pipeline should produce (its own
+        # docstring says never guess a sender), but the renderer must still
+        # degrade to null rather than crash or emit an unquoted bareword.
+        js = self.rendered_for(LastEmail="2026-09-01", LastEmailBy=None)
+        self.assertIn("lastEmailBy:null", js)
+        self.assertIn('lastEmail:"2026-09-01"', js)
 
     def test_present_next_meeting_fields_populated(self):
         js = self.rendered_for(
@@ -190,6 +199,10 @@ class TestRenderRowsJs(unittest.TestCase):
         self.assertIn('nextMeeting:"2026-09-18"', js)
         self.assertIn('nextMeetingTitle:"Sync"', js)
         self.assertIn('nextMeetingWith:"A, B"', js)
+
+    def test_last_email_by_present_and_escaped(self):
+        js = self.rendered_for(LastEmail="2026-09-01", LastEmailBy='Sylvia "Syl" Bermudez')
+        self.assertIn('lastEmailBy:"Sylvia \\"Syl\\" Bermudez"', js)
 
     def test_acv_renders_as_int_when_whole_number(self):
         js = self.rendered_for(ACV=12000.0)
