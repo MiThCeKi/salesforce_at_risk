@@ -59,6 +59,28 @@ Alert rules (agreed 2026-09-01, methodology corrected 2026-09-01):
     dates or a zero cap) are skipped for alerting, but still appear in the
     projected snapshot with pct: null.
 
+Email display vs. trigger logic (added 2026-09-09, user request): the
+digest email's alert rows must NOT use the rolling `pct` above as the
+displayed percentage - the user specifically wants a forward-looking
+warning signal ("if someone is heading in that direction"), so each
+pending_alerts.json entry also carries `projectedPct`, the SAME
+calendar-month-to-date-extrapolated figure already computed for the
+Projected Usage table (see projected_pct above) - do not compute it
+twice or differently. The agent sending the email must display
+projectedPct, not pct, in each row. This is a deliberate SPLIT: the
+trigger decision (who gets an email at all, and whether it's high/low)
+still runs on the stable rolling `pct` for the noise reasons documented
+above - only the number shown to the human changes. Because of that
+split, a projectedPct can occasionally look inconsistent with the
+"over 115%" / "under 25%" section headers (e.g. an account whose rolling
+pct just crossed 115% but whose month-to-date pace projects lower, or
+vice versa) - that's expected, not a bug: the header explains why the
+account was flagged, the number shown is where it's headed. Early in a
+calendar month projectedPct can be a very large or very small outlier
+(the 50,000% case above) since it's extrapolated from only a few days of
+data - still show it as-is; a volatile early-month number is itself part
+of the signal, not something to hide or clamp.
+
 Usage: python3 check_alerts.py
 Reads:  alert_state.json (if present; treated as empty otherwise)
 Writes: alert_state.json, pending_alerts.json, projected_snapshot.json,
@@ -286,7 +308,7 @@ def main():
         if send:
             pending.append({
                 "accountId": acct_id, "accountName": r["Name"], "owner": r["Owner"],
-                "pct": pct, "type": send,
+                "pct": pct, "projectedPct": projected_pct, "type": send,
             })
             since = entry["since"] if new_state == cur_state else today.isoformat()
             entry = {"state": new_state, "since": since, "last_alert": today.isoformat()}

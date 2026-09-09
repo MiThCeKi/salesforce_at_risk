@@ -194,6 +194,11 @@
     "since": "2026-09-08",
     "state": "high"
   },
+  "001OL00000Mel8uYAB": {
+    "last_alert": "2026-09-09",
+    "since": "2026-09-09",
+    "state": "low"
+  },
   "001OL00000Ncj26YAB": {
     "last_alert": "2026-09-01",
     "since": "2026-09-01",
@@ -213,6 +218,11 @@
     "last_alert": null,
     "since": null,
     "state": "normal"
+  },
+  "001OL00000RHlUoYAL": {
+    "last_alert": "2026-09-09",
+    "since": "2026-09-09",
+    "state": "low"
   },
   "001OL00000RHvTmYAL": {
     "last_alert": "2026-09-02",
