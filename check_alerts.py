@@ -104,17 +104,22 @@ def fetch_month_to_date_pages(my_domain, token, today):
 def fetch_accounts(my_domain, token):
     """Same account universe as generate.py's accounts list: no Stage__c
     filter (deliberately dropped 2026-09-02 - see generate.py's module
-    docstring) - just a non-zero ACV, a non-zero page cap, and both contract
-    dates on file. Kept identical to generate.py's criteria on purpose so
-    the Projected End of Month Usage table tracks the exact same accounts
-    as the main Expected Monthly table; do not reintroduce a Stage__c
-    filter here without also changing generate.py."""
+    docstring) - a non-zero ACV, a non-zero page cap, both contract dates
+    on file, AND a non-null Account_Tier__c (added 2026-09-10, user
+    request: an account with no Tier segment assigned shouldn't be tracked
+    as though it were - live-checked 2026-09-10 that exactly one currently-
+    tracked account, Dr. Yaacov Markus, has a null Tier and is the one this
+    drops). Kept identical to generate.py's criteria on purpose so the
+    Projected End of Month Usage table tracks the exact same accounts as
+    the main Expected Monthly table; do not reintroduce a Stage__c filter
+    here without also changing generate.py."""
     query = (
         "SELECT Id, Name, Owner.Name, Stage__c, Account_Tier__c, Annual_Contract_Value__c, "
         "PageCountCap__c, Active_Contract_Start_Date__c, Subscription_End_Date__c, "
         "Pages_Last_30__c, Hours_Last_30__c, Active_Users_Last_30__c "
         "FROM Account WHERE Annual_Contract_Value__c > 0 AND PageCountCap__c > 0 "
         "AND Active_Contract_Start_Date__c != null AND Subscription_End_Date__c != null "
+        "AND Account_Tier__c != null "
         "ORDER BY Name"
     )
     records = soql(my_domain, token, query)

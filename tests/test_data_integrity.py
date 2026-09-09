@@ -134,6 +134,14 @@ class TestAccountsSnapshotShape(unittest.TestCase):
         for a in generate.accounts:
             self.assertEqual(set(a.keys()), self.REQUIRED_KEYS, a.get("Name"))
 
+    def test_every_account_has_a_tier(self):
+        # Account_Tier__c != null was added to the inclusion criteria
+        # 2026-09-10 (user request) - an account with no Tier segment
+        # assigned shouldn't be tracked as though it were. Regression
+        # test for Dr. Yaacov Markus, the one account this dropped.
+        for a in generate.accounts:
+            self.assertIsNotNone(a.get("Tier"), a.get("Name"))
+
     def test_meeting_fields_consistent_null_pairing(self):
         # A meeting date with no title (or vice versa) usually indicates a
         # partial/corrupted refresh - flag it rather than silently render it.

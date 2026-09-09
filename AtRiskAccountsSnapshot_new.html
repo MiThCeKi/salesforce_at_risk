@@ -159,13 +159,13 @@
 
   <div class="stats">
     <div class="stat">
-      <div class="label">Flagged Accounts <span class="info-tip" tabindex="0" data-tip="33 of SiftMed's 72 tracked accounts (any account with a contract length, page cap, and usage on file, regardless of sales/lifecycle stage) used under 25% of their contracted or projected monthly page cap in the last 30 days &mdash; the same usage-cliff pattern that showed up, months in advance, ahead of every one of SiftMed's nine confirmed churns this year. The monthly cap is prorated to each account's actual contract length rather than assumed to be 12 months, which cleared two multi-year contracts (Zurich North America, Physician Life Care Planning) that would otherwise have looked at-risk only because their page cap covers 24 months, not one.">&#9432;</span></div>
-      <div class="value" id="statFlagged">33</div>
-      <div class="sub">of <span id="statTotal">72</span> tracked accounts</div>
+      <div class="label">Flagged Accounts <span class="info-tip" tabindex="0" data-tip="32 of SiftMed's 71 tracked accounts (any account with a contract length, page cap, and usage on file, regardless of sales/lifecycle stage) used under 25% of their contracted or projected monthly page cap in the last 30 days &mdash; the same usage-cliff pattern that showed up, months in advance, ahead of every one of SiftMed's nine confirmed churns this year. The monthly cap is prorated to each account's actual contract length rather than assumed to be 12 months, which cleared two multi-year contracts (Zurich North America, Physician Life Care Planning) that would otherwise have looked at-risk only because their page cap covers 24 months, not one.">&#9432;</span></div>
+      <div class="value" id="statFlagged">32</div>
+      <div class="sub">of <span id="statTotal">71</span> tracked accounts</div>
     </div>
     <div class="stat">
       <div class="label">ACV Represented</div>
-      <div class="value" id="statACV">$1153.6K</div>
+      <div class="value" id="statACV">$1139.8K</div>
       <div class="sub">annual contract value, flagged accounts</div>
     </div>
     <div class="stat">
@@ -189,7 +189,7 @@
     <h3 class="table-label">At Risk Accounts</h3>
     <div class="list-head">
       <input type="text" id="acctSearch" class="search-box" placeholder="Search accounts, owners, contacts&hellip;" autocomplete="off">
-      <span class="hint mono" id="listHint">showing all 72 accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
+      <span class="hint mono" id="listHint">showing all 71 accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
     </div>
 
     <table id="riskTable">
@@ -233,17 +233,19 @@
   <footer>
     <p id="methodology">
       Tracks any SiftMed account with a non-zero Annual_Contract_Value__c, a non-zero page cap
-      (PageCountCap__c), and both contract dates on file &mdash; regardless of Salesforce pipeline stage
-      (Customer, Previous Customer, SQL, Prospect, Unqualifed, Kick Back, etc. all qualify if the data's
-      there). This deliberately has no Stage__c filter: the criterion is whether an account has the data to
-      compute a usage %, not which stage it currently carries, so already-churned (Previous Customer) and
-      still-selling (SQL, Prospect) accounts appear alongside signed customers. Usage compares trailing 30-day
-      product usage (Pages_Last_30__c) to the contracted or projected page cap, prorated to each account's actual
-      contract length (Active_Contract_Start_Date__c to Subscription_End_Date__c) rather than a flat 12-month
-      assumption &mdash; the same usage-cliff pattern that preceded all nine of SiftMed's confirmed churns.
+      (PageCountCap__c), both contract dates on file, and an assigned Account_Tier__c &mdash; regardless of
+      Salesforce pipeline stage (Customer, Previous Customer, SQL, Prospect, Unqualifed, Kick Back, etc. all
+      qualify if the data's there). This deliberately has no Stage__c filter: the criterion is whether an
+      account has the data to compute a usage %, not which stage it currently carries, so already-churned
+      (Previous Customer) and still-selling (SQL, Prospect) accounts appear alongside signed customers. Usage
+      compares trailing 30-day product usage (Pages_Last_30__c) to the contracted or projected page cap,
+      prorated to each account's actual contract length (Active_Contract_Start_Date__c to
+      Subscription_End_Date__c) rather than a flat 12-month assumption &mdash; the same usage-cliff pattern
+      that preceded all nine of SiftMed's confirmed churns.
       Accounts missing a start date, end date, or page cap, or with a zero page cap or a negative contract length,
       are excluded from the calculation (shown as N/A) but still listed. Non-real and internal Account records
-      (null or zero Annual_Contract_Value__c) are excluded from the 72 tracked-account base entirely.
+      (null or zero Annual_Contract_Value__c), and accounts with no Account_Tier__c assigned, are excluded from
+      the 71 tracked-account base entirely.
       The Stage column shows the account's tier alongside a Customer-stage account, e.g. &ldquo;Customer
       (Enterprise)&rdquo;; every other stage shows just the stage name &mdash; those accounts haven't necessarily
       signed a contract yet (or, for Previous Customer, no longer have one), so their page cap and usage figures
@@ -268,7 +270,6 @@
     {name:"Carol Bierbrier & Associates - CBA", id:"001I9000007Bwg5IAC", owner:"Carla Chaytor", tier:"Micro", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:6840, renewal:"2026-05-01", days:-131, lastLogin:"2026-04-09", daysSinceLogin:153, mainContact:"Alyssa Bierbrier", lastEmail:"2026-05-01", lastEmailBy:null, nextMeeting:null, nextMeetingTitle:null, nextMeetingWith:null, nextInternalMeeting:null, nextInternalMeetingTitle:null},
     {name:"Cayuga Mutual", id:"001OL00000VTlWPYA1", owner:"Travis Bailey", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:600, renewal:"2026-10-19", days:40, lastLogin:"2026-08-06", daysSinceLogin:34, mainContact:"Paul Tiller", lastEmail:"2026-08-06", lastEmailBy:null, nextMeeting:null, nextMeetingTitle:null, nextMeetingWith:null, nextInternalMeeting:null, nextInternalMeetingTitle:null},
     {name:"Daugherty & Associates, LLC", id:"001OL00000SYxvHYAT", owner:"Carla Chaytor", tier:"Micro", stage:"Customer", stageLabel:"Customer (Micro)", severity:0, pct:0.0, pages:0, hours:23.7, users:1.0, acv:8400, renewal:"2027-07-29", days:323, lastLogin:"2026-08-18", daysSinceLogin:22, mainContact:"Shirley Daugherty", lastEmail:"2026-07-20", lastEmailBy:null, nextMeeting:null, nextMeetingTitle:null, nextMeetingWith:null, nextInternalMeeting:null, nextInternalMeetingTitle:null},
-    {name:"Dr. Yaacov Markus", id:"001OL00000p3vHKYAY", owner:"Carla Chaytor", tier:null, stage:"Prospect", stageLabel:"Prospect", severity:0, pct:0.0, pages:0, hours:0, users:0, acv:13800, renewal:"2027-06-30", days:294, lastLogin:"2026-09-08", daysSinceLogin:1, mainContact:"Yaacov Markus", lastEmail:"2026-09-08", lastEmailBy:null, nextMeeting:null, nextMeetingTitle:null, nextMeetingWith:null, nextInternalMeeting:null, nextInternalMeetingTitle:null},
     {name:"Drass and Associates Behavioral Healthcare and Legal Nurse Consulting", id:"001OL00000UZty1YAD", owner:"Peter Moyse", tier:"Micro", stage:"Previous Customer", stageLabel:"Previous Customer", severity:0, pct:0.0, pages:0, hours:0, users:3.0, acv:600, renewal:"2026-08-28", days:-12, lastLogin:"2026-08-11", daysSinceLogin:29, mainContact:"Theresa Drass", lastEmail:"2026-05-26", lastEmailBy:null, nextMeeting:null, nextMeetingTitle:null, nextMeetingWith:null, nextInternalMeeting:null, nextInternalMeetingTitle:null},
     {name:"E4 Life Care Planning, LLC", id:"001OL00000RHvTmYAL", owner:"Carla Chaytor", tier:"Micro", stage:"Prospect", stageLabel:"Prospect", severity:0, pct:0.0, pages:0, hours:1.0, users:1.0, acv:9618, renewal:"2027-07-27", days:321, lastLogin:"2026-08-13", daysSinceLogin:27, mainContact:"Alison Wohlhuter", lastEmail:"2026-07-26", lastEmailBy:null, nextMeeting:null, nextMeetingTitle:null, nextMeetingWith:null, nextInternalMeeting:null, nextInternalMeetingTitle:null},
     {name:"Girones Lawyers", id:"001I9000005T4a9IAC", owner:"Carla Chaytor", tier:"SMB", stage:"Customer", stageLabel:"Customer (SMB)", severity:0, pct:0.0, pages:0, hours:0, users:5.0, acv:11188, renewal:"2027-05-12", days:245, lastLogin:"2026-08-11", daysSinceLogin:29, mainContact:"Andrea Girones", lastEmail:"2026-06-22", lastEmailBy:null, nextMeeting:null, nextMeetingTitle:null, nextMeetingWith:null, nextInternalMeeting:null, nextInternalMeetingTitle:null},

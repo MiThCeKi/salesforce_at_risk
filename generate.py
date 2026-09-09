@@ -5,7 +5,12 @@ and writes out the final, ready-to-deploy HTML.
 This is the "recompute from Salesforce directly" pipeline step. The `accounts`
 list below was pulled live via SOQL against Salesforce on 2026-09-02:
 Annual_Contract_Value__c > 0 AND PageCountCap__c > 0 AND
-Active_Contract_Start_Date__c != null AND Subscription_End_Date__c != null,
+Active_Contract_Start_Date__c != null AND Subscription_End_Date__c != null AND
+Account_Tier__c != null (this last clause added 2026-09-10, user request: an
+account with no Tier segment assigned shouldn't be tracked as though it were -
+live-checked 2026-09-10 that exactly one previously-tracked account, Dr.
+Yaacov Markus, had a null Tier and is the one this drops; removed from the
+snapshot below accordingly),
 selecting Name, Owner.Name, Stage__c, Account_Tier__c, Annual_Contract_Value__c,
 Active_Contract_Start_Date__c, Subscription_End_Date__c, PageCountCap__c,
 Pages_Last_30__c, Hours_Last_30__c, Active_Users_Last_30__c, LastActivityDate
@@ -276,7 +281,6 @@ accounts = [
 {"Name":"Daugherty & Associates, LLC", "Id":"001OL00000SYxvHYAT", "LastLogin":"2026-08-18", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":8400.0, "Start":"2026-07-30", "End":"2027-07-29", "Cap":60000.0, "Pages":0, "Hours":23.7, "Users":1.0, "MainContact":"Shirley Daugherty", "LastEmail":"2026-07-20", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"Dr. Jordi Cisa Medical Corporation", "Id":"001OL00000BxtGiYAJ", "LastLogin":"2026-08-13", "Owner":"Carla Chaytor", "Stage":"Kick Back", "Tier":"Micro", "ACV":4590.0, "Start":"2025-10-09", "End":"2026-10-08", "Cap":36000.0, "Pages":878.0, "Hours":3.4, "Users":2.0, "MainContact":"Anne Lagace", "LastEmail":"2026-07-14", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"Dr. Rick Hu", "Id":"001OL00000YiPK6YAN", "LastLogin":"2026-09-02", "Owner":"Carla Chaytor", "Stage":"SQL", "Tier":"Micro", "ACV":9600.0, "Start":"2025-10-09", "End":"2026-09-24", "Cap":120000.0, "Pages":3501.0, "Hours":18.0, "Users":1.0, "MainContact":"Rick Hu", "LastEmail":"2026-08-19", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
-{"Name":"Dr. Yaacov Markus", "Id":"001OL00000p3vHKYAY", "LastLogin":"2026-09-08", "Owner":"Carla Chaytor", "Stage":"Prospect", "Tier":None, "ACV":13800.0, "Start":"2026-06-09", "End":"2027-06-30", "Cap":60000.0, "Pages":0, "Hours":0, "Users":0, "MainContact":"Yaacov Markus", "LastEmail":"2026-09-08", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"Drass and Associates Behavioral Healthcare and Legal Nurse Consulting", "Id":"001OL00000UZty1YAD", "LastLogin":"2026-08-11", "Owner":"Peter Moyse", "Stage":"Previous Customer", "Tier":"Micro", "ACV":600.0, "Start":"2025-08-28", "End":"2026-08-28", "Cap":5000.0, "Pages":0, "Hours":0, "Users":3.0, "MainContact":"Theresa Drass", "LastEmail":"2026-05-26", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"E4 Life Care Planning, LLC", "Id":"001OL00000RHvTmYAL", "LastLogin":"2026-08-13", "Owner":"Carla Chaytor", "Stage":"Prospect", "Tier":"Micro", "ACV":9618.0, "Start":"2026-07-28", "End":"2027-07-27", "Cap":60000.0, "Pages":0, "Hours":1.0, "Users":1.0, "MainContact":"Alison Wohlhuter", "LastEmail":"2026-07-26", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"Girones Lawyers", "Id":"001I9000005T4a9IAC", "LastLogin":"2026-08-11", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":11188.0, "Start":"2026-05-12", "End":"2027-05-12", "Cap":100000.0, "Pages":0, "Hours":0, "Users":5.0, "MainContact":"Andrea Girones", "LastEmail":"2026-06-22", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
