@@ -69,31 +69,6 @@ class TestRenderedJsIsValidJavascript(unittest.TestCase):
         self._assert_valid_js_array(generate.render_projected_js(data["rows"]))
 
 
-class TestAlertStateSchema(unittest.TestCase):
-    VALID_STATES = {"normal", "high", "low"}
-
-    def test_alert_state_entries_well_formed(self):
-        path = os.path.join(REPO_ROOT, "alert_state.json")
-        if not os.path.exists(path):
-            self.skipTest("alert_state.json not present")
-        with open(path) as fh:
-            state = json.load(fh)
-        self.assertIsInstance(state, dict)
-        for acct_id, entry in state.items():
-            self.assertIsInstance(acct_id, str, acct_id)
-            self.assertEqual(set(entry.keys()), {"state", "since", "last_alert"}, acct_id)
-            self.assertIn(entry["state"], self.VALID_STATES, acct_id)
-            if entry["state"] == "normal":
-                self.assertIsNone(entry["since"], acct_id)
-                self.assertIsNone(entry["last_alert"], acct_id)
-            else:
-                # since/last_alert must be parseable ISO dates when set
-                if entry["since"] is not None:
-                    generate.parse(entry["since"])
-                if entry["last_alert"] is not None:
-                    generate.parse(entry["last_alert"])
-
-
 class TestProjectedSnapshotSchema(unittest.TestCase):
     def test_shape_and_types(self):
         path = os.path.join(REPO_ROOT, "projected_snapshot.json")
@@ -115,22 +90,26 @@ class TestProjectedSnapshotSchema(unittest.TestCase):
             self.assertIsInstance(row["cycleLen"], int)
 
 
-class TestPendingAlertsSchema(unittest.TestCase):
-    VALID_TYPES = {"high_new", "high_reminder", "low_new", "low_reminder"}
+class TestOverageProjectionSchema(unittest.TestCase):
+    """Schema check for mid_month_projection.py's output - the sole source
+    of the (now monthly, mid-month) overage email, replacing the old
+    pending_alerts.json/alert_state.json pair this file used to check."""
 
     def test_shape_and_types(self):
-        path = os.path.join(REPO_ROOT, "pending_alerts.json")
+        path = os.path.join(REPO_ROOT, "overage_projection.json")
         if not os.path.exists(path):
-            self.skipTest("pending_alerts.json not present (gitignored / no pending run)")
+            self.skipTest("overage_projection.json not present (gitignored / no run yet)")
         with open(path) as fh:
-            pending = json.load(fh)
-        self.assertIsInstance(pending, list)
-        required_keys = {"accountId", "accountName", "owner", "pct", "projectedPct", "type"}
-        for entry in pending:
+            data = json.load(fh)
+        self.assertIn("asOf", data)
+        self.assertIn("dayOfMonth", data)
+        self.assertIn("accounts", data)
+        self.assertIsInstance(data["accounts"], list)
+        required_keys = {"id", "name", "owner", "projectedPct", "pagesSoFar", "acv"}
+        for entry in data["accounts"]:
             self.assertEqual(set(entry.keys()), required_keys, entry)
-            self.assertIn(entry["type"], self.VALID_TYPES, entry)
-            self.assertIsInstance(entry["pct"], (int, float))
             self.assertIsInstance(entry["projectedPct"], (int, float))
+            self.assertGreater(entry["projectedPct"], 150.0, entry)
 
 
 class TestAccountsSnapshotShape(unittest.TestCase):

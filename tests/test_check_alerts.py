@@ -1,9 +1,12 @@
 """Unit tests for check_alerts.py.
 
-decide_alert() is pure state-machine logic (see check_alerts.py's own
-docstring for the agreed rules) and is tested directly with no mocking.
-The Salesforce/HTTP functions are tested with urllib.request.urlopen
-mocked out - no network access, no live org needed.
+Since 2026-09-09 this script only refreshes the dashboard's Projected
+Usage section (the high/low alert email + hysteresis state machine it
+used to run was retired in favor of mid_month_projection.py - see
+check_alerts.py's own docstring). build_projected_rows() is pure
+extrapolation logic and is tested directly with no mocking. The
+Salesforce/HTTP functions are tested with urllib.request.urlopen mocked
+out - no network access, no live org needed.
 """
 import datetime
 import json
@@ -13,116 +16,53 @@ from unittest import mock
 import check_alerts
 
 
-def entry(state="normal", since=None, last_alert=None):
-    return {"state": state, "since": since, "last_alert": last_alert}
+def make_account(**over):
+    base = {
+        "Name": "Acme Inc", "Id": "001x", "Owner": "Jane Rep",
+        "Stage": "Customer", "Tier": "SMB", "ACV": 12000.0,
+        "Start": "2026-01-01", "End": "2027-01-01", "Cap": 120000.0,
+        "Pages": 5000.0, "Hours": 3.0, "Users": 4.0,
+    }
+    base.update(over)
+    return base
 
 
-class TestDecideAlertNormalState(unittest.TestCase):
-    TODAY = datetime.date(2026, 9, 9)
+class TestBuildProjectedRows(unittest.TestCase):
+    TODAY = datetime.date(2026, 9, 15)
 
-    def test_crossing_above_high_threshold_sends_high_new(self):
-        send, new = check_alerts.decide_alert(entry(), 120.0, self.TODAY)
-        self.assertEqual(send, "high_new")
-        self.assertEqual(new, {"state": "high", "since": "2026-09-09", "last_alert": "2026-09-09"})
+    def test_extrapolates_pages_so_far_to_full_month(self):
+        accounts = [make_account()]
+        accounts_by_id = {a["Id"]: a for a in accounts}
+        rows = [{"Id": "001x", "Name": "Acme Inc", "Tier": "SMB", "ACV": 12000.0}]
+        result = check_alerts.build_projected_rows(rows, accounts_by_id, {"001x": 1000}, self.TODAY)
+        self.assertEqual(len(result), 1)
+        row = result[0]
+        prorated_cap = 120000.0 / (365 / 30.44)
+        expected = round((1000 / 15 * 30) / prorated_cap * 100, 1)
+        self.assertEqual(row["pct"], expected)
+        self.assertEqual(row["daysIntoCycle"], 15)
+        self.assertEqual(row["cycleLen"], 30)
 
-    def test_exactly_at_high_threshold_does_not_trigger(self):
-        send, new = check_alerts.decide_alert(entry(), 115.0, self.TODAY)
-        self.assertIsNone(send)
-        self.assertEqual(new["state"], "normal")
+    def test_missing_mtd_entry_defaults_to_zero_pages(self):
+        accounts = [make_account()]
+        accounts_by_id = {a["Id"]: a for a in accounts}
+        rows = [{"Id": "001x", "Name": "Acme Inc", "Tier": "SMB", "ACV": 12000.0}]
+        result = check_alerts.build_projected_rows(rows, accounts_by_id, {}, self.TODAY)
+        self.assertEqual(result[0]["pct"], 0)
 
-    def test_crossing_below_low_threshold_sends_low_new(self):
-        send, new = check_alerts.decide_alert(entry(), 10.0, self.TODAY)
-        self.assertEqual(send, "low_new")
-        self.assertEqual(new, {"state": "low", "since": "2026-09-09", "last_alert": "2026-09-09"})
+    def test_missing_prorated_cap_yields_null_pct(self):
+        accounts = [make_account(Cap=0)]
+        accounts_by_id = {a["Id"]: a for a in accounts}
+        rows = [{"Id": "001x", "Name": "Acme Inc", "Tier": "SMB", "ACV": 12000.0}]
+        result = check_alerts.build_projected_rows(rows, accounts_by_id, {"001x": 1000}, self.TODAY)
+        self.assertIsNone(result[0]["pct"])
 
-    def test_exactly_at_low_threshold_does_not_trigger(self):
-        send, new = check_alerts.decide_alert(entry(), 25.0, self.TODAY)
-        self.assertIsNone(send)
-        self.assertEqual(new["state"], "normal")
-
-    def test_healthy_middle_range_stays_normal_silently(self):
-        send, new = check_alerts.decide_alert(entry(), 60.0, self.TODAY)
-        self.assertIsNone(send)
-        self.assertEqual(new, entry())
-
-
-class TestDecideAlertHighState(unittest.TestCase):
-    TODAY = datetime.date(2026, 9, 9)
-
-    def test_still_high_within_reminder_window_stays_silent(self):
-        cur = entry("high", since="2026-08-01", last_alert="2026-09-05")
-        send, new = check_alerts.decide_alert(cur, 130.0, self.TODAY)
-        self.assertIsNone(send)
-        self.assertEqual(new, cur)
-
-    def test_still_high_at_exactly_14_days_sends_reminder(self):
-        cur = entry("high", since="2026-08-01", last_alert="2026-08-26")
-        send, new = check_alerts.decide_alert(cur, 130.0, self.TODAY)
-        self.assertEqual(send, "high_reminder")
-        self.assertEqual(new["last_alert"], "2026-09-09")
-        self.assertEqual(new["since"], "2026-08-01")  # since is preserved, not reset
-        self.assertEqual(new["state"], "high")
-
-    def test_still_high_just_under_14_days_stays_silent(self):
-        cur = entry("high", since="2026-08-01", last_alert="2026-08-27")
-        send, new = check_alerts.decide_alert(cur, 130.0, self.TODAY)
-        self.assertIsNone(send)
-
-    def test_last_alert_none_sends_reminder_immediately(self):
-        # Defensive case: a hand-edited or corrupted state file with
-        # state=high but no recorded last_alert should not get stuck mute.
-        cur = entry("high", since="2026-08-01", last_alert=None)
-        send, new = check_alerts.decide_alert(cur, 130.0, self.TODAY)
-        self.assertEqual(send, "high_reminder")
-
-    def test_dropping_to_exactly_threshold_resets_to_normal_silently(self):
-        cur = entry("high", since="2026-08-01", last_alert="2026-08-01")
-        send, new = check_alerts.decide_alert(cur, 115.0, self.TODAY)
-        self.assertIsNone(send)
-        self.assertEqual(new, {"state": "normal", "since": None, "last_alert": None})
-
-    def test_dropping_below_threshold_resets_to_normal_silently(self):
-        cur = entry("high", since="2026-08-01", last_alert="2026-08-01")
-        send, new = check_alerts.decide_alert(cur, 50.0, self.TODAY)
-        self.assertIsNone(send)
-        self.assertEqual(new["state"], "normal")
-
-
-class TestDecideAlertLowState(unittest.TestCase):
-    TODAY = datetime.date(2026, 9, 9)
-
-    def test_still_low_within_reminder_window_stays_silent(self):
-        cur = entry("low", since="2026-08-01", last_alert="2026-09-05")
-        send, new = check_alerts.decide_alert(cur, 5.0, self.TODAY)
-        self.assertIsNone(send)
-
-    def test_still_low_at_14_days_sends_reminder(self):
-        cur = entry("low", since="2026-08-01", last_alert="2026-08-26")
-        send, new = check_alerts.decide_alert(cur, 5.0, self.TODAY)
-        self.assertEqual(send, "low_reminder")
-
-    def test_staying_low_state_between_25_and_30_does_not_reset(self):
-        # Between the alert threshold (25) and the reset threshold (30) is
-        # the hysteresis band: still counted as "low" state, so a reminder
-        # can still fire, but it does NOT bounce back to normal.
-        cur = entry("low", since="2026-08-01", last_alert="2026-08-26")
-        send, new = check_alerts.decide_alert(cur, 28.0, self.TODAY)
-        self.assertEqual(send, "low_reminder")
-        self.assertEqual(new["state"], "low")
-
-    def test_climbing_above_reset_threshold_resets_to_normal(self):
-        cur = entry("low", since="2026-08-01", last_alert="2026-08-01")
-        send, new = check_alerts.decide_alert(cur, 30.1, self.TODAY)
-        self.assertIsNone(send)
-        self.assertEqual(new, {"state": "normal", "since": None, "last_alert": None})
-
-    def test_exactly_at_reset_threshold_does_not_reset(self):
-        cur = entry("low", since="2026-08-01", last_alert="2026-09-05")
-        send, new = check_alerts.decide_alert(cur, 30.0, self.TODAY)
-        # 30.0 is not > 30.0, so still "low"; last_alert is recent, so no
-        # reminder fires either - net effect is a silent no-op, not a reset.
-        self.assertIsNone(send)
-        self.assertEqual(new["state"], "low")
+    def test_stage_label_includes_tier_only_for_customer(self):
+        accounts = [make_account(Stage="Prospect")]
+        accounts_by_id = {a["Id"]: a for a in accounts}
+        rows = [{"Id": "001x", "Name": "Acme Inc", "Tier": "SMB", "ACV": 12000.0}]
+        result = check_alerts.build_projected_rows(rows, accounts_by_id, {"001x": 0}, self.TODAY)
+        self.assertEqual(result[0]["stageLabel"], "Prospect")
 
 
 class TestFetchAccounts(unittest.TestCase):

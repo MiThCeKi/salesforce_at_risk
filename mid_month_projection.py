@@ -9,7 +9,10 @@ from the daily Usage_data__c records via check_alerts.fetch_month_to_date_pages
 - NOT Pages_Last_30__c, which is a continuously rolling trailing-30-day total
 with no monthly reset, verified live 2026-09-01) forward to a full-month
 total by scaling by (days_in_month / days_elapsed_so_far), then flags anyone
-projected to land over 100% of their prorated monthly cap.
+projected to land over 150% of their prorated monthly cap (raised from 100%
+2026-09-09, user request: this report replaced the old Mon/Wed/Fri rolling
+high/low email outright, so the bar for "worth an email" moved up from
+merely-over-cap to meaningfully-over-cap).
 
 Deliberately run on the 15th only, not the 1st: by the 15th, roughly half
 the month's real usage pace is in, so the projection is a meaningful
@@ -35,7 +38,7 @@ import os
 import generate
 from check_alerts import fetch_accounts, fetch_month_to_date_pages, get_access_token
 
-OVERAGE_THRESHOLD = 100.0
+OVERAGE_THRESHOLD = 150.0
 OUTPUT_PATH = "overage_projection.json"
 
 
@@ -54,6 +57,25 @@ def project_full_month_pct(account, pages_so_far, today):
     return (projected_pages / prorated_cap) * 100
 
 
+def select_overage(accounts, mtd_pages, today, threshold=OVERAGE_THRESHOLD):
+    """Pure selection/sort of the accounts to report: projects every
+    account's full-month pace via project_full_month_pct, keeps only those
+    strictly over `threshold`, sorted highest-projected first. Pulled out
+    of main() so the actual "who gets flagged" logic can be unit tested
+    without mocking Salesforce."""
+    over = []
+    for a in accounts:
+        pages_so_far = mtd_pages.get(a["Id"], 0)
+        pct = project_full_month_pct(a, pages_so_far, today)
+        if pct is not None and pct > threshold:
+            over.append({
+                "id": a["Id"], "name": a["Name"], "owner": a["Owner"],
+                "projectedPct": round(pct, 1), "pagesSoFar": pages_so_far, "acv": a["ACV"],
+            })
+    over.sort(key=lambda x: -x["projectedPct"])
+    return over
+
+
 def main():
     # See check_alerts.py: SF_MY_DOMAIN disappeared from this environment's
     # config on 2026-09-01 - falling back to the known org domain.
@@ -66,16 +88,7 @@ def main():
     accounts = fetch_accounts(my_domain, token)
     mtd_pages = fetch_month_to_date_pages(my_domain, token, today)
 
-    over = []
-    for a in accounts:
-        pages_so_far = mtd_pages.get(a["Id"], 0)
-        pct = project_full_month_pct(a, pages_so_far, today)
-        if pct is not None and pct > OVERAGE_THRESHOLD:
-            over.append({
-                "id": a["Id"], "name": a["Name"], "owner": a["Owner"],
-                "projectedPct": round(pct, 1), "pagesSoFar": pages_so_far, "acv": a["ACV"],
-            })
-    over.sort(key=lambda x: -x["projectedPct"])
+    over = select_overage(accounts, mtd_pages, today)
 
     with open(OUTPUT_PATH, "w") as fh:
         json.dump({"asOf": today.isoformat(), "dayOfMonth": today.day, "accounts": over}, fh, indent=2)

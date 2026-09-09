@@ -1,35 +1,37 @@
 """
 check_alerts.py
 
-Mon/Wed/Fri usage-threshold alert check + mid-cycle projected-usage snapshot
-for the At-Risk Accounts pipeline.
+Mon/Wed/Fri refresh of the "Projected End of Month Usage" section on the
+live At-Risk Accounts dashboard.
+
+RETIRED 2026-09-09 (user request): this script used to ALSO run a
+high/low rolling-usage email alert with hysteresis/reminder state
+(alert_state.json, pending_alerts.json, decide_alert()). That email has
+been fully replaced by mid_month_projection.py's mid-month (15th of the
+month) overage report, which the user specifically wanted instead: a
+single monthly check using the first half of the month's real pace to
+project the second half, flagging only accounts projected over 150% of
+their cap. See mid_month_projection.py's own docstring for that logic.
+This script no longer sends any email or persists any alert state - it
+only keeps the dashboard's Projected Usage tab current, which is a
+separate, still-wanted concern from the email and was kept on its
+existing Mon/Wed/Fri cadence so that tab doesn't go stale for three
+weeks out of four.
 
 What it does, each run:
   1. Pulls live account data from Salesforce (same fields/methodology as
      generate.py) via the OAuth client-credentials flow (env vars
      SF_MY_DOMAIN, SF_CONSUMER_KEY, SF_CONSUMER_SECRET).
-  2. Computes each account's usage % the same way generate.compute_rows does,
-     for the high/low alert check below - this is Pages_Last_30__c (a true
-     rolling trailing-30-day total, verified live against the raw
-     Usage_data__c records) against the prorated monthly cap. It needs no
-     calendar-cycle awareness and is never noisy early in a month.
-     Separately, for the Projected Usage table only, sums real page counts
-     from the 1st of the current calendar month via fetch_month_to_date_pages
-     (querying Usage_data__c directly, since Pages_Last_30__c itself never
-     resets) and extrapolates to a full-month total using
-     generate.cycle_position's day count.
-  3. Compares against alert_state.json (persisted in this repo, committed
-     after each run) using the hysteresis rules below, and writes
-     pending_alerts.json describing exactly which emails need sending this
-     run. This script does NOT send email itself — sending requires the
-     Gmail OAuth session, which only the calling agent has. The agent
-     should: run this script, read pending_alerts.json, send exactly those
-     emails, then commit alert_state.json + projected_snapshot.json (and
-     delete pending_alerts.json, or leave it - it's overwritten next run).
-  4. Writes projected_snapshot.json, the mid-cycle projection table's data,
+  2. Sums real page counts from the 1st of the current calendar month via
+     fetch_month_to_date_pages (querying Usage_data__c directly, since
+     Pages_Last_30__c is a continuously rolling trailing-30-day total with
+     no monthly reset - verified live 2026-09-01) and extrapolates each
+     account to a full-month total using generate.cycle_position's day
+     count, against its prorated monthly cap.
+  3. Writes projected_snapshot.json, the mid-cycle projection table's data,
      which generate.py's daily regeneration reads and carries forward
      unchanged on the days this script doesn't run.
-  5. Pushes that same Projected Usage data straight to the LIVE Static
+  4. Pushes that same Projected Usage data straight to the LIVE Static
      Resource itself (push_projected_section_live) - the daily push routine
      never clones this repo, so it can't pick up projected_snapshot.json;
      this script is the only thing that keeps the live page's Projected
@@ -37,54 +39,10 @@ What it does, each run:
      and the projAsof date), leaving the main all-accounts table and
      everything else on the live page untouched.
 
-Alert rules (agreed 2026-09-01, methodology corrected 2026-09-01):
-  - "High" = usage % > 115. "Low" = usage % < 25. This is the rolling
-    30-day Pages_Last_30__c-based UsagePct from generate.compute_rows - the
-    same number shown in the dashboard's main table - not the calendar
-    month-to-date projection used for the separate Projected Usage table
-    below. It's deliberately the stable rolling figure so an alert can fire
-    on any day of the month without the early-month noise a month-to-date
-    extrapolation would have (confirmed live: projecting from 1 day of
-    calendar-month data amplified one account to over 50,000%).
-  - First time an account enters High: send an alert, mark state "high".
-  - While state stays "high" (pct still > 115), no further emails until
-    either (a) pct drops to <= 115 (state resets to "normal", clearing the
-    reminder clock), or (b) 14+ days have passed since the last alert for
-    this account, in which case send one reminder and reset the clock.
-  - First time an account enters Low (pct < 25): send an alert, mark state
-    "low". State stays "low" (even once back above 25%) until pct climbs
-    above 30 - only then does it reset to "normal". While still "low", the
-    same 14-day reminder rule as High applies.
-  - Accounts with no computable pct (Unknown severity - missing contract
-    dates or a zero cap) are skipped for alerting, but still appear in the
-    projected snapshot with pct: null.
-
-Email display vs. trigger logic (added 2026-09-09, user request): the
-digest email's alert rows must NOT use the rolling `pct` above as the
-displayed percentage - the user specifically wants a forward-looking
-warning signal ("if someone is heading in that direction"), so each
-pending_alerts.json entry also carries `projectedPct`, the SAME
-calendar-month-to-date-extrapolated figure already computed for the
-Projected Usage table (see projected_pct above) - do not compute it
-twice or differently. The agent sending the email must display
-projectedPct, not pct, in each row. This is a deliberate SPLIT: the
-trigger decision (who gets an email at all, and whether it's high/low)
-still runs on the stable rolling `pct` for the noise reasons documented
-above - only the number shown to the human changes. Because of that
-split, a projectedPct can occasionally look inconsistent with the
-"over 115%" / "under 25%" section headers (e.g. an account whose rolling
-pct just crossed 115% but whose month-to-date pace projects lower, or
-vice versa) - that's expected, not a bug: the header explains why the
-account was flagged, the number shown is where it's headed. Early in a
-calendar month projectedPct can be a very large or very small outlier
-(the 50,000% case above) since it's extrapolated from only a few days of
-data - still show it as-is; a volatile early-month number is itself part
-of the signal, not something to hide or clamp.
-
 Usage: python3 check_alerts.py
-Reads:  alert_state.json (if present; treated as empty otherwise)
-Writes: alert_state.json, pending_alerts.json, projected_snapshot.json,
-        and PATCHes the live Salesforce Static Resource's Projected section.
+Reads:  nothing persisted
+Writes: projected_snapshot.json, and PATCHes the live Salesforce Static
+        Resource's Projected section.
 """
 import datetime
 import json
@@ -96,13 +54,7 @@ import urllib.request
 import generate
 
 API_VERSION = "v62.0"
-HIGH_THRESHOLD = 115.0
-LOW_ALERT_THRESHOLD = 25.0
-LOW_RESET_THRESHOLD = 30.0
-REMINDER_DAYS = 14
 
-STATE_PATH = "alert_state.json"
-PENDING_PATH = "pending_alerts.json"
 PROJECTED_PATH = "projected_snapshot.json"
 STATIC_RESOURCE_ID = "081OL000000FhsfYAC"
 
@@ -186,13 +138,6 @@ def fetch_accounts(my_domain, token):
     return accounts
 
 
-def load_json(path, default):
-    if os.path.exists(path):
-        with open(path) as fh:
-            return json.load(fh)
-    return default
-
-
 def get_static_resource_body(my_domain, token, resource_id):
     url = f"{my_domain}/services/data/{API_VERSION}/sobjects/StaticResource/{resource_id}/Body"
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
@@ -238,53 +183,33 @@ def push_projected_section_live(my_domain, token, asof, rows):
     return patch_static_resource_body(my_domain, token, STATIC_RESOURCE_ID, updated)
 
 
-def decide_alert(entry, pct, today):
-    """Pure hysteresis decision for one account: given its persisted state
-    entry (as stored in alert_state.json - defaults already applied by the
-    caller), its current rolling UsagePct (never None - the caller skips
-    Unknown-severity accounts before calling this), and today's date,
-    returns (send, new_entry).
-
-    `send` is None or one of "high_new"/"high_reminder"/"low_new"/
-    "low_reminder". `new_entry` is the state dict to persist for this
-    account this run. Implements exactly the rules in this module's
-    docstring ("Alert rules") - pulled out of main() as a standalone pure
-    function so that hysteresis/reminder state machine (the part of this
-    pipeline most prone to silent off-by-one bugs) can be unit tested
-    without mocking Salesforce or the filesystem."""
-    cur_state = entry["state"]
-    new_state = cur_state
-    send = None
-
-    if cur_state == "high":
-        if pct <= HIGH_THRESHOLD:
-            new_state = "normal"
-        elif entry["last_alert"] is None or (today - generate.parse(entry["last_alert"])).days >= REMINDER_DAYS:
-            send = "high_reminder"
-    elif cur_state == "low":
-        if pct > LOW_RESET_THRESHOLD:
-            new_state = "normal"
-        elif entry["last_alert"] is None or (today - generate.parse(entry["last_alert"])).days >= REMINDER_DAYS:
-            send = "low_reminder"
-    else:  # normal
-        if pct > HIGH_THRESHOLD:
-            new_state = "high"
-            send = "high_new"
-        elif pct < LOW_ALERT_THRESHOLD:
-            new_state = "low"
-            send = "low_new"
-
-    if send:
-        since = entry["since"] if new_state == cur_state else today.isoformat()
-        new_entry = {"state": new_state, "since": since, "last_alert": today.isoformat()}
-    elif new_state != cur_state:
-        # Full reset back to normal - clear the reminder clock too, so a
-        # future re-crossing starts a fresh "first time" alert.
-        new_entry = {"state": "normal", "since": None, "last_alert": None}
-    else:
-        new_entry = {"state": cur_state, "since": entry["since"], "last_alert": entry["last_alert"]}
-
-    return send, new_entry
+def build_projected_rows(rows, accounts_by_id, mtd_pages, today):
+    """Pure computation of the Projected Usage table's rows: for every
+    account row (as produced by generate.compute_rows), extrapolates its
+    calendar-month-to-date pages to a full-month total against its prorated
+    cap. Pulled out of main() so this can be unit tested without mocking
+    Salesforce - the extrapolation math itself is exactly
+    mid_month_projection.project_full_month_pct, just computed for every
+    account on every run rather than only on the 15th."""
+    days_into, days_remaining, cycle_len = generate.cycle_position(today)
+    projected = []
+    for r in rows:
+        acct_id = r["Id"]
+        prorated_cap = generate.prorated_monthly_cap(accounts_by_id[acct_id])
+        pages_so_far = mtd_pages.get(acct_id, 0)
+        if prorated_cap and days_into > 0:
+            projected_pct = round((pages_so_far / days_into * cycle_len) / prorated_cap * 100, 1)
+        else:
+            projected_pct = None
+        stage = accounts_by_id[acct_id].get("Stage")
+        stage_label = "{} ({})".format(stage, r["Tier"]) if stage == "Customer" and r["Tier"] else stage
+        projected.append({
+            "name": r["Name"], "id": acct_id, "tier": r["Tier"],
+            "stage": stage, "stageLabel": stage_label,
+            "pct": projected_pct, "acv": r["ACV"],
+            "daysIntoCycle": days_into, "daysRemaining": days_remaining, "cycleLen": cycle_len,
+        })
+    return projected
 
 
 def main():
@@ -303,59 +228,16 @@ def main():
     accounts_by_id = {a["Id"]: a for a in accounts}
     rows = generate.compute_rows(accounts, today)
     mtd_pages = fetch_month_to_date_pages(my_domain, token, today)
-    days_into, days_remaining, cycle_len = generate.cycle_position(today)
 
-    state = load_json(STATE_PATH, {})
-    pending = []
-    projected = []
+    projected = build_projected_rows(rows, accounts_by_id, mtd_pages, today)
 
-    for r in rows:
-        acct_id = r["Id"]
-        pct = r["UsagePct"]
-
-        prorated_cap = generate.prorated_monthly_cap(accounts_by_id[acct_id])
-        pages_so_far = mtd_pages.get(acct_id, 0)
-        if prorated_cap and days_into > 0:
-            projected_pct = round((pages_so_far / days_into * cycle_len) / prorated_cap * 100, 1)
-        else:
-            projected_pct = None
-        stage = accounts_by_id[acct_id].get("Stage")
-        stage_label = "{} ({})".format(stage, r["Tier"]) if stage == "Customer" and r["Tier"] else stage
-        projected.append({
-            "name": r["Name"], "id": acct_id, "tier": r["Tier"],
-            "stage": stage, "stageLabel": stage_label,
-            "pct": projected_pct, "acv": r["ACV"],
-            "daysIntoCycle": days_into, "daysRemaining": days_remaining, "cycleLen": cycle_len,
-        })
-
-        if pct is None:
-            continue
-
-        entry = state.get(acct_id, {"state": "normal", "since": None, "last_alert": None})
-        send, entry = decide_alert(entry, pct, today)
-
-        if send:
-            pending.append({
-                "accountId": acct_id, "accountName": r["Name"], "owner": r["Owner"],
-                "pct": pct, "projectedPct": projected_pct, "type": send,
-            })
-
-        state[acct_id] = entry
-
-    with open(STATE_PATH, "w") as fh:
-        json.dump(state, fh, indent=2, sort_keys=True)
-    with open(PENDING_PATH, "w") as fh:
-        json.dump(pending, fh, indent=2)
     projected_asof = today.strftime("%b %d, %Y").upper()
     with open(PROJECTED_PATH, "w") as fh:
         json.dump({"asOf": projected_asof, "rows": projected}, fh, indent=2)
 
     status = push_projected_section_live(my_domain, token, projected_asof, projected)
     print(f"Pushed Projected Usage section live: HTTP {status}")
-
-    print(f"{len(pending)} alert(s) pending, {len(projected)} accounts in projected snapshot")
-    for p in pending:
-        print(" -", p)
+    print(f"{len(projected)} accounts in projected snapshot")
 
 
 if __name__ == "__main__":

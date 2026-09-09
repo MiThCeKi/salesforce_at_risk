@@ -50,11 +50,13 @@ zero-dependency philosophy. Runs automatically on push/PR via
 - `tests/test_generate.py` - pure computation/rendering logic (severity
   buckets, prorated cap math, JS rendering incl. a regression test for the
   `tier:"None"` string bug, template placeholder substitution).
-- `tests/test_check_alerts.py` - the full high/low alert hysteresis state
-  machine (`check_alerts.decide_alert`, extracted from `main()` specifically
-  to make it unit-testable) plus Salesforce/HTTP calls with `urllib`
-  mocked out - no live org or network needed.
-- `tests/test_mid_month_projection.py` - the full-month usage projection math.
+- `tests/test_check_alerts.py` - the Projected Usage dashboard refresh math
+  (`check_alerts.build_projected_rows`, extracted from `main()` for
+  testability) plus Salesforce/HTTP calls with `urllib` mocked out - no
+  live org or network needed.
+- `tests/test_mid_month_projection.py` - the mid-month overage report:
+  the full-month usage projection math and `select_overage`'s >150%
+  filtering/sorting (the report that replaced the old Mon/Wed/Fri email).
 - `tests/test_data_integrity.py` - integration/smoke checks against the
   actual committed `template.html`, `generate.py` accounts snapshot, and
   the JSON state files, including piping real rendered JS through `node`
