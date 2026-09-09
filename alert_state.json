@@ -35,9 +35,9 @@
     "state": "normal"
   },
   "001I9000004mawoIAA": {
-    "last_alert": null,
-    "since": null,
-    "state": "normal"
+    "last_alert": "2026-09-09",
+    "since": "2026-09-09",
+    "state": "high"
   },
   "001I9000005T4a9IAC": {
     "last_alert": "2026-09-01",
@@ -100,9 +100,9 @@
     "state": "low"
   },
   "001OL0000087uk3YAA": {
-    "last_alert": null,
-    "since": null,
-    "state": "normal"
+    "last_alert": "2026-09-09",
+    "since": "2026-09-09",
+    "state": "high"
   },
   "001OL000008ibX8YAI": {
     "last_alert": "2026-09-01",
