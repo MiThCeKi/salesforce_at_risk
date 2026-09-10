@@ -7,11 +7,14 @@ separately validated by hand against a real fetched live page (see
 2026-09-10 session notes) before this pipeline was ever wired into the
 live Routines, since a wrong regex here pushes straight to production.
 """
+import os
 import re
 import unittest
 from unittest import mock
 
 import refresh_live_page as rlp
+
+FAKE_SF_ENV = {"SF_CONSUMER_KEY": "fake_key", "SF_CONSUMER_SECRET": "fake_secret"}
 
 
 class TestBuildAccountRecords(unittest.TestCase):
@@ -129,6 +132,7 @@ class TestPushMainTableLive(unittest.TestCase):
         '<script>var ROWS = [\n    {name:"Old"},\n  ];</script>'
     )
 
+    @mock.patch.dict(os.environ, FAKE_SF_ENV)
     @mock.patch("refresh_live_page.check_alerts.patch_static_resource_body")
     @mock.patch("refresh_live_page.check_alerts.get_static_resource_body")
     @mock.patch("refresh_live_page.check_alerts.get_access_token")
@@ -156,6 +160,7 @@ class TestPushMainTableLive(unittest.TestCase):
         self.assertIn('name:"New"', pushed)
         self.assertNotIn('name:"Old"', pushed)
 
+    @mock.patch.dict(os.environ, FAKE_SF_ENV)
     @mock.patch("refresh_live_page.check_alerts.get_access_token")
     @mock.patch("refresh_live_page.check_alerts.get_static_resource_body")
     def test_raises_if_a_section_is_missing(self, mock_get, mock_token):
