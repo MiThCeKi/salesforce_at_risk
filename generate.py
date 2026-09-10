@@ -561,10 +561,16 @@ def load_projected_snapshot(path="projected_snapshot.json"):
     return data["asOf"], render_projected_js(data["rows"])
 
 
-def fill_template(template_text, accounts, today, projected_path="projected_snapshot.json"):
-    all_rows = compute_rows(accounts, today)
+def compute_summary_stats(all_rows, today):
+    """Pure computation of the four summary-stat tiles from an already-computed
+    row list (generate.compute_rows output). Pulled out of fill_template so
+    the live-page refresh pipeline (refresh_live_page.py) can compute the
+    same stats without going through the HTML-templating step - both the
+    git-committed local page and the two live pages must show identical
+    numbers for identical data, so there is exactly one place this math
+    lives."""
     flagged = compute_flagged(all_rows)
-    total_n = len(accounts)
+    total_n = len(all_rows)
     flagged_n = len(flagged)
     total_acv = sum(f["ACV"] for f in flagged)
     acv_k = f"${total_acv/1000:.1f}K"
@@ -584,18 +590,29 @@ def fill_template(template_text, accounts, today, projected_path="projected_snap
 
     asof = today.strftime("%b %d, %Y").upper()
 
+    return {
+        "flagged_n": flagged_n, "total_n": total_n, "acv_k": acv_k,
+        "renew_n": renew_n, "renew_sub": renew_sub, "ent_n": ent_n, "ent_sub": ent_sub,
+        "asof": asof,
+    }
+
+
+def fill_template(template_text, accounts, today, projected_path="projected_snapshot.json"):
+    all_rows = compute_rows(accounts, today)
+    stats = compute_summary_stats(all_rows, today)
+
     rows_js = render_rows_js(all_rows)
     projected_asof, projected_rows_js = load_projected_snapshot(projected_path)
 
     out = template_text
-    out = out.replace("__ASOF__", asof)
-    out = out.replace("__FLAGGED_N__", str(flagged_n))
-    out = out.replace("__TOTAL_N__", str(total_n))
-    out = out.replace("__ACV_K__", acv_k)
-    out = out.replace("__RENEW_N__", str(renew_n))
-    out = out.replace("__RENEW_SUB__", renew_sub)
-    out = out.replace("__ENT_N__", str(ent_n))
-    out = out.replace("__ENT_SUB__", ent_sub)
+    out = out.replace("__ASOF__", stats["asof"])
+    out = out.replace("__FLAGGED_N__", str(stats["flagged_n"]))
+    out = out.replace("__TOTAL_N__", str(stats["total_n"]))
+    out = out.replace("__ACV_K__", stats["acv_k"])
+    out = out.replace("__RENEW_N__", str(stats["renew_n"]))
+    out = out.replace("__RENEW_SUB__", stats["renew_sub"])
+    out = out.replace("__ENT_N__", str(stats["ent_n"]))
+    out = out.replace("__ENT_SUB__", stats["ent_sub"])
     out = out.replace("__ROWS_JS__", rows_js)
     out = out.replace("__PROJECTED_ASOF__", projected_asof)
     out = out.replace("__PROJECTED_ROWS_JS__", projected_rows_js)
@@ -604,11 +621,7 @@ def fill_template(template_text, accounts, today, projected_path="projected_snap
     if remaining:
         raise AssertionError(f"Unfilled placeholders remain: {set(remaining)}")
 
-    return out, {
-        "flagged_n": flagged_n, "total_n": total_n, "acv_k": acv_k,
-        "renew_n": renew_n, "renew_sub": renew_sub, "ent_n": ent_n, "ent_sub": ent_sub,
-        "asof": asof, "projected_asof": projected_asof,
-    }
+    return out, {**stats, "projected_asof": projected_asof}
 
 
 if __name__ == "__main__":

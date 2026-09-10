@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 pending_alerts.json
 overage_projection.json
+live_data.json
+live_page_fragment.json
+calendar_overrides.json
