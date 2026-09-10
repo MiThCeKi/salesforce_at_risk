@@ -253,6 +253,25 @@ every account's LastLogin/LastEmail/NextMeeting from live data exactly
 like this incident's fix did - never regenerate the whole live page from
 this file's existing (possibly stale) values.
 
+IMPORTANT - manual override list (added 2026-09-10, user request): the
+user can name a specific account and have it ALWAYS included in the
+tracked base going forward, regardless of whether it satisfies ACV > 0 /
+PageCountCap__c > 0 / both contract dates / Account_Tier__c != null - the
+five criteria above are a good DEFAULT filter, not a hard requirement the
+user can't override for a specific account they care about. MANUAL_INCLUDE_IDS
+below is that standing list - check_alerts.fetch_accounts() ORs it into its
+live SOQL WHERE clause (`(the five criteria) OR Id IN (...)`), and both the
+daily artifact-refresh and daily Salesforce-push Routines carry the same
+list spelled out in their own prompts (they run their own independent SOQL,
+not this repo's Python, so the list has to be duplicated there - keep all
+three in sync by hand whenever this changes). Accounts added this way may
+show N/A/Unknown-severity cells if they're missing the data those cells
+need (compute_rows already handles that gracefully, no special-casing
+required) - the override only guarantees the account APPEARS, not that a
+usage % can be computed for it. Whenever the user says "add <account>",
+add its Id here (and to both Routines' prompts) and leave it here
+indefinitely - never remove an entry without being explicitly asked to.
+
 Usage: python3 generate.py
 Output: /home/claude/sf-refresh/AtRiskAccountsSnapshot_new.html
 """
@@ -261,6 +280,10 @@ import json
 import re
 
 TODAY = datetime.date.today()
+
+MANUAL_INCLUDE_IDS = {
+    "001OL00000RHlUoYAL": "Vocational Economics, Inc.",  # added 2026-09-10, user request
+}
 
 accounts = [
 {"Name":"Alex Luczack MD", "Id":"001OL00000C5CzSYAV", "LastLogin":"2026-08-18", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"Micro", "ACV":4000.0, "Start":"2026-07-01", "End":"2027-07-01", "Cap":55000.0, "Pages":3198.0, "Hours":21.7, "Users":1.0, "MainContact":"Alex Luczack", "LastEmail":"2026-08-18", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
@@ -331,6 +354,7 @@ accounts = [
 {"Name":"TrueLine Medical Legal Consulting", "Id":"001OL00000UBUYBYA5", "LastLogin":"2026-07-27", "Owner":"Peter Moyse", "Stage":"Previous Customer", "Tier":"SMB", "ACV":12000.0, "Start":"2026-06-01", "End":"2027-05-31", "Cap":120000.0, "Pages":0, "Hours":0, "Users":1.0, "MainContact":"Khaleela Umheni", "LastEmail":"2026-07-27", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"Viewpoint Medical Assessments", "Id":"0015f00000L4E4IAAV", "LastLogin":"2026-08-11", "Owner":"Travis Bailey", "Stage":"Previous Customer", "Tier":"SMB", "ACV":126000.0, "Start":"2025-09-01", "End":"2026-08-31", "Cap":3500000.0, "Pages":173.0, "Hours":0.8, "Users":12.0, "MainContact":"Melinda Popa", "LastEmail":"2026-08-11", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"Vocational Alternatives", "Id":"001OL00000byRmQYAU", "LastLogin":"2026-09-03", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":9900.0, "Start":"2026-03-10", "End":"2027-03-09", "Cap":90000.0, "Pages":1194.0, "Hours":8.7, "Users":3.0, "MainContact":"Jeff Cohen", "LastEmail":"2026-07-15", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
+{"Name":"Vocational Economics, Inc.", "Id":"001OL00000RHlUoYAL", "LastLogin":None, "Owner":"Travis Bailey", "Stage":"Prospect", "Tier":"SMB", "ACV":65000.0, "Start":"2026-09-09", "End":"2027-09-08", "Cap":360000.0, "Pages":0, "Hours":0, "Users":0, "MainContact":None, "LastEmail":None, "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"Walnut Orchard Psychology Services", "Id":"001OL00000izh1xYAA", "LastLogin":"2026-05-14", "Owner":"Carla Chaytor", "Stage":"Customer", "Tier":"SMB", "ACV":12500.0, "Start":"2026-04-09", "End":"2027-04-08", "Cap":120000.0, "Pages":14689.0, "Hours":15.5, "Users":2.0, "MainContact":"Shayna Nussbaum", "LastEmail":"2026-06-23", "LastEmailBy":None, "NextMeeting":None, "NextMeetingTitle":None, "NextMeetingWith":None, "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"Zurich North America", "Id":"001I9000002tqUTIAY", "LastLogin":"2026-09-08", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"Enterprise", "ACV":88200.0, "Start":"2026-04-01", "End":"2028-03-31", "Cap":900000.0, "Pages":18177.0, "Hours":21.6, "Users":48.0, "MainContact":"Ryan Gussak", "LastEmail":"2026-09-08", "LastEmailBy":None, "NextMeeting":"2026-09-15", "NextMeetingTitle":"Siftmed x Zurich Weekly Sync", "NextMeetingWith":"Travis Bailey, Holly Hill, Michael King", "NextInternalMeeting":None, "NextInternalMeetingTitle":None},
 {"Name":"iMPROve Health", "Id":"001OL00000Ncj26YAB", "LastLogin":"2026-09-08", "Owner":"Travis Bailey", "Stage":"Customer", "Tier":"SMB", "ACV":36960.0, "Start":"2025-09-15", "End":"2026-09-30", "Cap":336000.0, "Pages":320.0, "Hours":30.6, "Users":9.0, "MainContact":"Leslie Howard", "LastEmail":"2026-09-08", "LastEmailBy":None, "NextMeeting":"2026-09-17", "NextMeetingTitle":"iMPROve <> SiftMed: Quarterly Check-in", "NextMeetingWith":"Travis Bailey", "NextInternalMeeting":None, "NextInternalMeetingTitle":None}

@@ -142,6 +142,14 @@ class TestAccountsSnapshotShape(unittest.TestCase):
         for a in generate.accounts:
             self.assertIsNotNone(a.get("Tier"), a.get("Name"))
 
+    def test_every_manual_include_id_present_in_snapshot(self):
+        # MANUAL_INCLUDE_IDS (added 2026-09-10, user request) is a standing
+        # override list - every Id on it must actually be in the snapshot,
+        # or the "always include this account" promise is silently broken.
+        snapshot_ids = {a["Id"] for a in generate.accounts}
+        for manual_id, name in generate.MANUAL_INCLUDE_IDS.items():
+            self.assertIn(manual_id, snapshot_ids, name)
+
     def test_meeting_fields_consistent_null_pairing(self):
         # A meeting date with no title (or vice versa) usually indicates a
         # partial/corrupted refresh - flag it rather than silently render it.

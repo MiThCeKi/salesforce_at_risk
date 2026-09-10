@@ -109,17 +109,28 @@ def fetch_accounts(my_domain, token):
     request: an account with no Tier segment assigned shouldn't be tracked
     as though it were - live-checked 2026-09-10 that exactly one currently-
     tracked account, Dr. Yaacov Markus, has a null Tier and is the one this
-    drops). Kept identical to generate.py's criteria on purpose so the
-    Projected End of Month Usage table tracks the exact same accounts as
-    the main Expected Monthly table; do not reintroduce a Stage__c filter
-    here without also changing generate.py."""
+    drops) - OR its Id is in generate.MANUAL_INCLUDE_IDS (also added
+    2026-09-10, user request: a standing per-account override the user
+    grows by naming an account to always include, regardless of whether it
+    meets the criteria above - see generate.py's own docstring for the
+    full rationale and the rule to keep this in sync with both live
+    Routines' prompts). Kept identical to generate.py's criteria on
+    purpose so the Projected End of Month Usage table tracks the exact
+    same accounts as the main Expected Monthly table; do not reintroduce a
+    Stage__c filter here without also changing generate.py."""
+    criteria = (
+        "(Annual_Contract_Value__c > 0 AND PageCountCap__c > 0 "
+        "AND Active_Contract_Start_Date__c != null AND Subscription_End_Date__c != null "
+        "AND Account_Tier__c != null)"
+    )
+    if generate.MANUAL_INCLUDE_IDS:
+        manual_ids = "','".join(generate.MANUAL_INCLUDE_IDS)
+        criteria += f" OR Id IN ('{manual_ids}')"
     query = (
         "SELECT Id, Name, Owner.Name, Stage__c, Account_Tier__c, Annual_Contract_Value__c, "
         "PageCountCap__c, Active_Contract_Start_Date__c, Subscription_End_Date__c, "
         "Pages_Last_30__c, Hours_Last_30__c, Active_Users_Last_30__c "
-        "FROM Account WHERE Annual_Contract_Value__c > 0 AND PageCountCap__c > 0 "
-        "AND Active_Contract_Start_Date__c != null AND Subscription_End_Date__c != null "
-        "AND Account_Tier__c != null "
+        f"FROM Account WHERE {criteria} "
         "ORDER BY Name"
     )
     records = soql(my_domain, token, query)

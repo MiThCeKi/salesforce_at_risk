@@ -14,6 +14,7 @@ import unittest
 from unittest import mock
 
 import check_alerts
+import generate
 
 
 def make_account(**over):
@@ -91,6 +92,17 @@ class TestFetchAccounts(unittest.TestCase):
         self.assertEqual(a["Pages"], 0)   # None Pages_Last_30__c defaults to 0
         self.assertEqual(a["Hours"], 0)
         self.assertEqual(a["Users"], 0)
+
+    @mock.patch("check_alerts.urllib.request.urlopen")
+    def test_query_ors_in_manual_include_ids(self, mock_urlopen):
+        mock_urlopen.return_value = self._mock_response({"done": True, "nextRecordsUrl": None, "records": []})
+        check_alerts.fetch_accounts("https://example.my.salesforce.com", "tok")
+        sent_url = mock_urlopen.call_args[0][0].full_url
+        import urllib.parse
+        query = urllib.parse.parse_qs(urllib.parse.urlparse(sent_url).query)["q"][0]
+        for manual_id in generate.MANUAL_INCLUDE_IDS:
+            self.assertIn(manual_id, query)
+        self.assertIn("OR Id IN", query)
 
     @mock.patch("check_alerts.urllib.request.urlopen")
     def test_soql_follows_pagination(self, mock_urlopen):

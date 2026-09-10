@@ -245,7 +245,8 @@
       Accounts missing a start date, end date, or page cap, or with a zero page cap or a negative contract length,
       are excluded from the calculation (shown as N/A) but still listed. Non-real and internal Account records
       (null or zero Annual_Contract_Value__c), and accounts with no Account_Tier__c assigned, are excluded from
-      the __TOTAL_N__ tracked-account base entirely.
+      the __TOTAL_N__ tracked-account base entirely &mdash; except for a small manually-maintained list of
+      accounts the team has asked to always track regardless of data completeness.
       The Stage column shows the account's tier alongside a Customer-stage account, e.g. &ldquo;Customer
       (Enterprise)&rdquo;; every other stage shows just the stage name &mdash; those accounts haven't necessarily
       signed a contract yet (or, for Previous Customer, no longer have one), so their page cap and usage figures
