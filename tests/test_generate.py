@@ -20,7 +20,7 @@ def make_account(**over):
         "Start": "2026-01-01", "End": "2027-01-01", "Cap": 120000.0,
         "Pages": 5000.0, "Hours": 3.0, "Users": 4.0,
         "MainContact": "Bob Contact", "LastEmail": "2026-09-01", "LastEmailBy": "Jane Rep",
-        "LastLogin": "2026-09-01",
+        "LastLogin": "2026-09-01", "HealthScore": 6,
         "NextMeeting": None, "NextMeetingTitle": None, "NextMeetingWith": None,
         "NextInternalMeeting": None, "NextInternalMeetingTitle": None,
     }
@@ -117,6 +117,15 @@ class TestComputeRows(unittest.TestCase):
         self.assertIsNone(row["Days"])
         self.assertIsNone(row["DaysSinceLogin"])
 
+    def test_health_score_passed_through(self):
+        row = self.row_for(pages=5000)
+        self.assertEqual(row["HealthScore"], 6)  # make_account's default
+
+    def test_health_score_none_when_missing(self):
+        a = make_account(HealthScore=None)
+        row = generate.compute_rows([a], self.TODAY)[0]
+        self.assertIsNone(row["HealthScore"])
+
     def test_rows_sorted_by_usage_pct_ascending_nones_last(self):
         accounts = [
             make_account(Id="a1", Pages=5000, Cap=120000.0),   # ~25%+, Healthy
@@ -174,13 +183,24 @@ class TestRenderRowsJs(unittest.TestCase):
         js = self.rendered_for(
             MainContact=None, LastEmail=None, LastEmailBy=None, NextMeeting=None,
             NextMeetingTitle=None, NextMeetingWith=None,
-            NextInternalMeeting=None, NextInternalMeetingTitle=None,
+            NextInternalMeeting=None, NextInternalMeetingTitle=None, HealthScore=None,
         )
         for field in (
             "mainContact", "lastEmail", "lastEmailBy", "nextMeeting", "nextMeetingTitle",
-            "nextMeetingWith", "nextInternalMeeting", "nextInternalMeetingTitle",
+            "nextMeetingWith", "nextInternalMeeting", "nextInternalMeetingTitle", "healthScore",
         ):
             self.assertIn(f"{field}:null", js)
+
+    def test_health_score_renders_as_int_when_present(self):
+        js = self.rendered_for(HealthScore=7)
+        self.assertIn("healthScore:7,", js)
+        self.assertNotIn("healthScore:7.0", js)
+
+    def test_health_score_zero_is_not_treated_as_missing(self):
+        # 0 is a real, valid Health_Score__c value (verified live 2026-09-10)
+        # - must render as healthScore:0, not fall through to null.
+        js = self.rendered_for(HealthScore=0)
+        self.assertIn("healthScore:0,", js)
 
     def test_last_email_by_null_when_last_email_present_but_sender_unknown(self):
         # LastEmailBy can legitimately be null even when LastEmail isn't - a

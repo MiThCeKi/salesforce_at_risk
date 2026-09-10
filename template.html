@@ -198,6 +198,7 @@
           <th data-key="name">Account <span class="arrow">↕</span></th>
           <th data-key="stage">Stage <span class="arrow">↕</span></th>
           <th data-key="severity">Risk <span class="arrow">↕</span></th>
+          <th data-key="healthScore">Health Score <span class="info-tip" tabindex="0" data-tip="Salesforce's own Health_Score__c on the Account record, on its own 0-9 scale &mdash; a separate signal from the Risk/Expected Usage columns here, which are derived purely from trailing 30-day page usage against the contracted cap.">&#9432;</span> <span class="arrow">↕</span></th>
           <th data-key="pct">Expected Usage <span class="info-tip" tabindex="0" data-tip="Pages uploaded in the last 30 days. This compares their actual usage to their contracted page allowance, scaled to a monthly rate (contract page cap &divide; contract length in months). This is a recent-pace estimate, not cumulative usage - it will differ from Salesforce's own cumulative % Used chart on the Account record, which compares total pages since the contract started against the full contract cap.">&#9432;</span> <span class="arrow">↓</span></th>
           <th data-key="acv">ACV <span class="arrow">↕</span></th>
           <th data-key="days">Renewal <span class="arrow">↕</span></th>
@@ -253,7 +254,9 @@
       may be provisional or stale. Last Email reflects the most recent logged Email-type Task on the Account,
       with the sending rep shown beneath the date when known;
       Next Meeting reflects the earliest future-dated Event on the Account &mdash; both show &ldquo;Never&rdquo; /
-      &ldquo;Not scheduled&rdquo; when there's no such record on file.
+      &ldquo;Not scheduled&rdquo; when there's no such record on file. Health Score is Salesforce's own
+      Health_Score__c field (0-9 scale) taken directly from the Account record &mdash; a separate signal from
+      the Risk/Expected Usage columns, which this dashboard derives itself from trailing 30-day page usage.
     </p>
     <div class="snapshot-note mono">
       This is a point-in-time snapshot embedded in Salesforce as a Static Resource. The live, auto-refreshing version
@@ -306,6 +309,7 @@ __ROWS_JS__
           '</div></td>' +
         '<td>' + acctLink(r, r.stageLabel, 'class="chip"') + '</td>' +
         '<td>' + acctLink(r, '<span class="dot"></span>' + SEV_LABEL[r.severity], 'class="badge ' + SEV[r.severity] + '"') + '</td>' +
+        '<td class="health-score">' + (r.healthScore === null ? acctLink(r, 'N/A') : acctLink(r, r.healthScore)) + '</td>' +
         '<td><div class="usage-pct">' + acctLink(r, pctLabel) + '</div>' +
             '<div class="usage-bar"><span style="width:' + barWidth + '%"></span></div>' +
             '<div class="usage-detail">' +

@@ -121,6 +121,7 @@ class TestAccountsSnapshotShape(unittest.TestCase):
     REQUIRED_KEYS = {
         "Name", "Id", "Owner", "Stage", "Tier", "ACV", "Start", "End", "Cap",
         "Pages", "Hours", "Users", "MainContact", "LastEmail", "LastEmailBy", "LastLogin",
+        "HealthScore",
         "NextMeeting", "NextMeetingTitle", "NextMeetingWith",
         "NextInternalMeeting", "NextInternalMeetingTitle",
     }

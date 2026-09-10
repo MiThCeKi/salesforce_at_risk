@@ -83,6 +83,7 @@ class TestFetchAccounts(unittest.TestCase):
                 "PageCountCap__c": 10000.0, "Active_Contract_Start_Date__c": "2026-01-01",
                 "Subscription_End_Date__c": "2027-01-01", "Pages_Last_30__c": None,
                 "Hours_Last_30__c": None, "Active_Users_Last_30__c": None,
+                "Health_Score__c": None,
             }],
         })
         accounts = check_alerts.fetch_accounts("https://example.my.salesforce.com", "tok")
@@ -92,6 +93,34 @@ class TestFetchAccounts(unittest.TestCase):
         self.assertEqual(a["Pages"], 0)   # None Pages_Last_30__c defaults to 0
         self.assertEqual(a["Hours"], 0)
         self.assertEqual(a["Users"], 0)
+        self.assertIsNone(a["HealthScore"])  # unlike Pages/Hours/Users, stays None, not 0
+
+    @mock.patch("check_alerts.urllib.request.urlopen")
+    def test_maps_health_score_including_zero(self, mock_urlopen):
+        # 0 is a real, valid Health_Score__c value (verified live 2026-09-10)
+        # - must not be coerced to None the way missing numeric fields are.
+        mock_urlopen.return_value = self._mock_response({
+            "done": True, "nextRecordsUrl": None,
+            "records": [{
+                "Id": "001x", "Name": "Acme", "Owner": {"Name": "Jane Rep"}, "Stage__c": "Customer",
+                "Account_Tier__c": "SMB", "Annual_Contract_Value__c": 1000.0,
+                "PageCountCap__c": 10000.0, "Active_Contract_Start_Date__c": "2026-01-01",
+                "Subscription_End_Date__c": "2027-01-01", "Pages_Last_30__c": 100.0,
+                "Hours_Last_30__c": 1.0, "Active_Users_Last_30__c": 1.0,
+                "Health_Score__c": 0,
+            }],
+        })
+        accounts = check_alerts.fetch_accounts("https://example.my.salesforce.com", "tok")
+        self.assertEqual(accounts[0]["HealthScore"], 0)
+
+    @mock.patch("check_alerts.urllib.request.urlopen")
+    def test_query_selects_health_score_c(self, mock_urlopen):
+        mock_urlopen.return_value = self._mock_response({"done": True, "nextRecordsUrl": None, "records": []})
+        check_alerts.fetch_accounts("https://example.my.salesforce.com", "tok")
+        sent_url = mock_urlopen.call_args[0][0].full_url
+        import urllib.parse
+        query = urllib.parse.parse_qs(urllib.parse.urlparse(sent_url).query)["q"][0]
+        self.assertIn("Health_Score__c", query)
 
     @mock.patch("check_alerts.urllib.request.urlopen")
     def test_query_ors_in_manual_include_ids(self, mock_urlopen):

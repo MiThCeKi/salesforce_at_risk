@@ -129,7 +129,7 @@ def fetch_accounts(my_domain, token):
     query = (
         "SELECT Id, Name, Owner.Name, Stage__c, Account_Tier__c, Annual_Contract_Value__c, "
         "PageCountCap__c, Active_Contract_Start_Date__c, Subscription_End_Date__c, "
-        "Pages_Last_30__c, Hours_Last_30__c, Active_Users_Last_30__c "
+        "Pages_Last_30__c, Hours_Last_30__c, Active_Users_Last_30__c, Health_Score__c "
         f"FROM Account WHERE {criteria} "
         "ORDER BY Name"
     )
@@ -150,6 +150,7 @@ def fetch_accounts(my_domain, token):
             "Pages": r.get("Pages_Last_30__c") or 0,
             "Hours": r.get("Hours_Last_30__c") or 0,
             "Users": r.get("Active_Users_Last_30__c") or 0,
+            "HealthScore": r.get("Health_Score__c"),
         })
     return accounts
 

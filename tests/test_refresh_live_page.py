@@ -56,6 +56,15 @@ class TestBuildAccountRecords(unittest.TestCase):
         rlp.build_account_records(accounts, {}, {}, {}, {}, {})
         self.assertEqual(original, {"Id": "001x", "Name": "Acme"})
 
+    def test_health_score_from_the_account_fetch_passes_through_untouched(self):
+        # HealthScore comes straight from check_alerts.fetch_accounts (part
+        # of the base account dict), not from any activity_linking
+        # compute_* output - this only confirms the dict(a) copy in
+        # build_account_records doesn't drop it.
+        accounts = [{"Id": "001x", "Name": "Acme", "HealthScore": 0}]
+        records = rlp.build_account_records(accounts, {}, {}, {}, {}, {})
+        self.assertEqual(records[0]["HealthScore"], 0)
+
 
 class TestApplyOverrides(unittest.TestCase):
     def test_override_replaces_next_meeting_fields(self):
