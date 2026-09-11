@@ -119,7 +119,21 @@ def fetch_last_30d_case_hours(my_domain, token, account_ids):
     own numerator and denominator to agree with each other, not to match
     a different field's rollup. account_ids inlined directly - safe at
     this org's ~74 tracked-account count (unlike Contact ids elsewhere in
-    this codebase, which hit HTTP 431 at ~880 - see activity_linking.py)."""
+    this codebase, which hit HTTP 431 at ~880 - see activity_linking.py).
+
+    Excludes Usage_data__c rows with zero Total_Time_spent_in_App_hr__c
+    (added 2026-09-11, user request: a case created but never worked on
+    shouldn't count toward the average - it isn't real "time per case",
+    it's a case sitting untouched). Usage_data__c is a daily per-contact
+    row, not per-case, so there's no way to see whether a SPECIFIC case
+    got zero time; the closest available proxy is the day it was
+    created - if that whole day logged zero app time, whatever cases it
+    lists as created are dropped from the case count entirely (not just
+    zeroed out) rather than dragging the average down for work that
+    provably didn't happen. This also means those excluded rows can never
+    contribute to hours_sum either (a zero-hours row adds nothing to a
+    sum regardless), so the filter only ever changes cases_sum, never
+    hours_sum."""
     if not account_ids:
         return {}
     ids_list = "','".join(account_ids)
@@ -127,6 +141,7 @@ def fetch_last_30d_case_hours(my_domain, token, account_ids):
         "SELECT Related_Account__c, SUM(Total_Time_spent_in_App_hr__c) hrsum, "
         "SUM(Number_of_Cases_Created__c) casesum FROM Usage_data__c "
         f"WHERE Date__c = LAST_N_DAYS:30 AND Related_Account__c IN ('{ids_list}') "
+        "AND Total_Time_spent_in_App_hr__c > 0 "
         "GROUP BY Related_Account__c"
     )
     records = soql(my_domain, token, query)

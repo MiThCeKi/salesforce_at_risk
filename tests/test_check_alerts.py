@@ -242,6 +242,7 @@ class TestFetchLast30dCaseHours(unittest.TestCase):
         self.assertIn("001b", query)
         self.assertIn("Number_of_Cases_Created__c", query)
         self.assertIn("Total_Time_spent_in_App_hr__c", query)
+        self.assertIn("Total_Time_spent_in_App_hr__c > 0", query)
 
 
 class TestFetchMonthToDatePages(unittest.TestCase):
