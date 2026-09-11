@@ -177,10 +177,6 @@ def push_main_table_live(rows_js, stats):
         lambda m: m.group(1) + str(stats["total_n"]) + m.group(2), "statTotal",
     )
     updated = _regex_replace_one(
-        updated, r'(id="statACV">)[^<]*(</div>)',
-        lambda m: m.group(1) + stats["acv_k"] + m.group(2), "statACV tile",
-    )
-    updated = _regex_replace_one(
         updated, r'(id="statRenew">)[^<]*(</div>)',
         lambda m: m.group(1) + str(stats["renew_n"]) + m.group(2), "statRenew tile",
     )

@@ -43,7 +43,7 @@
   }
   hr.rule{border:none;border-top:1px solid var(--panel-border);margin:0 0 28px;}
   .stats{
-    display:grid;grid-template-columns:repeat(4,1fr);
+    display:grid;grid-template-columns:repeat(3,1fr);
     border:1px solid var(--panel-border);border-radius:4px;
     margin-bottom:40px;background:var(--panel);
   }
@@ -162,11 +162,6 @@
       <div class="label">Flagged Accounts <span class="info-tip" tabindex="0" data-tip="__FLAGGED_N__ of SiftMed's __TOTAL_N__ tracked accounts (any account with a contract length, page cap, and usage on file, regardless of sales/lifecycle stage) used under 25% of their contracted or projected monthly page cap in the last 30 days &mdash; the same usage-cliff pattern that showed up, months in advance, ahead of every one of SiftMed's nine confirmed churns this year. The monthly cap is prorated to each account's actual contract length rather than assumed to be 12 months, which cleared two multi-year contracts (Zurich North America, Physician Life Care Planning) that would otherwise have looked at-risk only because their page cap covers 24 months, not one.">&#9432;</span></div>
       <div class="value" id="statFlagged">__FLAGGED_N__</div>
       <div class="sub">of <span id="statTotal">__TOTAL_N__</span> tracked accounts</div>
-    </div>
-    <div class="stat">
-      <div class="label">ACV Represented</div>
-      <div class="value" id="statACV">__ACV_K__</div>
-      <div class="sub">annual contract value, flagged accounts</div>
     </div>
     <div class="stat">
       <div class="label">Renewing Within 60 Days</div>

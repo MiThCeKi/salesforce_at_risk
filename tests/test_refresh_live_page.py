@@ -132,7 +132,6 @@ class TestPushMainTableLive(unittest.TestCase):
         '<span id="asof">OLD DATE</span>'
         '<div class="value" id="statFlagged">1</div>'
         '<span id="statTotal">1</span>'
-        '<div class="value" id="statACV">$1K</div>'
         '<div class="value" id="statRenew">0</div>'
         '<div class="sub" id="statRenewSub">None in the next 60 days</div>'
         '<div class="value plain" id="statEnt">0</div>'
@@ -160,7 +159,6 @@ class TestPushMainTableLive(unittest.TestCase):
         self.assertIn('id="asof">SEP 10, 2026<', pushed)
         self.assertIn('id="statFlagged">2<', pushed)
         self.assertIn('id="statTotal">3<', pushed)
-        self.assertIn('id="statACV">$2K<', pushed)
         self.assertIn('id="statRenew">1<', pushed)
         self.assertIn('id="statRenewSub">Acme &mdash; 5 days, 1.0% usage<', pushed)
         self.assertIn('id="statEnt">1<', pushed)
