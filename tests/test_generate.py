@@ -20,7 +20,7 @@ def make_account(**over):
         "Start": "2026-01-01", "End": "2027-01-01", "Cap": 120000.0,
         "Pages": 5000.0, "Hours": 3.0, "Users": 4.0,
         "MainContact": "Bob Contact", "LastEmail": "2026-09-01", "LastEmailBy": "Jane Rep",
-        "LastLogin": "2026-09-01", "HealthScore": 6,
+        "LastLogin": "2026-09-01", "HealthScore": 6, "AvgHoursPerCase": 2.5,
         "NextMeeting": None, "NextMeetingTitle": None, "NextMeetingWith": None,
         "NextInternalMeeting": None, "NextInternalMeetingTitle": None,
     }
@@ -126,6 +126,15 @@ class TestComputeRows(unittest.TestCase):
         row = generate.compute_rows([a], self.TODAY)[0]
         self.assertIsNone(row["HealthScore"])
 
+    def test_avg_hours_per_case_passed_through(self):
+        row = self.row_for(pages=5000)
+        self.assertEqual(row["AvgHoursPerCase"], 2.5)  # make_account's default
+
+    def test_avg_hours_per_case_none_when_missing(self):
+        a = make_account(AvgHoursPerCase=None)
+        row = generate.compute_rows([a], self.TODAY)[0]
+        self.assertIsNone(row["AvgHoursPerCase"])
+
     def test_rows_sorted_by_usage_pct_ascending_nones_last(self):
         accounts = [
             make_account(Id="a1", Pages=5000, Cap=120000.0),   # ~25%+, Healthy
@@ -184,10 +193,12 @@ class TestRenderRowsJs(unittest.TestCase):
             MainContact=None, LastEmail=None, LastEmailBy=None, NextMeeting=None,
             NextMeetingTitle=None, NextMeetingWith=None,
             NextInternalMeeting=None, NextInternalMeetingTitle=None, HealthScore=None,
+            AvgHoursPerCase=None,
         )
         for field in (
             "mainContact", "lastEmail", "lastEmailBy", "nextMeeting", "nextMeetingTitle",
             "nextMeetingWith", "nextInternalMeeting", "nextInternalMeetingTitle", "healthScore",
+            "avgHoursPerCase",
         ):
             self.assertIn(f"{field}:null", js)
 
@@ -201,6 +212,14 @@ class TestRenderRowsJs(unittest.TestCase):
         # - must render as healthScore:0, not fall through to null.
         js = self.rendered_for(HealthScore=0)
         self.assertIn("healthScore:0,", js)
+
+    def test_avg_hours_per_case_renders_rounded_to_one_decimal(self):
+        js = self.rendered_for(AvgHoursPerCase=2.5)
+        self.assertIn("avgHoursPerCase:2.5,", js)
+
+    def test_avg_hours_per_case_rounds_long_decimal(self):
+        js = self.rendered_for(AvgHoursPerCase=10.0 / 3)
+        self.assertIn("avgHoursPerCase:3.3,", js)
 
     def test_last_email_by_null_when_last_email_present_but_sender_unknown(self):
         # LastEmailBy can legitimately be null even when LastEmail isn't - a

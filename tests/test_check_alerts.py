@@ -75,17 +75,20 @@ class TestFetchAccounts(unittest.TestCase):
 
     @mock.patch("check_alerts.urllib.request.urlopen")
     def test_maps_fields_and_defaults_missing_owner(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response({
-            "done": True, "nextRecordsUrl": None,
-            "records": [{
-                "Id": "001x", "Name": "Acme", "Owner": None, "Stage__c": "Customer",
-                "Account_Tier__c": "SMB", "Annual_Contract_Value__c": 1000.0,
-                "PageCountCap__c": 10000.0, "Active_Contract_Start_Date__c": "2026-01-01",
-                "Subscription_End_Date__c": "2027-01-01", "Pages_Last_30__c": None,
-                "Hours_Last_30__c": None, "Active_Users_Last_30__c": None,
-                "Health_Score__c": None,
-            }],
-        })
+        mock_urlopen.side_effect = [
+            self._mock_response({
+                "done": True, "nextRecordsUrl": None,
+                "records": [{
+                    "Id": "001x", "Name": "Acme", "Owner": None, "Stage__c": "Customer",
+                    "Account_Tier__c": "SMB", "Annual_Contract_Value__c": 1000.0,
+                    "PageCountCap__c": 10000.0, "Active_Contract_Start_Date__c": "2026-01-01",
+                    "Subscription_End_Date__c": "2027-01-01", "Pages_Last_30__c": None,
+                    "Hours_Last_30__c": None, "Active_Users_Last_30__c": None,
+                    "Health_Score__c": None,
+                }],
+            }),
+            self._mock_response({"done": True, "nextRecordsUrl": None, "records": []}),
+        ]
         accounts = check_alerts.fetch_accounts("https://example.my.salesforce.com", "tok")
         self.assertEqual(len(accounts), 1)
         a = accounts[0]
@@ -94,22 +97,26 @@ class TestFetchAccounts(unittest.TestCase):
         self.assertEqual(a["Hours"], 0)
         self.assertEqual(a["Users"], 0)
         self.assertIsNone(a["HealthScore"])  # unlike Pages/Hours/Users, stays None, not 0
+        self.assertIsNone(a["AvgHoursPerCase"])  # no Usage_data__c rows in the mocked second query
 
     @mock.patch("check_alerts.urllib.request.urlopen")
     def test_maps_health_score_including_zero(self, mock_urlopen):
         # 0 is a real, valid Health_Score__c value (verified live 2026-09-10)
         # - must not be coerced to None the way missing numeric fields are.
-        mock_urlopen.return_value = self._mock_response({
-            "done": True, "nextRecordsUrl": None,
-            "records": [{
-                "Id": "001x", "Name": "Acme", "Owner": {"Name": "Jane Rep"}, "Stage__c": "Customer",
-                "Account_Tier__c": "SMB", "Annual_Contract_Value__c": 1000.0,
-                "PageCountCap__c": 10000.0, "Active_Contract_Start_Date__c": "2026-01-01",
-                "Subscription_End_Date__c": "2027-01-01", "Pages_Last_30__c": 100.0,
-                "Hours_Last_30__c": 1.0, "Active_Users_Last_30__c": 1.0,
-                "Health_Score__c": 0,
-            }],
-        })
+        mock_urlopen.side_effect = [
+            self._mock_response({
+                "done": True, "nextRecordsUrl": None,
+                "records": [{
+                    "Id": "001x", "Name": "Acme", "Owner": {"Name": "Jane Rep"}, "Stage__c": "Customer",
+                    "Account_Tier__c": "SMB", "Annual_Contract_Value__c": 1000.0,
+                    "PageCountCap__c": 10000.0, "Active_Contract_Start_Date__c": "2026-01-01",
+                    "Subscription_End_Date__c": "2027-01-01", "Pages_Last_30__c": 100.0,
+                    "Hours_Last_30__c": 1.0, "Active_Users_Last_30__c": 1.0,
+                    "Health_Score__c": 0,
+                }],
+            }),
+            self._mock_response({"done": True, "nextRecordsUrl": None, "records": []}),
+        ]
         accounts = check_alerts.fetch_accounts("https://example.my.salesforce.com", "tok")
         self.assertEqual(accounts[0]["HealthScore"], 0)
 
@@ -117,10 +124,57 @@ class TestFetchAccounts(unittest.TestCase):
     def test_query_selects_health_score_c(self, mock_urlopen):
         mock_urlopen.return_value = self._mock_response({"done": True, "nextRecordsUrl": None, "records": []})
         check_alerts.fetch_accounts("https://example.my.salesforce.com", "tok")
+        # No accounts came back, so fetch_last_30d_case_hours never fires a
+        # second request - this is the only call, safe to check directly.
         sent_url = mock_urlopen.call_args[0][0].full_url
         import urllib.parse
         query = urllib.parse.parse_qs(urllib.parse.urlparse(sent_url).query)["q"][0]
         self.assertIn("Health_Score__c", query)
+
+    @mock.patch("check_alerts.urllib.request.urlopen")
+    def test_merges_avg_hours_per_case_from_usage_data(self, mock_urlopen):
+        mock_urlopen.side_effect = [
+            self._mock_response({
+                "done": True, "nextRecordsUrl": None,
+                "records": [{
+                    "Id": "001x", "Name": "Acme", "Owner": {"Name": "Jane Rep"}, "Stage__c": "Customer",
+                    "Account_Tier__c": "SMB", "Annual_Contract_Value__c": 1000.0,
+                    "PageCountCap__c": 10000.0, "Active_Contract_Start_Date__c": "2026-01-01",
+                    "Subscription_End_Date__c": "2027-01-01", "Pages_Last_30__c": 100.0,
+                    "Hours_Last_30__c": 10.0, "Active_Users_Last_30__c": 1.0,
+                    "Health_Score__c": 5,
+                }],
+            }),
+            self._mock_response({
+                "done": True, "nextRecordsUrl": None,
+                "records": [{"Related_Account__c": "001x", "hrsum": 10.0, "casesum": 4}],
+            }),
+        ]
+        accounts = check_alerts.fetch_accounts("https://example.my.salesforce.com", "tok")
+        self.assertEqual(accounts[0]["AvgHoursPerCase"], 2.5)
+
+    @mock.patch("check_alerts.urllib.request.urlopen")
+    def test_avg_hours_per_case_none_when_zero_cases(self, mock_urlopen):
+        mock_urlopen.side_effect = [
+            self._mock_response({
+                "done": True, "nextRecordsUrl": None,
+                "records": [{
+                    "Id": "001x", "Name": "Acme", "Owner": {"Name": "Jane Rep"}, "Stage__c": "Customer",
+                    "Account_Tier__c": "SMB", "Annual_Contract_Value__c": 1000.0,
+                    "PageCountCap__c": 10000.0, "Active_Contract_Start_Date__c": "2026-01-01",
+                    "Subscription_End_Date__c": "2027-01-01", "Pages_Last_30__c": 100.0,
+                    "Hours_Last_30__c": 10.0, "Active_Users_Last_30__c": 1.0,
+                    "Health_Score__c": 5,
+                }],
+            }),
+            self._mock_response({
+                "done": True, "nextRecordsUrl": None,
+                # Real hours logged, but no new case created that period.
+                "records": [{"Related_Account__c": "001x", "hrsum": 8.3, "casesum": 0}],
+            }),
+        ]
+        accounts = check_alerts.fetch_accounts("https://example.my.salesforce.com", "tok")
+        self.assertIsNone(accounts[0]["AvgHoursPerCase"])
 
     @mock.patch("check_alerts.urllib.request.urlopen")
     def test_query_ors_in_manual_include_ids(self, mock_urlopen):
@@ -141,6 +195,53 @@ class TestFetchAccounts(unittest.TestCase):
         records = check_alerts.soql("https://example.my.salesforce.com", "tok", "SELECT Id FROM Account")
         self.assertEqual([r["Id"] for r in records], ["1", "2"])
         self.assertEqual(mock_urlopen.call_count, 2)
+
+
+class TestAvgHoursPerCase(unittest.TestCase):
+    def test_divides_hours_by_cases(self):
+        self.assertEqual(check_alerts.avg_hours_per_case(10.0, 4), 2.5)
+
+    def test_none_when_zero_cases(self):
+        # Real hours logged but no new case created that period - a valid
+        # state, not an error, and must not raise ZeroDivisionError.
+        self.assertIsNone(check_alerts.avg_hours_per_case(8.3, 0))
+
+    def test_none_when_no_usage_data_at_all(self):
+        self.assertIsNone(check_alerts.avg_hours_per_case(0, 0))
+
+
+class TestFetchLast30dCaseHours(unittest.TestCase):
+    @mock.patch("check_alerts.soql")
+    def test_maps_account_id_to_hours_and_cases_tuple(self, mock_soql):
+        mock_soql.return_value = [
+            {"Related_Account__c": "001a", "hrsum": 12.5, "casesum": 5},
+            {"Related_Account__c": "001b", "hrsum": None, "casesum": None},
+        ]
+        result = check_alerts.fetch_last_30d_case_hours(
+            "https://example.my.salesforce.com", "tok", ["001a", "001b"]
+        )
+        self.assertEqual(result, {"001a": (12.5, 5), "001b": (0, 0)})
+
+    @mock.patch("check_alerts.soql")
+    def test_empty_account_ids_short_circuits_without_a_query(self, mock_soql):
+        result = check_alerts.fetch_last_30d_case_hours(
+            "https://example.my.salesforce.com", "tok", []
+        )
+        self.assertEqual(result, {})
+        mock_soql.assert_not_called()
+
+    @mock.patch("check_alerts.soql")
+    def test_query_filters_last_30_days_and_scopes_to_account_ids(self, mock_soql):
+        mock_soql.return_value = []
+        check_alerts.fetch_last_30d_case_hours(
+            "https://example.my.salesforce.com", "tok", ["001a", "001b"]
+        )
+        query = mock_soql.call_args[0][2]
+        self.assertIn("LAST_N_DAYS:30", query)
+        self.assertIn("001a", query)
+        self.assertIn("001b", query)
+        self.assertIn("Number_of_Cases_Created__c", query)
+        self.assertIn("Total_Time_spent_in_App_hr__c", query)
 
 
 class TestFetchMonthToDatePages(unittest.TestCase):

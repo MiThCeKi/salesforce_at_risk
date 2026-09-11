@@ -101,6 +101,49 @@ def fetch_month_to_date_pages(my_domain, token, today):
     return {r["Related_Account__c"]: (r["total"] or 0) for r in records}
 
 
+def fetch_last_30d_case_hours(my_domain, token, account_ids):
+    """{account_id: (hours_sum, cases_sum)} - the source for Avg Time/Case
+    (added 2026-09-11, user request). Account has no Cases_Last_30__c
+    rollup the way it does for Pages/Hours, so this sums Usage_data__c's
+    own Total_Time_spent_in_App_hr__c and Number_of_Cases_Created__c
+    directly over the trailing 30 days (Date__c = LAST_N_DAYS:30) - the
+    only place a per-account case count exists at all. Both sums come
+    from the same query/window so their ratio is always internally
+    consistent, even though checked live 2026-09-11 that this LAST_N_DAYS:30
+    sum does NOT exactly reproduce Account.Hours_Last_30__c or
+    Pages_Last_30__c (consistently a few percent lower across sampled
+    accounts - AssessMed: 377.89 summed vs 394.09 on the Account rollup;
+    those rollups evidently aggregate over a slightly different
+    window/source than a literal SOQL LAST_N_DAYS:30 sum of this object).
+    That's not a correctness problem for this ratio, which only needs its
+    own numerator and denominator to agree with each other, not to match
+    a different field's rollup. account_ids inlined directly - safe at
+    this org's ~74 tracked-account count (unlike Contact ids elsewhere in
+    this codebase, which hit HTTP 431 at ~880 - see activity_linking.py)."""
+    if not account_ids:
+        return {}
+    ids_list = "','".join(account_ids)
+    query = (
+        "SELECT Related_Account__c, SUM(Total_Time_spent_in_App_hr__c) hrsum, "
+        "SUM(Number_of_Cases_Created__c) casesum FROM Usage_data__c "
+        f"WHERE Date__c = LAST_N_DAYS:30 AND Related_Account__c IN ('{ids_list}') "
+        "GROUP BY Related_Account__c"
+    )
+    records = soql(my_domain, token, query)
+    return {r["Related_Account__c"]: (r["hrsum"] or 0, r["casesum"] or 0) for r in records}
+
+
+def avg_hours_per_case(hours_sum, cases_sum):
+    """Pure: None when there's no case to divide by - either no usage data
+    at all in the window, or real hours logged with zero NEW cases created
+    that period (checked live 2026-09-11: several tracked accounts have
+    hours > 0 but 0 cases created) - both are real "can't compute this"
+    states, not a bug to paper over with a 0."""
+    if not cases_sum:
+        return None
+    return hours_sum / cases_sum
+
+
 def fetch_accounts(my_domain, token):
     """Same account universe as generate.py's accounts list: no Stage__c
     filter (deliberately dropped 2026-09-02 - see generate.py's module
@@ -134,9 +177,11 @@ def fetch_accounts(my_domain, token):
         "ORDER BY Name"
     )
     records = soql(my_domain, token, query)
+    case_hours = fetch_last_30d_case_hours(my_domain, token, [r["Id"] for r in records])
     accounts = []
     for r in records:
         owner = r.get("Owner") or {}
+        hours_sum, cases_sum = case_hours.get(r["Id"], (0, 0))
         accounts.append({
             "Name": r["Name"],
             "Id": r["Id"],
@@ -151,6 +196,7 @@ def fetch_accounts(my_domain, token):
             "Hours": r.get("Hours_Last_30__c") or 0,
             "Users": r.get("Active_Users_Last_30__c") or 0,
             "HealthScore": r.get("Health_Score__c"),
+            "AvgHoursPerCase": avg_hours_per_case(hours_sum, cases_sum),
         })
     return accounts
 
