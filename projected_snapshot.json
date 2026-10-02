@@ -1,5 +1,5 @@
 {
-  "asOf": "SEP 30, 2026",
+  "asOf": "OCT 02, 2026",
   "rows": [
     {
       "name": "Assessnet",
@@ -9,9 +9,9 @@
       "stageLabel": "SQL",
       "pct": 0.0,
       "acv": 18000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Bobbie Ross MD",
@@ -21,9 +21,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 3000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Carol Bierbrier & Associates - CBA",
@@ -33,9 +33,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 6840.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Cayuga Mutual",
@@ -45,9 +45,9 @@
       "stageLabel": "Customer (SMB)",
       "pct": 0.0,
       "acv": 600.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Chris Small Professional Medical Corporation",
@@ -57,9 +57,9 @@
       "stageLabel": "Customer (Micro)",
       "pct": 0.0,
       "acv": 4800.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Daugherty & Associates, LLC",
@@ -69,9 +69,9 @@
       "stageLabel": "Customer (Micro)",
       "pct": 0.0,
       "acv": 8400.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Dr. K. Thomas",
@@ -81,9 +81,9 @@
       "stageLabel": "Prospect",
       "pct": 0.0,
       "acv": 12500.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Dr. Yaacov Markus",
@@ -93,9 +93,9 @@
       "stageLabel": "Prospect",
       "pct": 0.0,
       "acv": 13800.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Drass and Associates Behavioral Healthcare and Legal Nurse Consulting",
@@ -105,9 +105,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 600.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Girones Lawyers",
@@ -117,9 +117,9 @@
       "stageLabel": "Customer (SMB)",
       "pct": 0.0,
       "acv": 11188.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Halbrecht Orthopedics",
@@ -129,9 +129,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 650.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Harmony Life Care Planning",
@@ -141,9 +141,9 @@
       "stageLabel": "Prospect",
       "pct": 0.0,
       "acv": 9000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Integrity Legal Nurse Consulting",
@@ -153,9 +153,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 9000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Integrity Medical Evaluations",
@@ -165,9 +165,21 @@
       "stageLabel": "Customer (Enterprise)",
       "pct": 0.0,
       "acv": 158400.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Kent & Essex Mutual Insurance Company",
+      "id": "001OL00000VIfEAYA1",
+      "tier": "SMB",
+      "stage": "Unqualifed",
+      "stageLabel": "Unqualifed",
+      "pct": 0.0,
+      "acv": 5000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Medical and Life Care Consulting",
@@ -177,9 +189,9 @@
       "stageLabel": "Unqualifed",
       "pct": 0.0,
       "acv": 16800.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Mohamed Khaled MD",
@@ -189,9 +201,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 19349.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Paul Zalzal MD",
@@ -201,9 +213,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 4752.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Priddle Law Group",
@@ -213,9 +225,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 600.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Rachel Yeboah MD",
@@ -225,9 +237,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 5400.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "SEA & Associates Medical Legal Consulting Inc",
@@ -237,9 +249,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 24000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "TrueLine Medical Legal Consulting",
@@ -249,9 +261,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 12000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Viewpoint Medical Assessments",
@@ -261,9 +273,9 @@
       "stageLabel": "Previous Customer",
       "pct": 0.0,
       "acv": 126000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "National Medical Reviews (NMR)",
@@ -271,11 +283,11 @@
       "tier": "Enterprise",
       "stage": "Prospect",
       "stageLabel": "Prospect",
-      "pct": 0.1,
+      "pct": 0.0,
       "acv": 350000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Litco Law LSO",
@@ -283,239 +295,11 @@
       "tier": "Enterprise",
       "stage": "SQL",
       "stageLabel": "SQL",
-      "pct": 3.0,
+      "pct": 0.0,
       "acv": 62500.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Jamie Irvine MD",
-      "id": "001OL00000D0AqjYAF",
-      "tier": "Micro",
-      "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 4.8,
-      "acv": 9576.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "iMPROve Health",
-      "id": "001OL00000Ncj26YAB",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 4.9,
-      "acv": 36960.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Vocational Economics, Inc.",
-      "id": "001OL00000RHlUoYAL",
-      "tier": "SMB",
-      "stage": "Prospect",
-      "stageLabel": "Prospect",
-      "pct": 4.9,
-      "acv": 65000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Orvosi Medical Management",
-      "id": "001OL00000BbZGdYAN",
-      "tier": "Enterprise",
-      "stage": "Customer",
-      "stageLabel": "Customer (Enterprise)",
-      "pct": 5.2,
-      "acv": 96000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "KLE Nurse Consultants",
-      "id": "001OL00000XOkQ8YAL",
-      "tier": "Micro",
-      "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 6.2,
-      "acv": 9000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Trillium Mutual Insurance Company",
-      "id": "001OL00000Q4fgjYAB",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 7.0,
-      "acv": 7000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Tamming Law",
-      "id": "001I9000005T4eYIAS",
-      "tier": "SMB",
-      "stage": "Unqualifed",
-      "stageLabel": "Unqualifed",
-      "pct": 7.2,
-      "acv": 9600.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "North Toronto Surgical",
-      "id": "001OL00000SE68iYAD",
-      "tier": "Micro",
-      "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 8.3,
-      "acv": 1920.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "The Ivera Group",
-      "id": "001OL00000gAMVJYA4",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 8.0,
-      "acv": 80000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Dr. Jordi Cisa Medical Corporation",
-      "id": "001OL00000BxtGiYAJ",
-      "tier": "Micro",
-      "stage": "Kick Back",
-      "stageLabel": "Kick Back",
-      "pct": 14.4,
-      "acv": 4590.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Crannie Law",
-      "id": "001I9000005T4dLIAS",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 15.3,
-      "acv": 11896.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Life Care Planning Solutions LLC",
-      "id": "001OL00000NseOJYAZ",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 15.5,
-      "acv": 8000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Medical Vocational Planning (MVP)",
-      "id": "001OL00000A5GPoYAN",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 17.7,
-      "acv": 115200.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Integrated Insurance Resources",
-      "id": "001OL00000i3vA5YAI",
-      "tier": "SMB",
-      "stage": "Unqualifed",
-      "stageLabel": "Unqualifed",
-      "pct": 24.5,
-      "acv": 9000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "JS Held - BioMechanics Group",
-      "id": "001OL000006SaZlYAK",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 27.4,
-      "acv": 23061.75,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Medivest",
-      "id": "001OL00000eL401YAC",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 29.9,
-      "acv": 100000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "PsycIME",
-      "id": "0015f00000WHoQUAA1",
-      "tier": "Enterprise",
-      "stage": "SQL",
-      "stageLabel": "SQL",
-      "pct": 32.3,
-      "acv": 105000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Peel Mutual Insurance Company",
-      "id": "001I900000362wRIAQ",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 35.2,
-      "acv": 5760.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Alex Luczack MD",
-      "id": "001OL00000C5CzSYAV",
-      "tier": "Micro",
-      "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 38.8,
-      "acv": 4000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Canadian Health Solutions Inc",
@@ -525,9 +309,213 @@
       "stageLabel": "Customer (SMB)",
       "pct": 0.0,
       "acv": 20000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Jamie Irvine MD",
+      "id": "001OL00000D0AqjYAF",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 0.0,
+      "acv": 9576.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Vocational Economics, Inc.",
+      "id": "001OL00000RHlUoYAL",
+      "tier": "SMB",
+      "stage": "Prospect",
+      "stageLabel": "Prospect",
+      "pct": 0.0,
+      "acv": 65000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "iMPROve Health",
+      "id": "001OL00000Ncj26YAB",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 1.4,
+      "acv": 36960.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Orvosi Medical Management",
+      "id": "001OL00000BbZGdYAN",
+      "tier": "Enterprise",
+      "stage": "Customer",
+      "stageLabel": "Customer (Enterprise)",
+      "pct": 4.6,
+      "acv": 96000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "KLE Nurse Consultants",
+      "id": "001OL00000XOkQ8YAL",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 0.0,
+      "acv": 9000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Trillium Mutual Insurance Company",
+      "id": "001OL00000Q4fgjYAB",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 9.7,
+      "acv": 7000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "The Ivera Group",
+      "id": "001OL00000gAMVJYA4",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 0.0,
+      "acv": 80000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Tamming Law",
+      "id": "001I9000005T4eYIAS",
+      "tier": "SMB",
+      "stage": "Unqualifed",
+      "stageLabel": "Unqualifed",
+      "pct": 18.2,
+      "acv": 9600.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "North Toronto Surgical",
+      "id": "001OL00000SE68iYAD",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 13.2,
+      "acv": 1920.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Medical Vocational Planning (MVP)",
+      "id": "001OL00000A5GPoYAN",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 0.0,
+      "acv": 115200.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Life Care Planning Solutions LLC",
+      "id": "001OL00000NseOJYAZ",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 36.9,
+      "acv": 8000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Integrated Insurance Resources",
+      "id": "001OL00000i3vA5YAI",
+      "tier": "SMB",
+      "stage": "Unqualifed",
+      "stageLabel": "Unqualifed",
+      "pct": 0.0,
+      "acv": 9000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "JS Held - BioMechanics Group",
+      "id": "001OL000006SaZlYAK",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 0.0,
+      "acv": 23061.75,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "PsycIME",
+      "id": "0015f00000WHoQUAA1",
+      "tier": "Enterprise",
+      "stage": "SQL",
+      "stageLabel": "SQL",
+      "pct": 0.0,
+      "acv": 105000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Crannie Law",
+      "id": "001I9000005T4dLIAS",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 93.8,
+      "acv": 11896.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Peel Mutual Insurance Company",
+      "id": "001I900000362wRIAQ",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 1.9,
+      "acv": 5760.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Alex Luczack MD",
+      "id": "001OL00000C5CzSYAV",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 0.0,
+      "acv": 4000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "NuHaven Health",
@@ -535,23 +523,35 @@
       "tier": "SMB",
       "stage": "Customer",
       "stageLabel": "Customer (SMB)",
-      "pct": 50.1,
+      "pct": 0.0,
       "acv": 8100.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
-      "name": "Aua Consulting LLC",
-      "id": "001OL00000kV72oYAC",
+      "name": "Dr. Jordi Cisa Medical Corporation",
+      "id": "001OL00000BxtGiYAJ",
       "tier": "Micro",
+      "stage": "Kick Back",
+      "stageLabel": "Kick Back",
+      "pct": 0.0,
+      "acv": 4590.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Medivest",
+      "id": "001OL00000eL401YAC",
+      "tier": "SMB",
       "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 50.9,
-      "acv": 21000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "stageLabel": "Customer (SMB)",
+      "pct": 0.0,
+      "acv": 100000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Vocational Alternatives",
@@ -559,71 +559,11 @@
       "tier": "SMB",
       "stage": "Customer",
       "stageLabel": "Customer (SMB)",
-      "pct": 54.3,
+      "pct": 0.0,
       "acv": 9900.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Hands-On Orthopedics",
-      "id": "001OL00000dg8ynYAA",
-      "tier": "Micro",
-      "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 56.1,
-      "acv": 14700.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "IMED Services",
-      "id": "001OL00000Io5WoYAJ",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 56.6,
-      "acv": 12000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Breedon Mor LLP",
-      "id": "001I9000005T4bZIAS",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 64.8,
-      "acv": 15000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Portage Mutual Insurance",
-      "id": "001OL00000SGW3tYAH",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 67.2,
-      "acv": 10200.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "ArthroBiologix Inc.",
-      "id": "001OL00000Ckjw6YAB",
-      "tier": "Micro",
-      "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 68.7,
-      "acv": 10800.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Brian Woodruff MD PLC",
@@ -631,11 +571,59 @@
       "tier": "Micro",
       "stage": "Prospect",
       "stageLabel": "Prospect",
-      "pct": 58.1,
+      "pct": 0.0,
       "acv": 52000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Hands-On Orthopedics",
+      "id": "001OL00000dg8ynYAA",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 0.0,
+      "acv": 14700.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Portage Mutual Insurance",
+      "id": "001OL00000SGW3tYAH",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 2.2,
+      "acv": 10200.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "ArthroBiologix Inc.",
+      "id": "001OL00000Ckjw6YAB",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 0.0,
+      "acv": 10800.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "IMED Services",
+      "id": "001OL00000Io5WoYAJ",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 0.0,
+      "acv": 12000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Tri-Star Health Management Group Inc.",
@@ -643,11 +631,11 @@
       "tier": "SMB",
       "stage": "Customer",
       "stageLabel": "Customer (SMB)",
-      "pct": 73.4,
+      "pct": 12.4,
       "acv": 19250.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Zurich North America",
@@ -655,11 +643,11 @@
       "tier": "Enterprise",
       "stage": "Customer",
       "stageLabel": "Customer (Enterprise)",
-      "pct": 75.5,
+      "pct": 0.0,
       "acv": 88200.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Boucher Medical Professional Corp.",
@@ -667,23 +655,11 @@
       "tier": "Micro",
       "stage": "Customer",
       "stageLabel": "Customer (Micro)",
-      "pct": 81.7,
+      "pct": 0.0,
       "acv": 13500.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Roebothan McKay Marshall (RMM)",
-      "id": "001I9000003c6huIAA",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 85.4,
-      "acv": 36000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Janet Patterson MD",
@@ -691,11 +667,35 @@
       "tier": "Micro",
       "stage": "Customer",
       "stageLabel": "Customer (Micro)",
-      "pct": 71.7,
+      "pct": 167.5,
       "acv": 27700.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Breedon Mor LLP",
+      "id": "001I9000005T4bZIAS",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 265.2,
+      "acv": 15000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Roebothan McKay Marshall (RMM)",
+      "id": "001I9000003c6huIAA",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 93.8,
+      "acv": 36000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Professional Rehabilitation Consultants",
@@ -703,11 +703,11 @@
       "tier": "Micro",
       "stage": "Nuture",
       "stageLabel": "Nuture",
-      "pct": 106.5,
+      "pct": 0.0,
       "acv": 12500.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Physician Life Care Planning (PLCP)",
@@ -715,23 +715,11 @@
       "tier": "SMB",
       "stage": "Customer",
       "stageLabel": "Customer (SMB)",
-      "pct": 110.1,
+      "pct": 8.9,
       "acv": 845000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Integral Consulting Services Inc.",
-      "id": "001I9000007cllGIAQ",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 114.2,
-      "acv": 121500.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Curtis Hlushak",
@@ -739,11 +727,23 @@
       "tier": "Micro",
       "stage": "Customer",
       "stageLabel": "Customer (Micro)",
-      "pct": 116.8,
+      "pct": 0.0,
       "acv": 4500.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Integral Consulting Services Inc.",
+      "id": "001I9000007cllGIAQ",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 2.9,
+      "acv": 121500.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Kenney Shelton Liptak Nowak - KSLN law",
@@ -751,107 +751,11 @@
       "tier": "SMB",
       "stage": "Customer",
       "stageLabel": "Customer (SMB)",
-      "pct": 117.1,
+      "pct": 31.2,
       "acv": 41000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Sutton Special Risk",
-      "id": "001OL00000r94PIYAY",
-      "tier": "SMB",
-      "stage": "Prospect",
-      "stageLabel": "Prospect",
-      "pct": 120.4,
-      "acv": 5000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Buckeye Medical Legal Consulting",
-      "id": "001OL00000SHtnxYAD",
-      "tier": "Micro",
-      "stage": "SQL",
-      "stageLabel": "SQL",
-      "pct": 128.0,
-      "acv": 13200.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Hooper Law",
-      "id": "001I9000005T4bNIAS",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 130.0,
-      "acv": 6000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Walnut Orchard Psychology Services",
-      "id": "001OL00000izh1xYAA",
-      "tier": "SMB",
-      "stage": "Customer",
-      "stageLabel": "Customer (SMB)",
-      "pct": 131.9,
-      "acv": 12500.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Dr. Rick Hu",
-      "id": "001OL00000YiPK6YAN",
-      "tier": "Micro",
-      "stage": "SQL",
-      "stageLabel": "SQL",
-      "pct": 134.2,
-      "acv": 9600.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "AssessMed Inc.",
-      "id": "0015f00000IQRGHAA5",
-      "tier": "Enterprise",
-      "stage": "Customer",
-      "stageLabel": "Customer (Enterprise)",
-      "pct": 143.2,
-      "acv": 124000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "JHU Consulting",
-      "id": "001OL00000SYhk0YAD",
-      "tier": "Micro",
-      "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 160.0,
-      "acv": 6600.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "Kevin Smith MD",
-      "id": "001OL00000D0B7IYAV",
-      "tier": "Micro",
-      "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 168.5,
-      "acv": 9000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Rehab First Inc.",
@@ -859,35 +763,95 @@
       "tier": "SMB",
       "stage": "Customer",
       "stageLabel": "Customer (SMB)",
-      "pct": 126.4,
+      "pct": 0.0,
       "acv": 18000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
-      "name": "Physiohealth Inc.",
-      "id": "001I9000004mawoIAA",
-      "tier": "Micro",
-      "stage": "Customer",
-      "stageLabel": "Customer (Micro)",
-      "pct": 191.9,
-      "acv": 1500.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
-    },
-    {
-      "name": "LCP Pro",
-      "id": "001OL00000i2nBOYAY",
+      "name": "Hooper Law",
+      "id": "001I9000005T4bNIAS",
       "tier": "SMB",
       "stage": "Customer",
       "stageLabel": "Customer (SMB)",
-      "pct": 218.5,
-      "acv": 100000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "pct": 0.0,
+      "acv": 6000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Walnut Orchard Psychology Services",
+      "id": "001OL00000izh1xYAA",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 21.0,
+      "acv": 12500.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Dr. Rick Hu",
+      "id": "001OL00000YiPK6YAN",
+      "tier": "Micro",
+      "stage": "SQL",
+      "stageLabel": "SQL",
+      "pct": 0.0,
+      "acv": 9600.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Sutton Special Risk",
+      "id": "001OL00000r94PIYAY",
+      "tier": "SMB",
+      "stage": "Prospect",
+      "stageLabel": "Prospect",
+      "pct": 0.0,
+      "acv": 5000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "AssessMed Inc.",
+      "id": "0015f00000IQRGHAA5",
+      "tier": "Enterprise",
+      "stage": "Customer",
+      "stageLabel": "Customer (Enterprise)",
+      "pct": 109.4,
+      "acv": 124000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "JHU Consulting",
+      "id": "001OL00000SYhk0YAD",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 0.0,
+      "acv": 6600.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Kevin Smith MD",
+      "id": "001OL00000D0B7IYAV",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 0.0,
+      "acv": 9000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Laxton Consulting, LLC",
@@ -895,11 +859,59 @@
       "tier": "Micro",
       "stage": "Previous Customer",
       "stageLabel": "Previous Customer",
-      "pct": 227.2,
+      "pct": 0.0,
       "acv": 9000.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "LCP Pro",
+      "id": "001OL00000i2nBOYAY",
+      "tier": "SMB",
+      "stage": "Customer",
+      "stageLabel": "Customer (SMB)",
+      "pct": 83.6,
+      "acv": 100000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Aua Consulting LLC",
+      "id": "001OL00000kV72oYAC",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 661.3,
+      "acv": 21000.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Physiohealth Inc.",
+      "id": "001I9000004mawoIAA",
+      "tier": "Micro",
+      "stage": "Customer",
+      "stageLabel": "Customer (Micro)",
+      "pct": 798.3,
+      "acv": 1500.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
+    },
+    {
+      "name": "Buckeye Medical Legal Consulting",
+      "id": "001OL00000SHtnxYAD",
+      "tier": "Micro",
+      "stage": "SQL",
+      "stageLabel": "SQL",
+      "pct": 0.0,
+      "acv": 13200.0,
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "Northeast Life Care Planning",
@@ -907,11 +919,11 @@
       "tier": "Micro",
       "stage": "Customer",
       "stageLabel": "Customer (Micro)",
-      "pct": 409.1,
+      "pct": 0.0,
       "acv": 9250.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     },
     {
       "name": "E4 Life Care Planning, LLC",
@@ -919,11 +931,11 @@
       "tier": "Micro",
       "stage": "Prospect",
       "stageLabel": "Prospect",
-      "pct": 765.0,
+      "pct": 0.0,
       "acv": 9618.0,
-      "daysIntoCycle": 30,
-      "daysRemaining": 0,
-      "cycleLen": 30
+      "daysIntoCycle": 2,
+      "daysRemaining": 29,
+      "cycleLen": 31
     }
   ]
 }
