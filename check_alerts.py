@@ -105,37 +105,32 @@ def fetch_contract_year_pages(my_domain, token, accounts, today):
     """Real page totals since each account's own current contract-year
     anniversary (generate.contract_year_start) - the source for the main
     table's "Used This Contract Year" / "Projected (Full Year)" columns
-    (added 2026-10-26, user request). Each account's anniversary falls on
-    a different calendar date, so a single GROUP BY Related_Account__c
-    query (like fetch_month_to_date_pages's) can't bound the window per
-    account - instead this pulls one window wide enough to cover every
-    possible anniversary (366 days back from today, since an anniversary
-    is never more than a year ago) grouped by account AND day, then sums
-    in Python only the days on/after each account's own anniversary.
-    Uses the same ground-truth field fetch_month_to_date_pages does
+    (added 2026-10-26, user request).
+
+    One SUM(...) aggregate query per account, each scoped to that
+    account's own Date__c >= anniversary threshold, rather than a single
+    GROUP BY Related_Account__c, Date__c query batched by a wide
+    366-day window - confirmed live 2026-10-26 that Salesforce rejects
+    the latter outright once the grouped result set is large enough to
+    need a second batch ("Aggregate query does not support queryMore(),
+    use LIMIT to restrict the results to a single batch", EXCEEDED_ID_LIMIT),
+    since aggregate queries can't paginate via nextRecordsUrl at all. Each
+    account's own single-row SUM never hits that limit. Uses the same
+    ground-truth field fetch_month_to_date_pages does
     (Number_of_Pages_Uploaded__c, not Pages_Last_30__c, which has no
     annual reset either) for internal consistency across this dashboard's
     "sum since X" figures."""
-    accounts_with_start = [a for a in accounts if a.get("Start")]
-    if not accounts_with_start:
-        return {}
-    window_start = (today - datetime.timedelta(days=366)).isoformat()
-    query = (
-        "SELECT Related_Account__c, Date__c, SUM(Number_of_Pages_Uploaded__c) total "
-        f"FROM Usage_data__c WHERE Date__c >= {window_start} "
-        "AND Related_Account__c != null GROUP BY Related_Account__c, Date__c"
-    )
-    records = soql(my_domain, token, query)
-    daily = {}
-    for r in records:
-        daily.setdefault(r["Related_Account__c"], []).append(
-            (generate.parse(r["Date__c"]), r["total"] or 0)
-        )
-
     totals = {}
-    for a in accounts_with_start:
+    for a in accounts:
         cy_start = generate.contract_year_start(a, today)
-        totals[a["Id"]] = sum(p for d, p in daily.get(a["Id"], []) if d >= cy_start)
+        if cy_start is None:
+            continue
+        query = (
+            "SELECT SUM(Number_of_Pages_Uploaded__c) total FROM Usage_data__c "
+            f"WHERE Related_Account__c = '{a['Id']}' AND Date__c >= {cy_start.isoformat()}"
+        )
+        records = soql(my_domain, token, query)
+        totals[a["Id"]] = (records[0]["total"] or 0) if records else 0
     return totals
 
 

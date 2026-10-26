@@ -272,25 +272,23 @@ class TestFetchContractYearPages(unittest.TestCase):
     TODAY = datetime.date(2026, 10, 26)
 
     @mock.patch("check_alerts.soql")
-    def test_sums_only_days_on_or_after_each_accounts_own_anniversary(self, mock_soql):
-        # 001a's contract year started 2026-03-15 (already landed this
-        # calendar year); only the two rows on/after that date should count.
-        mock_soql.return_value = [
-            {"Related_Account__c": "001a", "Date__c": "2026-03-01", "total": 100},  # before anniversary
-            {"Related_Account__c": "001a", "Date__c": "2026-03-15", "total": 200},  # on anniversary
-            {"Related_Account__c": "001a", "Date__c": "2026-10-01", "total": 300},
-        ]
+    def test_one_query_per_account_scoped_to_its_own_anniversary(self, mock_soql):
+        # 001a's contract started 2024-03-15, so its current contract year
+        # began 2026-03-15 (already landed this calendar year).
+        mock_soql.return_value = [{"total": 500}]
         accounts = [make_account(Id="001a", Start="2024-03-15", End="2027-03-15")]
         result = check_alerts.fetch_contract_year_pages(
             "https://example.my.salesforce.com", "tok", accounts, self.TODAY
         )
         self.assertEqual(result, {"001a": 500})
+        query = mock_soql.call_args[0][2]
+        self.assertIn("001a", query)
+        self.assertIn("2026-03-15", query)
+        self.assertIn("SUM(Number_of_Pages_Uploaded__c)", query)
 
     @mock.patch("check_alerts.soql")
     def test_none_total_defaults_to_zero(self, mock_soql):
-        mock_soql.return_value = [
-            {"Related_Account__c": "001a", "Date__c": "2026-10-01", "total": None},
-        ]
+        mock_soql.return_value = [{"total": None}]
         accounts = [make_account(Id="001a", Start="2024-03-15", End="2027-03-15")]
         result = check_alerts.fetch_contract_year_pages(
             "https://example.my.salesforce.com", "tok", accounts, self.TODAY
@@ -298,7 +296,7 @@ class TestFetchContractYearPages(unittest.TestCase):
         self.assertEqual(result, {"001a": 0})
 
     @mock.patch("check_alerts.soql")
-    def test_account_missing_from_query_results_defaults_to_zero(self, mock_soql):
+    def test_empty_query_result_defaults_to_zero(self, mock_soql):
         mock_soql.return_value = []
         accounts = [make_account(Id="001a", Start="2024-03-15", End="2027-03-15")]
         result = check_alerts.fetch_contract_year_pages(
@@ -307,8 +305,7 @@ class TestFetchContractYearPages(unittest.TestCase):
         self.assertEqual(result, {"001a": 0})
 
     @mock.patch("check_alerts.soql")
-    def test_accounts_with_no_start_date_are_excluded_and_dont_affect_the_query(self, mock_soql):
-        mock_soql.return_value = []
+    def test_accounts_with_no_start_date_are_skipped_without_a_query(self, mock_soql):
         accounts = [make_account(Id="001a", Start=None)]
         result = check_alerts.fetch_contract_year_pages(
             "https://example.my.salesforce.com", "tok", accounts, self.TODAY
@@ -317,14 +314,18 @@ class TestFetchContractYearPages(unittest.TestCase):
         mock_soql.assert_not_called()
 
     @mock.patch("check_alerts.soql")
-    def test_query_window_is_366_days_back_from_today(self, mock_soql):
-        mock_soql.return_value = []
-        accounts = [make_account(Id="001a", Start="2024-03-15", End="2027-03-15")]
+    def test_each_account_gets_its_own_anniversary_threshold(self, mock_soql):
+        mock_soql.return_value = [{"total": 10}]
+        accounts = [
+            make_account(Id="001a", Start="2024-03-15", End="2027-03-15"),
+            make_account(Id="001b", Start="2025-12-01", End="2026-12-01"),
+        ]
         check_alerts.fetch_contract_year_pages(
             "https://example.my.salesforce.com", "tok", accounts, self.TODAY
         )
-        query = mock_soql.call_args[0][2]
-        self.assertIn("2025-10-25", query)  # 366 days before 2026-10-26
+        queries = [c.args[2] for c in mock_soql.call_args_list]
+        self.assertTrue(any("001a" in q and "2026-03-15" in q for q in queries))
+        self.assertTrue(any("001b" in q and "2025-12-01" in q for q in queries))
 
 
 class TestPushProjectedSectionLive(unittest.TestCase):
