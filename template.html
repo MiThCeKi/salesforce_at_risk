@@ -66,6 +66,12 @@
   }
   .search-box::placeholder{color:var(--muted-2);}
   .search-box:focus{outline:none;border-color:var(--teal);}
+  .search-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .share-btn{
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:4px;color:var(--muted);
+    font-size:12px;padding:7px 11px;font-family:inherit;cursor:pointer;white-space:nowrap;
+  }
+  .share-btn:hover{color:var(--teal);border-color:var(--teal);}
   table{width:100%;border-collapse:collapse;font-size:14px;}
   thead th{
     text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
@@ -183,7 +189,10 @@
   <div class="tab-panel" data-panel="expected">
     <h3 class="table-label">At Risk Accounts</h3>
     <div class="list-head">
-      <input type="text" id="acctSearch" class="search-box" placeholder="Search accounts, owners, contacts&hellip;" autocomplete="off">
+      <div class="search-row">
+        <input type="text" id="acctSearch" class="search-box" placeholder="Search accounts, owners, contacts&hellip;" autocomplete="off">
+        <button type="button" id="shareSearchBtn" class="share-btn" title="Copy a link that opens this search">Copy Link</button>
+      </div>
       <span class="hint mono" id="listHint">showing all __TOTAL_N__ accounts &middot; click a column to sort &middot; sorted by usage % (highest first) by default</span>
     </div>
 
@@ -386,8 +395,37 @@ __ROWS_JS__
 
   document.getElementById("acctSearch").addEventListener("input", applyFilter);
 
+  function getSharedSearch(){
+    var hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return null;
+    var params = new URLSearchParams(hash);
+    return params.get("q");
+  }
+
+  var sharedSearch = getSharedSearch();
+  if (sharedSearch) {
+    document.getElementById("acctSearch").value = sharedSearch;
+  }
+
   currentSorted = ROWS.slice().sort(function(a,b){ return (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct); });
   applyFilter();
+
+  document.getElementById("shareSearchBtn").addEventListener("click", function(){
+    var btn = this;
+    var q = document.getElementById("acctSearch").value.trim();
+    var url = window.location.origin + window.location.pathname + window.location.search;
+    if (q) { url += "#q=" + encodeURIComponent(q); }
+    function showCopied(){
+      var original = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(function(){ btn.textContent = original; }, 1500);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(showCopied, function(){ window.prompt("Copy this link:", url); });
+    } else {
+      window.prompt("Copy this link:", url);
+    }
+  });
 
   document.querySelectorAll(".tab-btn").forEach(function(btn){
     btn.addEventListener("click", function(e){
