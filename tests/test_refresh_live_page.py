@@ -56,6 +56,18 @@ class TestBuildAccountRecords(unittest.TestCase):
         rlp.build_account_records(accounts, {}, {}, {}, {}, {})
         self.assertEqual(original, {"Id": "001x", "Name": "Acme"})
 
+    def test_merges_contract_year_pages_when_provided(self):
+        accounts = [{"Id": "001x", "Name": "Acme"}]
+        records = rlp.build_account_records(
+            accounts, {}, {}, {}, {}, {}, contract_year_pages={"001x": 4200},
+        )
+        self.assertEqual(records[0]["ContractYearPages"], 4200)
+
+    def test_contract_year_pages_defaults_to_none_when_omitted(self):
+        accounts = [{"Id": "001x", "Name": "Acme"}]
+        records = rlp.build_account_records(accounts, {}, {}, {}, {}, {})
+        self.assertIsNone(records[0]["ContractYearPages"])
+
     def test_health_score_from_the_account_fetch_passes_through_untouched(self):
         # HealthScore comes straight from check_alerts.fetch_accounts (part
         # of the base account dict), not from any activity_linking

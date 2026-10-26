@@ -60,6 +60,40 @@ class TestProratedMonthlyCap(unittest.TestCase):
         self.assertIsNone(generate.prorated_monthly_cap(a))
 
 
+class TestProratedAnnualCap(unittest.TestCase):
+    def test_is_twelve_times_the_monthly_cap(self):
+        a = make_account(Start="2026-01-01", End="2027-01-01", Cap=120000.0)
+        self.assertAlmostEqual(
+            generate.prorated_annual_cap(a), generate.prorated_monthly_cap(a) * 12, places=6,
+        )
+
+    def test_none_when_monthly_cap_is_none(self):
+        self.assertIsNone(generate.prorated_annual_cap(make_account(Cap=0)))
+
+
+class TestContractYearStart(unittest.TestCase):
+    TODAY = datetime.date(2026, 10, 26)
+
+    def test_anniversary_already_passed_this_calendar_year(self):
+        a = make_account(Start="2024-03-15")
+        self.assertEqual(generate.contract_year_start(a, self.TODAY), datetime.date(2026, 3, 15))
+
+    def test_anniversary_not_yet_reached_this_calendar_year_uses_last_year(self):
+        a = make_account(Start="2024-12-01")
+        self.assertEqual(generate.contract_year_start(a, self.TODAY), datetime.date(2025, 12, 1))
+
+    def test_anniversary_is_today(self):
+        a = make_account(Start="2020-10-26")
+        self.assertEqual(generate.contract_year_start(a, self.TODAY), datetime.date(2026, 10, 26))
+
+    def test_feb_29_start_on_non_leap_anniversary_year(self):
+        a = make_account(Start="2020-02-29")
+        self.assertEqual(generate.contract_year_start(a, datetime.date(2026, 6, 1)), datetime.date(2026, 2, 28))
+
+    def test_none_when_no_start_date(self):
+        self.assertIsNone(generate.contract_year_start(make_account(Start=None), self.TODAY))
+
+
 class TestComputeRows(unittest.TestCase):
     TODAY = datetime.date(2026, 9, 9)
 
@@ -134,6 +168,42 @@ class TestComputeRows(unittest.TestCase):
         a = make_account(AvgHoursPerCase=None)
         row = generate.compute_rows([a], self.TODAY)[0]
         self.assertIsNone(row["AvgHoursPerCase"])
+
+    def test_contract_year_pct_against_annualized_cap(self):
+        # Start anniversary (2026-01-01) has already landed this calendar
+        # year as of TODAY (2026-09-09), so the contract-year window is
+        # 2026-01-01 through TODAY.
+        a = make_account(Start="2026-01-01", End="2027-01-01", Cap=120000.0, ContractYearPages=30000.0)
+        row = generate.compute_rows([a], self.TODAY)[0]
+        annual_cap = generate.prorated_annual_cap(a)
+        self.assertAlmostEqual(row["ContractYearPct"], round(30000.0 / annual_cap * 100, 1))
+
+    def test_contract_year_projected_pct_extrapolates_to_365_days(self):
+        a = make_account(Start="2026-01-01", End="2027-01-01", Cap=120000.0, ContractYearPages=30000.0)
+        row = generate.compute_rows([a], self.TODAY)[0]
+        annual_cap = generate.prorated_annual_cap(a)
+        days_elapsed = (self.TODAY - datetime.date(2026, 1, 1)).days
+        expected = round(30000.0 / days_elapsed * 365 / annual_cap * 100, 1)
+        self.assertAlmostEqual(row["ContractYearProjectedPct"], expected)
+
+    def test_contract_year_pct_none_when_pages_missing(self):
+        a = make_account(Start="2026-01-01", End="2027-01-01", Cap=120000.0)
+        row = generate.compute_rows([a], self.TODAY)[0]
+        self.assertIsNone(row["ContractYearPct"])
+        self.assertIsNone(row["ContractYearProjectedPct"])
+        self.assertIsNone(row["ContractYearPages"])
+
+    def test_contract_year_pct_none_when_annual_cap_uncomputable(self):
+        a = make_account(Cap=0, ContractYearPages=30000.0)
+        row = generate.compute_rows([a], self.TODAY)[0]
+        self.assertIsNone(row["ContractYearPct"])
+        self.assertIsNone(row["ContractYearProjectedPct"])
+
+    def test_zero_contract_year_pages_is_not_treated_as_missing(self):
+        a = make_account(Start="2026-01-01", End="2027-01-01", Cap=120000.0, ContractYearPages=0)
+        row = generate.compute_rows([a], self.TODAY)[0]
+        self.assertEqual(row["ContractYearPct"], 0)
+        self.assertEqual(row["ContractYearPages"], 0)
 
     def test_rows_sorted_by_usage_pct_ascending_nones_last(self):
         accounts = [
@@ -251,6 +321,22 @@ class TestRenderRowsJs(unittest.TestCase):
     def test_acv_renders_as_float_when_fractional(self):
         js = self.rendered_for(ACV=12000.5)
         self.assertIn("acv:12000.5", js)
+
+    def test_contract_year_fields_null_when_missing(self):
+        js = self.rendered_for(ContractYearPages=None)
+        self.assertIn("contractYearPages:null", js)
+        self.assertIn("contractYearPct:null", js)
+        self.assertIn("contractYearProjectedPct:null", js)
+
+    def test_contract_year_pages_renders_as_int_when_whole_number(self):
+        js = self.rendered_for(Start="2026-01-01", End="2027-01-01", Cap=120000.0, ContractYearPages=30000.0)
+        self.assertIn("contractYearPages:30000,", js)
+        self.assertNotIn("contractYearPages:30000.0", js)
+
+    def test_contract_year_pct_renders_when_present(self):
+        js = self.rendered_for(Start="2026-01-01", End="2027-01-01", Cap=120000.0, ContractYearPages=30000.0)
+        self.assertRegex(js, r"contractYearPct:[\d.]+,")
+        self.assertRegex(js, r"contractYearProjectedPct:[\d.]+,")
 
     def test_output_is_syntactically_plausible_js_object_list(self):
         js = self.rendered_for()

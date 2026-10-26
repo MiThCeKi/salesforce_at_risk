@@ -439,6 +439,38 @@ def prorated_monthly_cap(a):
     return cap if cap > 0 else None
 
 
+def prorated_annual_cap(a):
+    """The same contract-length proration prorated_monthly_cap uses, scaled
+    to an annual figure (monthly cap * 12) - the denominator for the main
+    table's "Used This Contract Year" / "Projected (Full Year)" columns.
+    None under the same conditions prorated_monthly_cap returns None."""
+    monthly = prorated_monthly_cap(a)
+    return monthly * 12 if monthly else None
+
+
+def contract_year_start(a, today):
+    """The most recent anniversary of the account's contract start date
+    on or before `today` - the rolling window "this contract year" usage
+    is measured from, instead of a flat Jan 1 calendar-year boundary
+    (deliberately consistent with this dashboard's existing stance of
+    proration against each account's own contract, not a calendar
+    convention - see prorated_monthly_cap). Returns None if there's no
+    start date on file."""
+    if not a.get("Start"):
+        return None
+    start = parse(a["Start"])
+    try:
+        anniversary = start.replace(year=today.year)
+    except ValueError:
+        anniversary = start.replace(year=today.year, day=28)  # Feb 29 start, non-leap year
+    if anniversary > today:
+        try:
+            anniversary = anniversary.replace(year=today.year - 1)
+        except ValueError:
+            anniversary = anniversary.replace(year=today.year - 1, day=28)
+    return anniversary
+
+
 def compute_rows(accounts, today):
     """Computes a row for every account, not just ones under the 25% at-risk
     threshold. Severity is "Healthy" at/above 25% usage, or "Unknown" when a
@@ -473,12 +505,27 @@ def compute_rows(accounts, today):
         days_since_login = (today - parse(last_login)).days if last_login else None
         stage = a.get("Stage")
         stage_label = "{} ({})".format(stage, a["Tier"]) if stage == "Customer" and a.get("Tier") else stage
+
+        annual_cap = prorated_annual_cap(a)
+        cy_start = contract_year_start(a, today)
+        cy_pages = a.get("ContractYearPages")
+        if annual_cap and cy_pages is not None:
+            cy_pct = (cy_pages / annual_cap) * 100
+            days_elapsed = max((today - cy_start).days, 1)
+            cy_projected_pct = (cy_pages / days_elapsed * 365 / annual_cap) * 100
+        else:
+            cy_pct = None
+            cy_projected_pct = None
+
         rows.append({
             "Name": a["Name"], "Id": a["Id"], "Owner": a["Owner"], "Tier": a["Tier"], "Severity": sev,
             "Stage": stage, "StageLabel": stage_label,
             "UsagePct": (round(usage_pct, 1) if usage_pct is not None else None),
             "Pages": a["Pages"], "Hours": round(a["Hours"], 1),
             "Users": a["Users"], "ACV": a["ACV"], "Renewal": end, "Days": days_to_renewal,
+            "ContractYearPages": (None if cy_pages is None else cy_pages),
+            "ContractYearPct": (round(cy_pct, 1) if cy_pct is not None else None),
+            "ContractYearProjectedPct": (round(cy_projected_pct, 1) if cy_projected_pct is not None else None),
             "LastLogin": last_login, "DaysSinceLogin": days_since_login,
             "MainContact": a.get("MainContact"),
             "LastEmail": a.get("LastEmail"), "LastEmailBy": a.get("LastEmailBy"),
@@ -534,6 +581,14 @@ def render_rows_js(rows):
         next_internal_meeting_js = 'null' if not next_internal_meeting else '"{}"'.format(next_internal_meeting)
         next_internal_meeting_title = f.get("NextInternalMeetingTitle")
         next_internal_meeting_title_js = 'null' if not next_internal_meeting_title else '"{}"'.format(js_escape(next_internal_meeting_title))
+        cy_pages = f.get("ContractYearPages")
+        cy_pages_js = 'null' if cy_pages is None else (
+            int(cy_pages) if float(cy_pages).is_integer() else cy_pages
+        )
+        cy_pct = f.get("ContractYearPct")
+        cy_pct_js = 'null' if cy_pct is None else cy_pct
+        cy_projected_pct = f.get("ContractYearProjectedPct")
+        cy_projected_pct_js = 'null' if cy_projected_pct is None else cy_projected_pct
         lines.append(
             '    {{name:"{name}", id:"{id}", owner:"{owner}", tier:{tier}, stage:"{stage}", '
             'stageLabel:"{stage_label}", severity:{sev}, '
@@ -541,6 +596,7 @@ def render_rows_js(rows):
             'renewal:{renewal}, days:{days}, lastLogin:{last_login}, daysSinceLogin:{days_since_login}, '
             'mainContact:{main_contact}, lastEmail:{last_email}, lastEmailBy:{last_email_by}, '
             'healthScore:{health_score}, avgHoursPerCase:{avg_hours_per_case}, '
+            'contractYearPages:{cy_pages}, contractYearPct:{cy_pct}, contractYearProjectedPct:{cy_projected_pct}, '
             'nextMeeting:{next_meeting}, '
             'nextMeetingTitle:{next_meeting_title}, nextMeetingWith:{next_meeting_with}, '
             'nextInternalMeeting:{next_internal_meeting}, nextInternalMeetingTitle:{next_internal_meeting_title}}},'.format(
@@ -565,6 +621,9 @@ def render_rows_js(rows):
                 last_email_by=last_email_by_js,
                 health_score=health_score_js,
                 avg_hours_per_case=avg_hours_per_case_js,
+                cy_pages=cy_pages_js,
+                cy_pct=cy_pct_js,
+                cy_projected_pct=cy_projected_pct_js,
                 next_meeting=next_meeting_js,
                 next_meeting_title=next_meeting_title_js,
                 next_meeting_with=next_meeting_with_js,

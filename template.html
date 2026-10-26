@@ -204,6 +204,8 @@
           <th data-key="severity">Risk <span class="arrow">↕</span></th>
           <th data-key="healthScore">Health Score <span class="info-tip" tabindex="0" data-tip="Salesforce's own Health_Score__c on the Account record, on its own 0-9 scale &mdash; a separate signal from the Risk/Expected Usage columns here, which are derived purely from trailing 30-day page usage against the contracted cap.">&#9432;</span> <span class="arrow">↕</span></th>
           <th data-key="pct">Expected Usage <span class="info-tip" tabindex="0" data-tip="Pages uploaded in the last 30 days. This compares their actual usage to their contracted page allowance, scaled to a monthly rate (contract page cap &divide; contract length in months). This is a recent-pace estimate, not cumulative usage - it will differ from Salesforce's own cumulative % Used chart on the Account record, which compares total pages since the contract started against the full contract cap.">&#9432;</span> <span class="arrow">↓</span></th>
+          <th data-key="contractYearPct">Used This Contract Year <span class="info-tip" tabindex="0" data-tip="Pages uploaded since the most recent anniversary of this account's contract start date, against their page cap scaled to one year (contract page cap &divide; contract length in years). Tracks their own contract-year cycle, not the calendar year.">&#9432;</span> <span class="arrow">↕</span></th>
+          <th data-key="contractYearProjectedPct">Projected (Full Year) <span class="info-tip" tabindex="0" data-tip="This contract year's real pace so far (pages since their contract anniversary) scaled up to a full 365-day year, against their page cap scaled to one year. Early in a new contract year this is based on very little data.">&#9432;</span> <span class="arrow">↕</span></th>
           <th data-key="avgHoursPerCase">Avg Time/Case <span class="info-tip" tabindex="0" data-tip="Total hours logged in-app divided by new cases created, both summed over the trailing 30 days (Usage_data__c's Total_Time_spent_in_App_hr__c and Number_of_Cases_Created__c) &mdash; a period average, not a per-case timer. N/A when no case was created in the window.">&#9432;</span> <span class="arrow">↕</span></th>
           <th data-key="acv">ACV <span class="arrow">↕</span></th>
           <th data-key="days">Renewal <span class="arrow">↕</span></th>
@@ -311,6 +313,9 @@ __ROWS_JS__
       var stale = r.daysSinceLogin !== null && r.daysSinceLogin > 30;
       var pctLabel = r.pct === null ? 'N/A' : r.pct.toFixed(1) + '%';
       var barWidth = r.pct === null ? 0 : Math.min(100, r.pct);
+      var cyPctLabel = r.contractYearPct === null ? 'N/A' : r.contractYearPct.toFixed(1) + '%';
+      var cyProjLabel = r.contractYearProjectedPct === null ? 'N/A' : r.contractYearProjectedPct.toFixed(1) + '%';
+      var cyProjBadge = projBadge(r.contractYearProjectedPct);
       tr.innerHTML =
         '<td>' + acctLink(r, r.name, 'class="acct-name"') + '<div class="acct-owner">' + r.owner +
             (r.mainContact ? acctLink(r, ' &middot; ' + r.mainContact, 'class="acct-contact"') : '') +
@@ -325,6 +330,10 @@ __ROWS_JS__
               acctLink(r, r.hours.toFixed(1) + ' hrs') + ' &middot; ' +
               acctLink(r, r.users + ' users') +
             '</div></td>' +
+        '<td class="contract-year-pct">' + acctLink(r, cyPctLabel) +
+            (r.contractYearPages !== null ? '<div class="acct-owner">' + r.contractYearPages.toLocaleString("en-US") + ' pages</div>' : '') +
+          '</td>' +
+        '<td>' + acctLink(r, '<span class="dot"></span>' + cyProjLabel, 'class="proj-badge ' + cyProjBadge.cls + '"') + '</td>' +
         '<td class="avg-time-case">' + (r.avgHoursPerCase === null ? acctLink(r, 'N/A') : acctLink(r, r.avgHoursPerCase.toFixed(1) + ' hrs')) + '</td>' +
         '<td class="acv">' + acctLink(r, fmtMoney(r.acv)) + '</td>' +
         '<td class="renewal' + (soon ? ' soon' : '') + '">' +

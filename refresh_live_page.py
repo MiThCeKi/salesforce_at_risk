@@ -66,17 +66,20 @@ def _sf_credentials():
     return my_domain, consumer_key, consumer_secret
 
 
-def build_account_records(accounts, contact_account_map, main_contacts, last_emails, last_logins, sf_meetings):
+def build_account_records(accounts, contact_account_map, main_contacts, last_emails, last_logins, sf_meetings,
+                           contract_year_pages=None):
     """Pure: merges the activity_linking outputs onto the fetched accounts
     list, producing the full generate.py-schema account dicts (Next
     Meeting fields defaulted to the Salesforce-Event candidate - see
     module docstring). Separated from fetch() so this merge step is
     unit-testable without mocking Salesforce."""
+    contract_year_pages = contract_year_pages or {}
     records = []
     for a in accounts:
         aid = a["Id"]
         record = dict(a)
         record["LastLogin"] = last_logins.get(aid)
+        record["ContractYearPages"] = contract_year_pages.get(aid)
         record["MainContact"] = main_contacts.get(aid)
         last_email_date, last_email_by = last_emails.get(aid, (None, None))
         record["LastEmail"] = last_email_date
@@ -110,8 +113,12 @@ def fetch(today=None):
     sf_meetings = activity_linking.compute_sf_event_next_meetings(
         my_domain, token, account_ids, contact_account_map, now_iso
     )
+    contract_year_pages = check_alerts.fetch_contract_year_pages(my_domain, token, accounts, today)
 
-    records = build_account_records(accounts, contact_account_map, main_contacts, last_emails, last_logins, sf_meetings)
+    records = build_account_records(
+        accounts, contact_account_map, main_contacts, last_emails, last_logins, sf_meetings,
+        contract_year_pages=contract_year_pages,
+    )
 
     with open(LIVE_DATA_PATH, "w") as fh:
         json.dump({"asOf": today.isoformat(), "accounts": records}, fh, indent=2)

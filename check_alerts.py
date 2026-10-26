@@ -101,6 +101,44 @@ def fetch_month_to_date_pages(my_domain, token, today):
     return {r["Related_Account__c"]: (r["total"] or 0) for r in records}
 
 
+def fetch_contract_year_pages(my_domain, token, accounts, today):
+    """Real page totals since each account's own current contract-year
+    anniversary (generate.contract_year_start) - the source for the main
+    table's "Used This Contract Year" / "Projected (Full Year)" columns
+    (added 2026-10-26, user request). Each account's anniversary falls on
+    a different calendar date, so a single GROUP BY Related_Account__c
+    query (like fetch_month_to_date_pages's) can't bound the window per
+    account - instead this pulls one window wide enough to cover every
+    possible anniversary (366 days back from today, since an anniversary
+    is never more than a year ago) grouped by account AND day, then sums
+    in Python only the days on/after each account's own anniversary.
+    Uses the same ground-truth field fetch_month_to_date_pages does
+    (Number_of_Pages_Uploaded__c, not Pages_Last_30__c, which has no
+    annual reset either) for internal consistency across this dashboard's
+    "sum since X" figures."""
+    accounts_with_start = [a for a in accounts if a.get("Start")]
+    if not accounts_with_start:
+        return {}
+    window_start = (today - datetime.timedelta(days=366)).isoformat()
+    query = (
+        "SELECT Related_Account__c, Date__c, SUM(Number_of_Pages_Uploaded__c) total "
+        f"FROM Usage_data__c WHERE Date__c >= {window_start} "
+        "AND Related_Account__c != null GROUP BY Related_Account__c, Date__c"
+    )
+    records = soql(my_domain, token, query)
+    daily = {}
+    for r in records:
+        daily.setdefault(r["Related_Account__c"], []).append(
+            (generate.parse(r["Date__c"]), r["total"] or 0)
+        )
+
+    totals = {}
+    for a in accounts_with_start:
+        cy_start = generate.contract_year_start(a, today)
+        totals[a["Id"]] = sum(p for d, p in daily.get(a["Id"], []) if d >= cy_start)
+    return totals
+
+
 def fetch_last_30d_case_hours(my_domain, token, account_ids):
     """{account_id: (hours_sum, cases_sum)} - the source for Avg Time/Case
     (added 2026-09-11, user request). Account has no Cases_Last_30__c
